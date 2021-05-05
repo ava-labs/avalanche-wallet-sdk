@@ -3,9 +3,11 @@ import { buildEvmTransferErc20Tx } from '@/helpers/TxHelper';
 import Avalanche, { BN } from 'avalanche';
 import { Transaction } from '@ethereumjs/tx';
 import { web3 } from '@/network';
+import EvmWallet from '@/Wallet/EvmWallet';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
+    abstract evmWallet: EvmWallet;
 
     abstract getAddressX(): string;
     abstract getAddressP(): string;
@@ -21,5 +23,9 @@ export abstract class WalletProvider {
         let txHex = signedTx.serialize().toString('hex');
         let hash = await web3.eth.sendSignedTransaction('0x' + txHex);
         return hash.transactionHash;
+    }
+
+    async updateAvaxBalanceC(): Promise<BN> {
+        return await this.evmWallet.updateBalance();
     }
 }
