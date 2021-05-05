@@ -6,3 +6,7 @@ export const AVAX_TOKEN_INDEX: string = '9000';
 export const AVAX_ACCOUNT_PATH: string = `m/44'/${AVAX_TOKEN_INDEX}'/0'`; // Change and index left out
 export const ETH_ACCOUNT_PATH: string = `m/44'/60'/0'`;
 export const LEDGER_ETH_ACCOUNT_PATH = ETH_ACCOUNT_PATH + '/0/0';
+
+export const INDEX_RANGE: number = 20; // a gap of at least 20 indexes is needed to claim an index unused
+export const SCAN_SIZE: number = 70; // the total number of utxos to look at initially to calculate last index
+export const SCAN_RANGE: number = SCAN_SIZE - INDEX_RANGE; // How many items are actually scanned
