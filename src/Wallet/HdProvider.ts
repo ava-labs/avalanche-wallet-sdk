@@ -1,10 +1,10 @@
 import HDKey from 'hdkey';
 import { Buffer } from 'avalanche';
 import { getPreferredHRP } from 'avalanche/dist/utils';
-import { avalanche, bintools, pChain, xChain } from '@/network';
+import { avalanche, bintools, pChain, xChain } from '../network';
 import { KeyPair as AVMKeyPair } from 'avalanche/dist/apis/avm/keychain';
-import MnemonicWallet from '@/Wallet/MnemonicWallet';
-import { INDEX_RANGE, SCAN_SIZE } from '@/Wallet/constants';
+// import MnemonicWallet from './MnemonicWallet';
+// import { INDEX_RANGE, SCAN_SIZE } from './constants';
 
 export default class HdProvider {
     constructor() {}

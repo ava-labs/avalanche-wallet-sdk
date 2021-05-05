@@ -1,7 +1,7 @@
 import { BN } from 'avalanche';
 import { privateToAddress } from 'ethereumjs-util';
 import { Transaction } from '@ethereumjs/tx';
-import { web3 } from '@/network';
+import { web3 } from '../network';
 
 export default class EvmWallet {
     private privateKey: Buffer;

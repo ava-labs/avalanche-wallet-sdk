@@ -4,8 +4,8 @@ import { InfoAPI } from 'avalanche/dist/apis/info';
 import BinTools from 'avalanche/dist/utils/bintools';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import Web3 from 'web3';
-import { MainnetConfig } from '@/constants';
-import { NetworkConfig } from '@/types';
+import { MainnetConfig } from './constants';
+import { NetworkConfig } from './types';
 
 // Default network connection
 const DefaultConfig = MainnetConfig;

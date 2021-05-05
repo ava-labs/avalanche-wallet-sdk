@@ -1,4 +1,4 @@
-import { xChain, bintools, cChain, pChain, web3 } from '@/network';
+import { xChain, bintools, cChain, pChain, web3 } from '../network';
 
 // import { ITransaction } from '@/components/wallet/transfer/types';
 import { BN, Buffer } from 'avalanche';
@@ -26,7 +26,7 @@ import {
 
 import { UnsignedTx as EVMUnsignedTx, EVMConstants } from 'avalanche/dist/apis/evm';
 
-import { AvmExportChainType } from '@/Wallet/types';
+import { AvmExportChainType } from '../Wallet/types';
 import { Transaction } from '@ethereumjs/tx';
 import EthereumjsCommon from '@ethereumjs/common';
 

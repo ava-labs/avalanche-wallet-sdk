@@ -1,9 +1,9 @@
-import { WalletNameType } from '@/Wallet/types';
-import { buildEvmTransferErc20Tx, buildEvmTransferNativeTx } from '@/helpers/TxHelper';
+import { WalletNameType } from './types';
+import { buildEvmTransferErc20Tx, buildEvmTransferNativeTx } from '../helpers/TxHelper';
 import Avalanche, { BN } from 'avalanche';
 import { Transaction } from '@ethereumjs/tx';
-import { web3 } from '@/network';
-import EvmWallet from '@/Wallet/EvmWallet';
+import { web3 } from '../network';
+import EvmWallet from './EvmWallet';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;

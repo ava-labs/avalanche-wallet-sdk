@@ -19,7 +19,7 @@ import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx } from 'avalanche/dist/apis/ev
 // import { ITransaction } from '@/components/wallet/transfer/types';
 import { BN } from 'avalanche';
 import { PayloadBase } from 'avalanche/dist/utils';
-import { ChainIdType } from '@/types';
+import { ChainIdType } from '../types';
 
 import { Transaction } from '@ethereumjs/tx';
 // import MnemonicWallet from '@/wallets/MnemonicWallet';
