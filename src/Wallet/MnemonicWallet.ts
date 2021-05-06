@@ -8,8 +8,8 @@ import { WalletNameType } from './types';
 // import { Buffer } from 'avalanche';
 // import { avalanche, bintools } from '@/index';
 // import { getPreferredHRP } from 'avalanche/dist/utils';
-import HdProvider from './HdProvider';
 import { Transaction } from '@ethereumjs/tx';
+import HdScanner from './HdScanner';
 
 // import Web3 from 'web3';
 // import Avalanche from 'avalanche';
@@ -17,14 +17,18 @@ import { Transaction } from '@ethereumjs/tx';
 export default class MnemonicWallet extends WalletProvider {
     evmWallet: EvmWallet;
     type: WalletNameType = 'mnemonic';
-    externalIndex = 600;
-    internalIndex = 600;
     accountKey: HDKey;
+
+    internalScan: HdScanner
+    externalScan: HdScanner
 
     constructor(accountKey: HDKey, evmWallet: EvmWallet) {
         super();
         this.accountKey = accountKey;
         this.evmWallet = evmWallet;
+
+        this.internalScan = new HdScanner(accountKey, true)
+        this.externalScan = new HdScanner(accountKey, false)
     }
 
     static create(): MnemonicWallet {
@@ -51,16 +55,24 @@ export default class MnemonicWallet extends WalletProvider {
         return this.evmWallet.sign(tx);
     }
 
-    public getAddressX(index = this.externalIndex): string {
-        return HdProvider.deriveAddress(this.accountKey, `0/${index}`);
+    public getExternalIndex(): number{
+        return this.externalScan.getIndex()
     }
 
-    public getChangeAddressX(index = this.internalIndex) {
-        return HdProvider.deriveAddress(this.accountKey, `1/${index}`);
+    public getInternalIndex(): number{
+        return this.internalScan.getIndex()
     }
 
-    public getAddressP(index = this.externalIndex): string {
-        return HdProvider.deriveAddress(this.accountKey, `0/${index}`, 'P');
+    public getAddressX(): string {
+        return this.externalScan.getAddressX()
+    }
+
+    public getChangeAddressX() {
+        return this.internalScan.getAddressX()
+    }
+
+    public getAddressP(): string {
+        return this.externalScan.getAddressP()
     }
 
     public getAddressC(isBech = false): string {
@@ -69,21 +81,11 @@ export default class MnemonicWallet extends WalletProvider {
 
     // Returns every external X derived address up to active index
     public getExternalAddressesX(): string[] {
-        let addrs = [];
-        let upTo = this.externalIndex;
-        for (var i = 0; i <= upTo; i++) {
-            addrs.push(this.getAddressX(i));
-        }
-        return addrs;
+        return this.externalScan.getAllAddresses('X')
     }
 
     public getInternalAddressesX(): string[] {
-        let addrs = [];
-        let upTo = this.internalIndex;
-        for (var i = 0; i <= upTo; i++) {
-            addrs.push(this.getChangeAddressX(i));
-        }
-        return addrs;
+        return this.internalScan.getAllAddresses('X')
     }
 
     // Returns every derived internal and external addresses
@@ -92,15 +94,16 @@ export default class MnemonicWallet extends WalletProvider {
     }
 
     public getExternalAddressesP(): string[] {
-        let addrs = [];
-        let upTo = this.externalIndex;
-        for (var i = 0; i <= upTo; i++) {
-            addrs.push(this.getAddressP(i));
-        }
-        return addrs;
+        return this.externalScan.getAllAddresses('P')
+
     }
 
     public getAllAddressesP(): string[] {
         return this.getExternalAddressesP();
+    }
+
+    public resetHdIndices(){
+        this.externalScan.resetIndex()
+        this.internalScan.resetIndex()
     }
 }

@@ -6,6 +6,7 @@ import { EVMAPI } from 'avalanche/dist/apis/evm';
 import Web3 from 'web3';
 import { MainnetConfig } from './constants';
 import { NetworkConfig } from './types';
+import axios, { AxiosInstance } from 'axios'
 
 // Default network connection
 const DefaultConfig = MainnetConfig;
@@ -25,6 +26,15 @@ export const bintools: BinTools = BinTools.getInstance();
 
 const rpcUrl = `${DefaultConfig.apiProtocol}://${DefaultConfig.apiIp}:${DefaultConfig.apiPort}/ext/bc/C/rpc`;
 export const web3 = new Web3(rpcUrl);
+
+
+export const explorer_api: AxiosInstance = axios.create({
+    baseURL: DefaultConfig.explorerURL,
+    withCredentials: false,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+})
 
 export async function setNetwork(conf: NetworkConfig) {
     avalanche.setAddress(conf.apiIp, conf.apiPort, conf.apiProtocol);
@@ -46,7 +56,7 @@ export async function setNetwork(conf: NetworkConfig) {
     cChain.getAVAXAssetID(true);
 
     if (conf.explorerURL) {
-        // explorer_api.defaults.baseURL = net.explorerUrl
+        explorer_api.defaults.baseURL = conf.explorerURL
     }
 
     // Set web3 Network Settings

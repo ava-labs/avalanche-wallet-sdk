@@ -34,6 +34,7 @@ export interface IIndexKeyCache {
 export type ChainAlias = 'X' | 'P';
 export type AvmImportChainType = 'P' | 'C';
 export type AvmExportChainType = 'P' | 'C';
+export type HdChainType = 'X' | 'P'
 
 export type WalletNameType = 'mnemonic' | 'ledger' | 'singleton';
 // export type WalletType = MnemonicWallet | LedgerWallet | SingletonWallet;
