@@ -30,6 +30,9 @@ export abstract class WalletProvider {
     abstract getAllAddressesX(): string[];
     abstract getAllAddressesP(): string[];
 
+    public utxosX: AVMUTXOSet = new AVMUTXOSet()
+    public utxosP: PlatformUTXOSet = new PlatformUTXOSet()
+
     abstract async signEvm(tx: Transaction): Promise<Transaction>;
     // abstract async signX(tx: AVMUnsignedTx): Promise<AvmTx>
     // abstract async signP(tx: PlatformUnsignedTx): Promise<PlatformTx>
@@ -63,13 +66,15 @@ export abstract class WalletProvider {
     // Returns UTXOs on the X chain that belong to this wallet
     public async getUtxosX(): Promise<AVMUTXOSet> {
         let addresses = this.getAllAddressesX();
-        return await avmGetAllUTXOs(addresses);
+        this.utxosX = await avmGetAllUTXOs(addresses);
+        return this.utxosX
     }
 
     // Returns UTXOs on the X chain that belong to this wallet
     public async getUtxosP(): Promise<PlatformUTXOSet> {
         let addresses = this.getAllAddressesP();
-        return await platformGetAllUTXOs(addresses);
+        this.utxosP = await platformGetAllUTXOs(addresses);
+        return this.utxosP
     }
 
     public async getStake(): Promise<BN> {
