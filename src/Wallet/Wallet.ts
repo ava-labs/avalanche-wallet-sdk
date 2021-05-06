@@ -1,9 +1,9 @@
 import { WalletNameType } from './types';
-import { buildAvmExportTransaction, buildEvmTransferErc20Tx, buildEvmTransferNativeTx } from '../helpers/TxHelper';
+import { buildAvmExportTransaction, buildEvmTransferErc20Tx, buildEvmTransferNativeTx } from '@/helpers/TxHelper';
 import Avalanche, { BN } from 'avalanche';
 import { Transaction } from '@ethereumjs/tx';
-import { web3, xChain } from '../network';
-import EvmWallet from './EvmWallet';
+import { web3, xChain } from '@/network';
+import EvmWallet from '@/Wallet/EvmWallet';
 
 import { avmGetAllUTXOs, getStakeForAddresses, platformGetAllUTXOs } from '../helpers/utxo_helper';
 
@@ -30,10 +30,10 @@ export abstract class WalletProvider {
     abstract getAllAddressesX(): string[];
     abstract getAllAddressesP(): string[];
 
-    public utxosX: AVMUTXOSet = new AVMUTXOSet()
-    public utxosP: PlatformUTXOSet = new PlatformUTXOSet()
+    public utxosX: AVMUTXOSet = new AVMUTXOSet();
+    public utxosP: PlatformUTXOSet = new PlatformUTXOSet();
 
-    abstract async signEvm(tx: Transaction): Promise<Transaction>;
+    abstract signEvm(tx: Transaction): Promise<Transaction>;
     // abstract async signX(tx: AVMUnsignedTx): Promise<AvmTx>
     // abstract async signP(tx: PlatformUnsignedTx): Promise<PlatformTx>
 
@@ -67,14 +67,14 @@ export abstract class WalletProvider {
     public async getUtxosX(): Promise<AVMUTXOSet> {
         let addresses = this.getAllAddressesX();
         this.utxosX = await avmGetAllUTXOs(addresses);
-        return this.utxosX
+        return this.utxosX;
     }
 
     // Returns UTXOs on the X chain that belong to this wallet
     public async getUtxosP(): Promise<PlatformUTXOSet> {
         let addresses = this.getAllAddressesP();
         this.utxosP = await platformGetAllUTXOs(addresses);
-        return this.utxosP
+        return this.utxosP;
     }
 
     public async getStake(): Promise<BN> {
