@@ -17,8 +17,8 @@ import { Transaction } from '@ethereumjs/tx';
 export default class MnemonicWallet extends WalletProvider {
     evmWallet: EvmWallet;
     type: WalletNameType = 'mnemonic';
-    externalIndex = 0;
-    internalIndex = 0;
+    externalIndex = 600;
+    internalIndex = 600;
     accountKey: HDKey;
 
     constructor(accountKey: HDKey, evmWallet: EvmWallet) {
@@ -68,22 +68,22 @@ export default class MnemonicWallet extends WalletProvider {
     }
 
     // Returns every external X derived address up to active index
-    public getExternalAddressesX(): string[]{
-        let addrs = []
-        let upTo = this.externalIndex
-        for(var i=0;i<=upTo;i++){
-            addrs.push(this.getAddressX(i))
+    public getExternalAddressesX(): string[] {
+        let addrs = [];
+        let upTo = this.externalIndex;
+        for (var i = 0; i <= upTo; i++) {
+            addrs.push(this.getAddressX(i));
         }
-        return addrs
+        return addrs;
     }
 
-    public getInternalAddressesX(): string[]{
-        let addrs = []
-        let upTo = this.internalIndex
-        for(var i=0;i<=upTo;i++){
-            addrs.push(this.getChangeAddressX(i))
+    public getInternalAddressesX(): string[] {
+        let addrs = [];
+        let upTo = this.internalIndex;
+        for (var i = 0; i <= upTo; i++) {
+            addrs.push(this.getChangeAddressX(i));
         }
-        return addrs
+        return addrs;
     }
 
     // Returns every derived internal and external addresses
@@ -91,13 +91,13 @@ export default class MnemonicWallet extends WalletProvider {
         return [...this.getExternalAddressesX(), ...this.getInternalAddressesX()];
     }
 
-    public getExternalAddressesP(): string[]{
-        let addrs = []
-        let upTo = this.externalIndex
-        for(var i=0;i<=upTo;i++){
-            addrs.push(this.getAddressP(i))
+    public getExternalAddressesP(): string[] {
+        let addrs = [];
+        let upTo = this.externalIndex;
+        for (var i = 0; i <= upTo; i++) {
+            addrs.push(this.getAddressP(i));
         }
-        return addrs
+        return addrs;
     }
 
     public getAllAddressesP(): string[] {

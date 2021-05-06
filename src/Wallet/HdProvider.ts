@@ -3,6 +3,8 @@ import { Buffer } from 'avalanche';
 import { getPreferredHRP } from 'avalanche/dist/utils';
 import { avalanche, bintools, pChain, xChain } from '../network';
 import { KeyPair as AVMKeyPair } from 'avalanche/dist/apis/avm/keychain';
+import MnemonicWallet from './MnemonicWallet';
+import { INDEX_RANGE } from './constants';
 // import MnemonicWallet from './MnemonicWallet';
 // import { INDEX_RANGE, SCAN_SIZE } from './constants';
 
@@ -31,12 +33,8 @@ export default class HdProvider {
     //     let addrs = this.getAllDerivedAddresses(startIndex + upTo, startIndex);
     //     let addrChains = await getAddressChains(addrs);
     //
-    //     let chainID;
-    //     if (this.chainId === 'X') {
-    //         chainID = xChain.getBlockchainID();
-    //     } else {
-    //         chainID = pChain.getBlockchainID();
-    //     }
+    //     let chainIdX = xChain.getBlockchainID();
+    //     let chainIdP = pChain.getBlockchainID();
     //
     //     for (var i = 0; i < addrs.length - INDEX_RANGE; i++) {
     //         let gapSize: number = 0;
@@ -50,9 +48,6 @@ export default class HdProvider {
     //
     //             if (!chains) {
     //                 // If doesnt exist on any chain
-    //                 gapSize++;
-    //             } else if (!chains.includes(chainID)) {
-    //                 // If doesnt exist on this chain
     //                 gapSize++;
     //             } else {
     //                 i = i + n;

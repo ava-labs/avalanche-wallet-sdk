@@ -8,7 +8,11 @@ import EvmWallet from './EvmWallet';
 import { avmGetAllUTXOs, getStakeForAddresses, platformGetAllUTXOs } from '../helpers/utxo_helper';
 
 import { UTXOSet as AVMUTXOSet, UnsignedTx as AVMUnsignedTx, Tx as AvmTx } from 'avalanche/dist/apis/avm';
-import { UTXOSet as PlatformUTXOSet, UnsignedTx as PlatformUnsignedTx, Tx as PlatformTx  } from 'avalanche/dist/apis/platformvm';
+import {
+    UTXOSet as PlatformUTXOSet,
+    UnsignedTx as PlatformUnsignedTx,
+    Tx as PlatformTx,
+} from 'avalanche/dist/apis/platformvm';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -19,12 +23,12 @@ export abstract class WalletProvider {
     abstract getAddressP(): string;
     abstract getAddressC(): string;
 
-    abstract getExternalAddressesX(): string[]
-    abstract getInternalAddressesX(): string[]
-    abstract getExternalAddressesP(): string[]
+    abstract getExternalAddressesX(): string[];
+    abstract getInternalAddressesX(): string[];
+    abstract getExternalAddressesP(): string[];
 
-    abstract getAllAddressesX(): string[]
-    abstract getAllAddressesP(): string[]
+    abstract getAllAddressesX(): string[];
+    abstract getAllAddressesP(): string[];
 
     abstract async signEvm(tx: Transaction): Promise<Transaction>;
     // abstract async signX(tx: AVMUnsignedTx): Promise<AvmTx>
@@ -57,15 +61,15 @@ export abstract class WalletProvider {
     }
 
     // Returns UTXOs on the X chain that belong to this wallet
-    public async getUtxosX(): Promise<AVMUTXOSet>{
-        let addresses = this.getAllAddressesX()
-        return await avmGetAllUTXOs(addresses)
+    public async getUtxosX(): Promise<AVMUTXOSet> {
+        let addresses = this.getAllAddressesX();
+        return await avmGetAllUTXOs(addresses);
     }
 
     // Returns UTXOs on the X chain that belong to this wallet
-    public async getUtxosP(): Promise<PlatformUTXOSet>{
-        let addresses = this.getAllAddressesP()
-        return await platformGetAllUTXOs(addresses)
+    public async getUtxosP(): Promise<PlatformUTXOSet> {
+        let addresses = this.getAllAddressesP();
+        return await platformGetAllUTXOs(addresses);
     }
 
     public async getStake(): Promise<BN> {
