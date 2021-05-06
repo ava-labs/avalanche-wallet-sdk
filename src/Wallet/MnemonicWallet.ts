@@ -10,6 +10,7 @@ import { WalletNameType } from './types';
 // import { getPreferredHRP } from 'avalanche/dist/utils';
 import HdProvider from './HdProvider';
 import { Transaction } from '@ethereumjs/tx';
+
 // import Web3 from 'web3';
 // import Avalanche from 'avalanche';
 
@@ -50,19 +51,56 @@ export default class MnemonicWallet extends WalletProvider {
         return this.evmWallet.sign(tx);
     }
 
-    public getAddressX(): string {
-        return HdProvider.deriveAddress(this.accountKey, `0/${this.externalIndex}`);
+    public getAddressX(index = this.externalIndex): string {
+        return HdProvider.deriveAddress(this.accountKey, `0/${index}`);
     }
 
-    public getChangeAddressX() {
-        return HdProvider.deriveAddress(this.accountKey, `1/${this.internalIndex}`);
+    public getChangeAddressX(index = this.internalIndex) {
+        return HdProvider.deriveAddress(this.accountKey, `1/${index}`);
     }
 
-    public getAddressP(): string {
-        return HdProvider.deriveAddress(this.accountKey, `0/${this.externalIndex}`, 'P');
+    public getAddressP(index = this.externalIndex): string {
+        return HdProvider.deriveAddress(this.accountKey, `0/${index}`, 'P');
     }
 
     public getAddressC(isBech = false): string {
         return isBech ? 'C-avax1..' : this.evmWallet.address;
+    }
+
+    // Returns every external X derived address up to active index
+    public getExternalAddressesX(): string[]{
+        let addrs = []
+        let upTo = this.externalIndex
+        for(var i=0;i<=upTo;i++){
+            addrs.push(this.getAddressX(i))
+        }
+        return addrs
+    }
+
+    public getInternalAddressesX(): string[]{
+        let addrs = []
+        let upTo = this.internalIndex
+        for(var i=0;i<=upTo;i++){
+            addrs.push(this.getChangeAddressX(i))
+        }
+        return addrs
+    }
+
+    // Returns every derived internal and external addresses
+    public getAllAddressesX(): string[] {
+        return [...this.getExternalAddressesX(), ...this.getInternalAddressesX()];
+    }
+
+    public getExternalAddressesP(): string[]{
+        let addrs = []
+        let upTo = this.externalIndex
+        for(var i=0;i<=upTo;i++){
+            addrs.push(this.getAddressP(i))
+        }
+        return addrs
+    }
+
+    public getAllAddressesP(): string[] {
+        return this.getExternalAddressesP();
     }
 }
