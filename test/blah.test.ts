@@ -1,7 +1,8 @@
-import { sum } from '../src';
+import MnemonicWallet from '@/Wallet/MnemonicWallet';
 
 describe('blah', () => {
-  it('works', () => {
-    expect(sum(1, 1)).toEqual(2);
-  });
+    it('works', () => {
+        const wallet = MnemonicWallet.create();
+        expect(wallet.getAddressX()).toEqual('');
+    });
 });
