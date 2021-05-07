@@ -1,70 +1,68 @@
 import HDKey from 'hdkey';
 import { getPreferredHRP } from 'avalanche/dist/utils';
-import { avalanche, bintools, pChain, xChain } from '../network';
+import { avalanche, bintools, pChain, xChain } from '@/Network/network';
 import { KeyPair as AVMKeyPair } from 'avalanche/dist/apis/avm/keychain';
 import { HdChainType } from './types';
-import { Buffer } from 'avalanche'
+import { Buffer } from 'avalanche';
 import { INDEX_RANGE, SCAN_RANGE, SCAN_SIZE } from './constants';
 import { getAddressChains } from '../Explorer/Explorer';
 
-
 type AddressCache = {
-    [index:string]: HDKey
-}
+    [index: string]: HDKey;
+};
 
 // Each HD wallet has 2 HdScaners, one for internal chain, one for external
 export default class HdScanner {
     protected index = 0;
-    protected addressCache: AddressCache = {}
+    protected addressCache: AddressCache = {};
     readonly changePath: string;
     readonly accountKey: HDKey;
 
     constructor(accountKey: HDKey, isInternal = true) {
-        this.changePath = isInternal ? '1' : '0'
-        this.accountKey = accountKey
+        this.changePath = isInternal ? '1' : '0';
+        this.accountKey = accountKey;
     }
 
-    getIndex(){
-        return this.index
+    getIndex() {
+        return this.index;
     }
 
-    public getAddressX(){
-        return this.getAddressForIndex(this.index, 'X')
+    public getAddressX() {
+        return this.getAddressForIndex(this.index, 'X');
     }
 
     // public getAddressAtX(index: number){
     //     return this.getAddressForIndex(index, 'X')
     // }
 
-    public getAddressP(){
-        return this.getAddressForIndex(this.index, 'P')
+    public getAddressP() {
+        return this.getAddressForIndex(this.index, 'P');
     }
 
-    public getAllAddresses(chainId: HdChainType = 'X'): string[]{
+    public getAllAddresses(chainId: HdChainType = 'X'): string[] {
         let upTo = this.index;
-        let addrs = []
+        let addrs = [];
         for (var i = 0; i <= upTo; i++) {
             addrs.push(this.getAddressForIndex(i, chainId));
         }
-        return addrs
+        return addrs;
     }
 
-    getAddressesInRange(start: number, end: number){
-        let res = []
-        for(let i = start; i<end;i++){
-            res.push(this.getAddressForIndex(i))
+    getAddressesInRange(start: number, end: number) {
+        let res = [];
+        for (let i = start; i < end; i++) {
+            res.push(this.getAddressForIndex(i));
         }
-        return res
+        return res;
     }
 
     private getAddressForIndex(index: number, chainId: HdChainType = 'X'): string {
-
         let key: HDKey;
         if (this.addressCache[index]) {
-            key = this.addressCache[index]
-        }else{
+            key = this.addressCache[index];
+        } else {
             key = this.accountKey.derive(`m/${this.changePath}/${index}`) as HDKey;
-            this.addressCache[index] = key
+            this.addressCache[index] = key;
         }
 
         let publicKey = key.publicKey.toString('hex');
@@ -76,15 +74,13 @@ export default class HdScanner {
         let addrBuf = keypair.addressFromPublicKey(publicKeyBuff);
         let addr = bintools.addressToString(hrp, chainId, addrBuf);
 
-        return addr
+        return addr;
     }
-
 
     // Uses the explorer to scan used addresses and find its starting index
-    public async resetIndex(){
-        this.index = await this.findAvailableIndexExplorer()
+    public async resetIndex() {
+        this.index = await this.findAvailableIndexExplorer();
     }
-
 
     // Scans the address space of this hd path and finds the last used index using the
     // explorer API.
@@ -135,7 +131,6 @@ export default class HdScanner {
             addrsX.push(addressX);
             addrsP.push(addressP);
         }
-
 
         let utxoSetX = (await xChain.getUTXOs(addrsX)).utxos;
         let utxoSetP = (await pChain.getUTXOs(addrsP)).utxos;

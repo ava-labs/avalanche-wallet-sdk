@@ -1,4 +1,4 @@
-import { xChain, bintools, cChain, pChain, web3 } from '../network';
+import { xChain, bintools, cChain, pChain, web3 } from '../Network/network';
 
 // import { ITransaction } from '@/components/wallet/transfer/types';
 import { BN, Buffer } from 'avalanche';
@@ -330,7 +330,7 @@ export async function buildEvmTransferErc20Tx(
     let tx = Transaction.fromTxData(
         {
             nonce: nonce,
-            gasPrice: gasPrice.toString('hex'),
+            gasPrice: '0x' + gasPrice.toString('hex'),
             gasLimit: gasLimit,
             value: '0x0',
             to: contractAddress,

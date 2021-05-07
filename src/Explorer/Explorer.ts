@@ -1,8 +1,6 @@
-import axios, { AxiosInstance } from 'axios'
-import { explorer_api } from '../network';
+import axios, { AxiosInstance } from 'axios';
+import { explorer_api } from '@/Network/network';
 // import { ITransactionData } from './store/modules/history/types'
-
-
 
 // async function getAddressHistory(
 //   addrs: string[],
@@ -62,27 +60,27 @@ import { explorer_api } from '../network';
 // }
 
 async function isAddressUsedX(addr: string) {
-    let addrRaw = addr.split('-')[1]
-    let url = `/x/transactions?address=${addrRaw}&limit=1&disableCount=1`
+    let addrRaw = addr.split('-')[1];
+    let url = `/x/transactions?address=${addrRaw}&limit=1&disableCount=1`;
     try {
-        let res = await explorer_api.get(url)
+        let res = await explorer_api.get(url);
         // console.log(res);
-        if (res.data.transactions.length > 0) return true
-        else return false
+        if (res.data.transactions.length > 0) return true;
+        else return false;
     } catch (e) {
-        throw e
+        throw e;
     }
 }
 
 async function getAddressDetailX(addr: string) {
-    let addrRaw = addr.split('-')[1]
-    let url = `/x/addresses/${addrRaw}`
+    let addrRaw = addr.split('-')[1];
+    let url = `/x/addresses/${addrRaw}`;
 
     try {
-        let res = await explorer_api.get(url)
-        return res.data
+        let res = await explorer_api.get(url);
+        return res.data;
     } catch (e) {
-        throw e
+        throw e;
     }
 }
 
@@ -90,17 +88,17 @@ async function getAddressDetailX(addr: string) {
 async function getAddressChains(addrs: string[]) {
     // Strip the prefix
     let rawAddrs = addrs.map((addr) => {
-        return addr.split('-')[1]
-    })
+        return addr.split('-')[1];
+    });
 
-    let urlRoot = `/v2/addressChains`
+    let urlRoot = `/v2/addressChains`;
 
     let res = await explorer_api.post(urlRoot, {
         address: rawAddrs,
         disableCount: ['1'],
-    })
+    });
 
-    return res.data.addressChains
+    return res.data.addressChains;
 }
 
-export { getAddressDetailX, isAddressUsedX, getAddressChains }
+export { getAddressDetailX, isAddressUsedX, getAddressChains };

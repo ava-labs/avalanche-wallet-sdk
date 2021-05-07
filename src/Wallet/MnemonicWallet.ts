@@ -19,16 +19,16 @@ export default class MnemonicWallet extends WalletProvider {
     type: WalletNameType = 'mnemonic';
     accountKey: HDKey;
 
-    internalScan: HdScanner
-    externalScan: HdScanner
+    internalScan: HdScanner;
+    externalScan: HdScanner;
 
     constructor(accountKey: HDKey, evmWallet: EvmWallet) {
         super();
         this.accountKey = accountKey;
         this.evmWallet = evmWallet;
 
-        this.internalScan = new HdScanner(accountKey, true)
-        this.externalScan = new HdScanner(accountKey, false)
+        this.internalScan = new HdScanner(accountKey, true);
+        this.externalScan = new HdScanner(accountKey, false);
     }
 
     static create(): MnemonicWallet {
@@ -55,24 +55,24 @@ export default class MnemonicWallet extends WalletProvider {
         return this.evmWallet.sign(tx);
     }
 
-    public getExternalIndex(): number{
-        return this.externalScan.getIndex()
+    public getExternalIndex(): number {
+        return this.externalScan.getIndex();
     }
 
-    public getInternalIndex(): number{
-        return this.internalScan.getIndex()
+    public getInternalIndex(): number {
+        return this.internalScan.getIndex();
     }
 
     public getAddressX(): string {
-        return this.externalScan.getAddressX()
+        return this.externalScan.getAddressX();
     }
 
     public getChangeAddressX() {
-        return this.internalScan.getAddressX()
+        return this.internalScan.getAddressX();
     }
 
     public getAddressP(): string {
-        return this.externalScan.getAddressP()
+        return this.externalScan.getAddressP();
     }
 
     public getAddressC(isBech = false): string {
@@ -81,11 +81,11 @@ export default class MnemonicWallet extends WalletProvider {
 
     // Returns every external X derived address up to active index
     public getExternalAddressesX(): string[] {
-        return this.externalScan.getAllAddresses('X')
+        return this.externalScan.getAllAddresses('X');
     }
 
     public getInternalAddressesX(): string[] {
-        return this.internalScan.getAllAddresses('X')
+        return this.internalScan.getAllAddresses('X');
     }
 
     // Returns every derived internal and external addresses
@@ -94,16 +94,15 @@ export default class MnemonicWallet extends WalletProvider {
     }
 
     public getExternalAddressesP(): string[] {
-        return this.externalScan.getAllAddresses('P')
-
+        return this.externalScan.getAllAddresses('P');
     }
 
     public getAllAddressesP(): string[] {
         return this.getExternalAddressesP();
     }
 
-    public resetHdIndices(){
-        this.externalScan.resetIndex()
-        this.internalScan.resetIndex()
+    public async resetHdIndices() {
+        await this.externalScan.resetIndex();
+        await this.internalScan.resetIndex();
     }
 }
