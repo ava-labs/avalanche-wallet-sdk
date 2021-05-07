@@ -41,12 +41,16 @@ export default class MnemonicWallet extends WalletProvider {
     }
 
     static create(): MnemonicWallet {
-        let mnemonic = bip39.generateMnemonic(256);
+        const mnemonic = bip39.generateMnemonic(256);
         return MnemonicWallet.fromMnemonic(mnemonic);
     }
 
+    static generateMnemonicPhrase(): string {
+        return bip39.generateMnemonic(256);
+    }
+
     static fromMnemonic(mnemonic: string): MnemonicWallet {
-        let cleanMnemonic = mnemonic.trim();
+        const cleanMnemonic = mnemonic.trim();
         if (!bip39.validateMnemonic(cleanMnemonic)) {
             throw new Error('Invalid mnemonic phrase.');
         }
