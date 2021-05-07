@@ -22,10 +22,10 @@ import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx } from 'avalanche/dist/apis/ev
 export default class MnemonicWallet extends WalletProvider {
     evmWallet: EvmWallet;
     type: WalletNameType = 'mnemonic';
-    accountKey: HDKey;
+    private accountKey: HDKey;
 
-    internalScan: HdScanner;
-    externalScan: HdScanner;
+    private internalScan: HdScanner;
+    private externalScan: HdScanner;
 
     constructor(accountKey: HDKey, evmWallet: EvmWallet) {
         super();
