@@ -25,9 +25,9 @@
     "lint-staged": {
         "**/*": "prettier --write --ignore-unknown"
     },
-    "name": "wallet-sdk-tsdx",
+    "name": "avalanche-wallet-sdk",
     "author": "Emre Kanatli",
-    "module": "dist/wallet-sdk-tsdx.esm.js",
+    "module": "dist/avalanche-wallet-sdk.esm.js",
     "size-limit": [
         {
             "path": "dist/index.js",
