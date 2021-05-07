@@ -74,6 +74,9 @@ export async function setNetwork(conf: NetworkConfig) {
     activeNetwork = conf;
 }
 
+// Default connection is Mainnet
+setNetwork(MainnetConfig);
+
 // What is the AVA coin in the network
 // async function getAvaxId() {
 //     let res = await xChain.getAssetDescription('AVAX');
