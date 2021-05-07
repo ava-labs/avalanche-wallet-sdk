@@ -10,6 +10,11 @@ import { WalletNameType } from './types';
 // import { getPreferredHRP } from 'avalanche/dist/utils';
 import { Transaction } from '@ethereumjs/tx';
 import HdScanner from './HdScanner';
+import { Tx as AVMTx, UnsignedTx as AVMUnsignedTx } from 'avalanche/dist/apis/avm';
+import { Tx as PlatformTx, UnsignedTx as PlatformUnsignedTx } from 'avalanche/dist/apis/platformvm';
+import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
+import { KeyChain as PlatformKeyChain, KeyPair as PlatformKeyPair } from 'avalanche/dist/apis/platformvm';
+import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx } from 'avalanche/dist/apis/evm';
 
 // import Web3 from 'web3';
 // import Avalanche from 'avalanche';
@@ -29,6 +34,10 @@ export default class MnemonicWallet extends WalletProvider {
 
         this.internalScan = new HdScanner(accountKey, true);
         this.externalScan = new HdScanner(accountKey, false);
+    }
+
+    getEvmAddressBech(): string {
+        return this.evmWallet.getAddressBech();
     }
 
     static create(): MnemonicWallet {
@@ -52,7 +61,29 @@ export default class MnemonicWallet extends WalletProvider {
     }
 
     async signEvm(tx: Transaction): Promise<Transaction> {
-        return this.evmWallet.sign(tx);
+        return this.evmWallet.signEVM(tx);
+    }
+
+    async signX(tx: AVMUnsignedTx): Promise<AVMTx> {
+        return tx.sign(this.getKeyChainX());
+    }
+
+    async signP(tx: PlatformUnsignedTx): Promise<PlatformTx> {
+        return tx.sign(this.getKeyChainP());
+    }
+
+    async signC(tx: EVMUnsignedTx): Promise<EVMTx> {
+        return this.evmWallet.signC(tx);
+    }
+
+    private getKeyChainX(): AVMKeyChain {
+        let internal = this.internalScan.getKeyChainX();
+        let external = this.externalScan.getKeyChainX();
+        return internal.union(external);
+    }
+
+    private getKeyChainP(): PlatformKeyChain {
+        return this.externalScan.getKeyChainP();
     }
 
     public getExternalIndex(): number {

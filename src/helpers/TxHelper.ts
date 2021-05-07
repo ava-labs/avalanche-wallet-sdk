@@ -297,10 +297,10 @@ export async function buildEvmTransferNativeTx(
     const tx = Transaction.fromTxData(
         {
             nonce: nonce,
-            gasPrice: gasPrice.toString('hex'),
+            gasPrice: '0x' + gasPrice.toString('hex'),
             gasLimit: gasLimit,
             to: to,
-            value: amount.toString('hex'),
+            value: '0x' + amount.toString('hex'),
             data: '0x',
         },
         chainParams

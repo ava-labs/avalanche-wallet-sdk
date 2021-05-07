@@ -44,13 +44,21 @@ async function avmGetAtomicUTXOs(addrs: string[]): Promise<AVMUTXOSet> {
 }
 
 // todo: Use end index to get ALL utxos
-async function platformGetAtomicUTXOs(addrs: string[]): Promise<PlatformUTXOSet> {
-    if (addrs.length > 1024) {
-        throw new Error('Number of addresses can not be greater than 1024.');
-    }
+export async function platformGetAtomicUTXOs(addrs: string[]): Promise<PlatformUTXOSet> {
+    // if (addrs.length > 1024) {
+    //     throw new Error('Number of addresses can not be greater than 1024.');
+    // }
+    let selection = addrs.slice(0, 1024);
+    let remaining = addrs.slice(1024);
 
-    let result: PlatformUTXOSet = (await pChain.getUTXOs(addrs, xChain.getBlockchainID())).utxos;
-    return result;
+    let utxoSet = (await pChain.getUTXOs(selection, xChain.getBlockchainID())).utxos;
+    if (remaining.length > 0) {
+        // @ts-ignore
+        let nextSet = await platformGetAtomicUTXOs(remaining);
+        // @ts-ignore
+        utxoSet = utxoSet.merge(nextSet);
+    }
+    return utxoSet;
 }
 
 // todo: Use end index to get ALL utxos

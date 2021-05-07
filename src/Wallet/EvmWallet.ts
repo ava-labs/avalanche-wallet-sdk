@@ -1,7 +1,9 @@
-import { BN } from 'avalanche';
+import { BN, Buffer as BufferAvalanche } from 'avalanche';
 import { privateToAddress } from 'ethereumjs-util';
 import { Transaction } from '@ethereumjs/tx';
-import { web3 } from '@/Network/network';
+import { avalanche, bintools, cChain, web3 } from '@/Network/network';
+import { KeyChain as EVMKeyChain, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
+import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx } from 'avalanche/dist/apis/evm';
 
 export default class EvmWallet {
     private privateKey: Buffer;
@@ -14,8 +16,31 @@ export default class EvmWallet {
         this.address = '0x' + privateToAddress(key).toString('hex');
     }
 
-    sign(tx: Transaction) {
+    private getPrivateKeyBech(): string {
+        return `PrivateKey-` + bintools.cb58Encode(BufferAvalanche.from(this.privateKey));
+    }
+
+    getKeyChain(): EVMKeyChain {
+        let keychain = new EVMKeyChain(avalanche.getHRP(), 'C');
+        keychain.importKey(this.getPrivateKeyBech());
+        return keychain;
+    }
+
+    getKeyPair(): EVMKeyPair {
+        let keychain = new EVMKeyChain(avalanche.getHRP(), 'C');
+        return keychain.importKey(this.getPrivateKeyBech());
+    }
+
+    getAddressBech(): string {
+        return this.getKeyPair().getAddressString();
+    }
+
+    signEVM(tx: Transaction) {
         return tx.sign(this.privateKey);
+    }
+
+    signC(tx: EVMUnsignedTx): EVMTx {
+        return tx.sign(this.getKeyChain());
     }
 
     getPrivateKeyHex(): string {
