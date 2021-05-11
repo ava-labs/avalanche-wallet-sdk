@@ -20,7 +20,8 @@
         "prepare": "husky install && rollup -c",
         "size": "size-limit",
         "analyze": "size-limit --why",
-        "docs": "typedoc src/index.ts"
+        "docs": "typedoc src/index.ts",
+        "docs:watch": "typedoc --watch src/index.ts"
     },
     "peerDependencies": {},
     "lint-staged": {
