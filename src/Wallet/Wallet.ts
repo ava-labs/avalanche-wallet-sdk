@@ -75,6 +75,12 @@ export abstract class WalletProvider {
     abstract signP(tx: PlatformUnsignedTx): Promise<PlatformTx>;
     abstract signC(tx: EVMUnsignedTx): Promise<EVMTx>;
 
+    /**
+     *
+     * @param to - the address funds are being send to.
+     * @param amount - amount of AVAX to send in nAVAX
+     * @param memo - A MEMO for the transaction
+     */
     async sendAvaxX(to: string, amount: BN, memo?: string): Promise<string> {
         if (!activeNetwork) throw NO_NETWORK;
 
