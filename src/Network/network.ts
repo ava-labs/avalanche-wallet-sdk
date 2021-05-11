@@ -38,13 +38,18 @@ export const explorer_api: AxiosInstance = axios.create({
 
 export let activeNetwork: null | NetworkConfig = null;
 
+let isLoading = false;
 export async function setNetwork(conf: NetworkConfig) {
+    if (isLoading) {
+        throw new Error('Already trying to connect, try again later.');
+    }
+    isLoading = true;
     avalanche.setAddress(conf.apiIp, conf.apiPort, conf.apiProtocol);
     avalanche.setNetworkID(conf.networkID);
 
-    let chainIdX = await infoApi.getBlockchainID('X');
-    let chainIdP = await infoApi.getBlockchainID('P');
-    let chainIdC = await infoApi.getBlockchainID('C');
+    const chainIdX = await infoApi.getBlockchainID('X');
+    const chainIdP = await infoApi.getBlockchainID('P');
+    const chainIdC = await infoApi.getBlockchainID('C');
 
     xChain.refreshBlockchainID(chainIdX);
     xChain.setBlockchainAlias('X');
@@ -55,9 +60,9 @@ export async function setNetwork(conf: NetworkConfig) {
     cChain.refreshBlockchainID(chainIdC);
     cChain.setBlockchainAlias('C');
 
-    xChain.getAVAXAssetID(true);
+    await xChain.getAVAXAssetID(true);
     pChain.getAVAXAssetID(true);
-    cChain.getAVAXAssetID(true);
+    await cChain.getAVAXAssetID(true);
 
     if (conf.explorerURL) {
         explorer_api.defaults.baseURL = conf.explorerURL;
@@ -72,6 +77,7 @@ export async function setNetwork(conf: NetworkConfig) {
 
     let chainID = await web3.eth.getChainId();
     activeNetwork = conf;
+    isLoading = false;
 }
 
 // Default connection is Mainnet

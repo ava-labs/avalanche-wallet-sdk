@@ -67,7 +67,7 @@
     "dependencies": {
         "@ethereumjs/tx": "^3.1.4",
         "@openzeppelin/contracts": "^4.1.0",
-        "avalanche": "^3.3.0",
+        "avalanche": "3.4.0",
         "big.js": "^6.1.1",
         "bip39": "^3.0.4",
         "hdkey": "^2.0.1",

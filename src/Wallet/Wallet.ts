@@ -3,6 +3,7 @@ import {
     AssetBalanceRawX,
     AssetBalanceX,
     AvmExportChainType,
+    AvmImportChainType,
     WalletBalanceERC20,
     WalletBalanceX,
     WalletNameType,
@@ -20,7 +21,7 @@ import EvmWallet from '@/Wallet/EvmWallet';
 
 import {
     avmGetAllUTXOs,
-    getAtomicUTXOsForAllAddresses,
+    avmGetAtomicUTXOs,
     getStakeForAddresses,
     platformGetAllUTXOs,
     platformGetAtomicUTXOs,
@@ -40,7 +41,7 @@ import {
     PlatformVMConstants,
     StakeableLockOut,
 } from 'avalanche/dist/apis/platformvm';
-import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx } from 'avalanche/dist/apis/evm';
+import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, UTXOSet as EVMUTXOSet } from 'avalanche/dist/apis/evm';
 
 import { UnixNow } from 'avalanche/dist/utils';
 import { getAssetDescription } from '@/Asset/Assets';
@@ -170,7 +171,7 @@ export abstract class WalletProvider {
      *  - Calls `this.updateBalanceX()` after success.
      */
     public async getUtxosX(): Promise<AVMUTXOSet> {
-        let addresses = this.getAllAddressesX();
+        const addresses = this.getAllAddressesX();
         this.utxosX = await avmGetAllUTXOs(addresses);
         this.updateBalanceX();
         return this.utxosX;
@@ -357,6 +358,7 @@ export abstract class WalletProvider {
         let exportTx = await buildEvmExportTransaction(fromAddresses, destinationAddr, amtFee, bechAddr);
 
         let tx = await this.signC(exportTx);
+
         return cChain.issueTx(tx);
     }
 
@@ -372,11 +374,6 @@ export abstract class WalletProvider {
     async exportXChain(amt: BN, destinationChain: AvmExportChainType) {
         let fee = xChain.getTxFee();
         let amtFee = amt.add(fee);
-
-        if (destinationChain === 'C') {
-            // C Chain imports/exports do not have a fee
-            amtFee = amt;
-        }
 
         let destinationAddr;
         if (destinationChain === 'P') {
@@ -403,15 +400,50 @@ export abstract class WalletProvider {
         return xChain.issueTx(tx);
     }
 
-    // async getAtomicUTXOsX() {
-    //     let addrs = this.getAllAddressesX();
-    //     let result = await getAtomicUTXOsForAllAddresses<AVMUTXOSet>(addrs, 'X');
-    //     return result;
-    // }
+    async getAtomicUTXOsX(chainID: AvmImportChainType) {
+        let addrs = this.getAllAddressesX();
+        let result = await avmGetAtomicUTXOs(addrs, chainID);
+        return result;
+    }
 
     async getAtomicUTXOsP(): Promise<PlatformUTXOSet> {
         let addrs = this.getAllAddressesP();
         return await platformGetAtomicUTXOs(addrs);
+    }
+
+    /**
+     * Imports atomic X chain utxos to the current actie X chain address
+     * @param chainID The chain ID to import from, either `P` or `C`
+     */
+    async importX(chainID: AvmImportChainType) {
+        const utxoSet = await this.getAtomicUTXOsX(chainID);
+
+        if (utxoSet.getAllUTXOs().length === 0) {
+            throw new Error('Nothing to import.');
+        }
+
+        let xToAddr = this.getAddressX();
+
+        let hrp = avalanche.getHRP();
+        let utxoAddrs = utxoSet.getAddresses().map((addr) => bintools.addressToString(hrp, 'X', addr));
+
+        let fromAddrs = utxoAddrs;
+        let ownerAddrs = utxoAddrs;
+
+        let sourceChainId;
+        if (chainID === 'P') {
+            sourceChainId = pChain.getBlockchainID();
+        } else {
+            sourceChainId = cChain.getBlockchainID();
+        }
+
+        // Owner addresses, the addresses we exported to
+        const unsignedTx = await xChain.buildImportTx(utxoSet, ownerAddrs, sourceChainId, [xToAddr], fromAddrs, [
+            xToAddr,
+        ]);
+
+        const tx = await this.signX(unsignedTx);
+        return await xChain.issueTx(tx);
     }
 
     async importP(): Promise<string> {
@@ -443,7 +475,26 @@ export abstract class WalletProvider {
         const tx = await this.signP(unsignedTx);
         return await pChain.issueTx(tx);
     }
-    // async exportCChain(amt: BN) {
-    //     return await WalletHelper.exportFromCChain(this, amt)
-    // }
+
+    async importC() {
+        let bechAddr = this.getEvmAddressBech();
+
+        const utxoResponse = await cChain.getUTXOs(bechAddr, xChain.getBlockchainID());
+        const utxoSet: EVMUTXOSet = utxoResponse.utxos;
+
+        if (utxoSet.getAllUTXOs().length === 0) {
+            throw new Error('Nothing to import.');
+        }
+
+        let toAddress = this.getAddressC();
+        let ownerAddresses = [bechAddr];
+        let fromAddresses = ownerAddresses;
+        let sourceChain = xChain.getBlockchainID();
+
+        const unsignedTx = await cChain.buildImportTx(utxoSet, toAddress, ownerAddresses, sourceChain, fromAddresses);
+        let tx = await this.signC(unsignedTx);
+        let id = await cChain.issueTx(tx);
+
+        return id;
+    }
 }
