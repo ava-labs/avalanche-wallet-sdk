@@ -64,10 +64,18 @@ export abstract class WalletProvider {
     abstract getAllAddressesX(): string[];
     abstract getAllAddressesP(): string[];
 
+    /**
+     * The X chain UTXOs of the wallet's current state
+     */
     public utxosX: AVMUTXOSet = new AVMUTXOSet();
+
+    /**
+     * The P chain UTXOs of the wallet's current state
+     */
     public utxosP: PlatformUTXOSet = new PlatformUTXOSet();
 
     public balanceX: WalletBalanceX = {};
+
     public balanceERC20: WalletBalanceERC20 = {};
 
     abstract signEvm(tx: Transaction): Promise<Transaction>;
@@ -109,7 +117,16 @@ export abstract class WalletProvider {
         return txId;
     }
 
-    async sendAvaxC(to: string, amount: BN, gasPrice: BN, gasLimit: number) {
+    /**
+     * Sends AVAX to another address on the C chain.
+     * @param to Hex address to send AVAX to.
+     * @param amount Amount of AVAX to send, represented in WEI format.
+     * @param gasPrice Gas price in gWEI format
+     * @param gasLimit Gas limit
+     *
+     * @return Returns the transaction hash
+     */
+    async sendAvaxC(to: string, amount: BN, gasPrice: BN, gasLimit: number): Promise<string> {
         let fromAddr = this.evmWallet.address;
 
         let tx = await buildEvmTransferNativeTx(fromAddr, to, amount, gasPrice, gasLimit);
@@ -121,6 +138,14 @@ export abstract class WalletProvider {
         return hash.transactionHash;
     }
 
+    /**
+     * Makes a transfer call on a ERC20 contract.
+     * @param to Hex address to transfer tokens to.
+     * @param amount Amount of the ERC20 token to send, donated in the token's correct denomination.
+     * @param gasPrice Gas price in gWEI format
+     * @param gasLimit Gas limit
+     * @param contractAddress Contract address of the ERC20 token
+     */
     async sendErc20(to: string, amount: BN, gasPrice: BN, gasLimit: number, contractAddress: string) {
         let fromAddr = this.getAddressC();
         let tx = await buildEvmTransferErc20Tx(fromAddr, to, amount, gasPrice, gasLimit, contractAddress);
@@ -131,11 +156,19 @@ export abstract class WalletProvider {
         return hash.transactionHash;
     }
 
+    /**
+     * Returns the C chain AVAX balance of the wallet in WEI format.
+     */
     async updateAvaxBalanceC(): Promise<BN> {
         return await this.evmWallet.updateBalance();
     }
 
-    // Returns UTXOs on the X chain that belong to this wallet
+    /**
+     *  Returns UTXOs on the X chain that belong to this wallet.
+     *  - Makes network request.
+     *  - Updates `this.utxosX` with new UTXOs
+     *  - Calls `this.updateBalanceX()` after success.
+     */
     public async getUtxosX(): Promise<AVMUTXOSet> {
         let addresses = this.getAllAddressesX();
         this.utxosX = await avmGetAllUTXOs(addresses);
@@ -143,23 +176,42 @@ export abstract class WalletProvider {
         return this.utxosX;
     }
 
-    // Returns UTXOs on the P chain that belong to this wallet
+    /**
+     *  Returns UTXOs on the P chain that belong to this wallet.
+     *  - Makes network request.
+     *  - Updates `this.utxosP` with the new UTXOs
+     */
     public async getUtxosP(): Promise<PlatformUTXOSet> {
         let addresses = this.getAllAddressesP();
         this.utxosP = await platformGetAllUTXOs(addresses);
         return this.utxosP;
     }
 
+    /**
+     * Returns the number AVAX staked by this wallet.
+     */
     public async getStake(): Promise<BN> {
         let addrs = this.getAllAddressesP();
         return await getStakeForAddresses(addrs);
     }
 
+    /**
+     * Requests the balance for each ERC20 contract in the SDK.
+     * - Makes network requests.
+     * - Updates the value of `this.balanceERC20`
+     */
     public async updateBalanceERC20(): Promise<WalletBalanceERC20> {
         this.balanceERC20 = await balanceOf(this.getAddressC());
         return this.balanceERC20;
     }
 
+    /**
+     * Fetches the X chain UTXOs owned by this wallet, gets asset description for unknown assets,
+     * and returns a nicely formatted dictionary that represents
+     * - Updates `this.balanceX`
+     * - Expensive operation
+     * @private
+     */
     private async updateBalanceX(): Promise<WalletBalanceX> {
         let utxos = this.utxosX.getAllUTXOs();
 
@@ -201,8 +253,11 @@ export abstract class WalletProvider {
         return res;
     }
 
-    // Returns the AVAX balance on X chain based on the current utxos.
-    // This method does not refresh utxos.
+    /**
+     * Returns the X chain AVAX balance of the current wallet state.
+     * - Does not make a network request.
+     * - Does not refresh wallet balance.
+     */
     public getAvaxBalanceX(): AssetBalanceX {
         // checkNetworkConnection()
         if (!activeNetwork) {
@@ -211,8 +266,11 @@ export abstract class WalletProvider {
         return this.balanceX[activeNetwork.avaxID];
     }
 
-    // Returns the AVAX balance on P chain based on the current utxos.
-    // This method does not refresh utxos.
+    /**
+     * Returns the P chain AVAX balance of the current wallet state.
+     * - Does not make a network request.
+     * - Does not refresh wallet balance.
+     */
     public getAvaxBalanceP(): AssetBalanceP {
         let unlocked = new BN(0);
         let locked = new BN(0);
@@ -252,6 +310,14 @@ export abstract class WalletProvider {
         };
     }
 
+    /**
+     * Exports AVAX from P chain to X chain
+     * @remarks
+     * The export transaction will cover the Export + Import Fees
+     *
+     * @param amt amount of nAVAX to transfer
+     * @return returns the transaction id.
+     */
     async exportPChain(amt: BN) {
         let fee = xChain.getTxFee();
         let amtFee = amt.add(fee);
@@ -270,6 +336,14 @@ export abstract class WalletProvider {
         return await pChain.issueTx(tx);
     }
 
+    /**
+     * Exports AVAX from C chain to X chain
+     * @remarks
+     * The export transaction will cover the Export + Import Fees
+     *
+     * @param amt amount of nAVAX to transfer
+     * @return returns the transaction id.
+     */
     async exportCChain(amt: BN) {
         let fee = xChain.getTxFee();
         let amtFee = amt.add(fee);
@@ -286,6 +360,15 @@ export abstract class WalletProvider {
         return cChain.issueTx(tx);
     }
 
+    /**
+     * Exports AVAX from X chain to either P or C chain
+     * @remarks
+     * The export transaction will cover the Export + Import Fees
+     *
+     * @param amt amount of nAVAX to transfer
+     * @param destinationChain Which chain to export to.
+     * @return returns the transaction id.
+     */
     async exportXChain(amt: BN, destinationChain: AvmExportChainType) {
         let fee = xChain.getTxFee();
         let amtFee = amt.add(fee);

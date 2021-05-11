@@ -36,19 +36,35 @@ export default class MnemonicWallet extends WalletProvider {
         this.externalScan = new HdScanner(accountKey, false);
     }
 
+    /**
+     * Gets the active address on the C chain in Bech32 encoding
+     * @return
+     * Bech32 representation of the EVM address.
+     */
     getEvmAddressBech(): string {
         return this.evmWallet.getAddressBech();
     }
 
+    /**
+     * Generates a 24 word mnemonic phrase and initializes a wallet instance with it.
+     * @return Returns the initialized wallet.
+     */
     static create(): MnemonicWallet {
         const mnemonic = bip39.generateMnemonic(256);
         return MnemonicWallet.fromMnemonic(mnemonic);
     }
 
+    /**
+     * Returns a new 24 word mnemonic key phrase.
+     */
     static generateMnemonicPhrase(): string {
         return bip39.generateMnemonic(256);
     }
 
+    /**
+     * Returns a new instance of a Mnemonic wallet from the given key phrase.
+     * @param mnemonic The 24 word mnemonic phrase of the wallet
+     */
     static fromMnemonic(mnemonic: string): MnemonicWallet {
         const cleanMnemonic = mnemonic.trim();
         if (!bip39.validateMnemonic(cleanMnemonic)) {
@@ -64,66 +80,121 @@ export default class MnemonicWallet extends WalletProvider {
         return new MnemonicWallet(avaxAccountHdKey, evmWallet);
     }
 
+    /**
+     * Signs an EVM transaction on the C chain.
+     * @param tx The unsigned transaction
+     */
     async signEvm(tx: Transaction): Promise<Transaction> {
         return this.evmWallet.signEVM(tx);
     }
 
+    /**
+     * Signs an AVM transaction.
+     * @param tx The unsigned transaction
+     */
     async signX(tx: AVMUnsignedTx): Promise<AVMTx> {
         return tx.sign(this.getKeyChainX());
     }
 
+    /**
+     * Signs a PlatformVM transaction.
+     * @param tx The unsigned transaction
+     */
     async signP(tx: PlatformUnsignedTx): Promise<PlatformTx> {
         return tx.sign(this.getKeyChainP());
     }
 
+    /**
+     * Signs a C chain transaction
+     * @remarks
+     * Used for Import and Export transactions on the C chain. For everything else, use `this.signEvm()`
+     * @param tx The unsigned transaction
+     */
     async signC(tx: EVMUnsignedTx): Promise<EVMTx> {
         return this.evmWallet.signC(tx);
     }
 
+    /**
+     * Returns a keychain with the keys of every derived X chain address.
+     * @private
+     */
     private getKeyChainX(): AVMKeyChain {
         let internal = this.internalScan.getKeyChainX();
         let external = this.externalScan.getKeyChainX();
         return internal.union(external);
     }
 
+    /**
+     * Returns a keychain with the keys of every derived P chain address.
+     * @private
+     */
     private getKeyChainP(): PlatformKeyChain {
         return this.externalScan.getKeyChainP();
     }
 
+    /**
+     * Returns current index used for external address derivation.
+     */
     public getExternalIndex(): number {
         return this.externalScan.getIndex();
     }
 
+    /**
+     * Returns current index used for internal address derivation.
+     */
     public getInternalIndex(): number {
         return this.internalScan.getIndex();
     }
 
+    /**
+     * Gets the active external address on the X chain
+     * - The X address will change after every deposit.
+     */
     public getAddressX(): string {
         return this.externalScan.getAddressX();
     }
 
+    /**
+     * Gets the active change address on the X chain
+     * - The change address will change after every transaction on the X chain.
+     */
     public getChangeAddressX() {
         return this.internalScan.getAddressX();
     }
 
+    /**
+     * Gets the active address on the P chain
+     */
     public getAddressP(): string {
         return this.externalScan.getAddressP();
     }
 
-    public getAddressC(isBech = false): string {
-        return isBech ? 'C-avax1..' : this.evmWallet.address;
+    /**
+     * Gets the active address on the C chain
+     * @return
+     * Hex representation of the EVM address.
+     */
+    public getAddressC(): string {
+        return this.evmWallet.address;
     }
 
-    // Returns every external X derived address up to active index
+    /**
+     * Returns every external X chain address used by the wallet up to now.
+     */
     public getExternalAddressesX(): string[] {
         return this.externalScan.getAllAddresses('X');
     }
 
+    /**
+     * Returns every internal X chain address used by the wallet up to now.
+     */
     public getInternalAddressesX(): string[] {
         return this.internalScan.getAllAddresses('X');
     }
 
-    // Returns every derived internal and external addresses
+    /**
+     * Returns every X chain address used by the wallet up to now (internal + external).
+     */
     public getAllAddressesX(): string[] {
         return [...this.getExternalAddressesX(), ...this.getInternalAddressesX()];
     }
@@ -132,10 +203,19 @@ export default class MnemonicWallet extends WalletProvider {
         return this.externalScan.getAllAddresses('P');
     }
 
+    /**
+     * Returns every P chain address used by the wallet up to now.
+     */
     public getAllAddressesP(): string[] {
         return this.getExternalAddressesP();
     }
 
+    /**
+     * Scans the network and initializes internal and external addresses on P and X chains.
+     * - Heavy operation
+     * - MUST use the explorer api to find the last used address
+     * - If explorer is not available it will use the connected node. This may result in invalid balances.
+     */
     public async resetHdIndices() {
         await this.externalScan.resetIndex();
         await this.internalScan.resetIndex();
