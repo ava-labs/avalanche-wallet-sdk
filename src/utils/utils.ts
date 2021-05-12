@@ -1,6 +1,8 @@
 // Extending Big.js with a helper function
 import Big from 'big.js';
 import { BN } from 'avalanche';
+import createHash from 'create-hash';
+
 const axios = require('axios');
 
 /**
@@ -108,4 +110,12 @@ const COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=avalanc
 export async function getAvaxPrice(): Promise<number> {
     const res = await axios.get(COINGECKO_URL);
     return res.data['avalanche-2'].usd;
+}
+
+export function digestMessage(msgStr: string) {
+    let mBuf = Buffer.from(msgStr, 'utf8');
+    let msgSize = Buffer.alloc(4);
+    msgSize.writeUInt32BE(mBuf.length, 0);
+    let msgBuf = Buffer.from(`\x1AAvalanche Signed Message:\n${msgSize}${msgStr}`, 'utf8');
+    return createHash('sha256').update(msgBuf).digest();
 }

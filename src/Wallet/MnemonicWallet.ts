@@ -5,7 +5,7 @@ import EvmWallet from './EvmWallet';
 import { WalletProvider } from './Wallet';
 import { WalletNameType } from './types';
 // import { KeyChain as AVMKeyChain, KeyPair as AVMKeyPair, UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm';
-// import { Buffer } from 'avalanche';
+import { Buffer } from 'avalanche';
 // import { avalanche, bintools } from '@/index';
 // import { getPreferredHRP } from 'avalanche/dist/utils';
 import { Transaction } from '@ethereumjs/tx';
@@ -15,6 +15,8 @@ import { Tx as PlatformTx, UnsignedTx as PlatformUnsignedTx } from 'avalanche/di
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
 import { KeyChain as PlatformKeyChain, KeyPair as PlatformKeyPair } from 'avalanche/dist/apis/platformvm';
 import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx } from 'avalanche/dist/apis/evm';
+import { bintools } from '@/Network/network';
+import { digestMessage } from '@/utils/utils';
 
 // import Web3 from 'web3';
 // import Avalanche from 'avalanche';
@@ -22,13 +24,29 @@ import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx } from 'avalanche/dist/apis/ev
 export default class MnemonicWallet extends WalletProvider {
     evmWallet: EvmWallet;
     type: WalletNameType = 'mnemonic';
+    mnemonic: string;
     private accountKey: HDKey;
 
     private internalScan: HdScanner;
     private externalScan: HdScanner;
 
-    constructor(accountKey: HDKey, evmWallet: EvmWallet) {
+    constructor(mnemonic: string) {
         super();
+
+        const cleanMnemonic = mnemonic.trim();
+        if (!bip39.validateMnemonic(cleanMnemonic)) {
+            throw new Error('Invalid mnemonic phrase.');
+        }
+
+        let seed: globalThis.Buffer = bip39.mnemonicToSeedSync(cleanMnemonic);
+        let masterHdKey: HDKey = HDKey.fromMasterSeed(seed);
+        let accountKey = masterHdKey.derive(AVAX_ACCOUNT_PATH);
+        let ethAccountKey = masterHdKey.derive(ETH_ACCOUNT_PATH + '/0/0');
+        let ethKey = ethAccountKey.privateKey;
+        let evmWallet = new EvmWallet(ethKey);
+
+        this.mnemonic = mnemonic;
+
         this.accountKey = accountKey;
         this.evmWallet = evmWallet;
 
@@ -66,18 +84,19 @@ export default class MnemonicWallet extends WalletProvider {
      * @param mnemonic The 24 word mnemonic phrase of the wallet
      */
     static fromMnemonic(mnemonic: string): MnemonicWallet {
-        const cleanMnemonic = mnemonic.trim();
-        if (!bip39.validateMnemonic(cleanMnemonic)) {
-            throw new Error('Invalid mnemonic phrase.');
-        }
-
-        let seed: globalThis.Buffer = bip39.mnemonicToSeedSync(cleanMnemonic);
-        let masterHdKey: HDKey = HDKey.fromMasterSeed(seed);
-        let avaxAccountHdKey = masterHdKey.derive(AVAX_ACCOUNT_PATH);
-        let ethAccountKey = masterHdKey.derive(ETH_ACCOUNT_PATH + '/0/0');
-        let ethKey = ethAccountKey.privateKey;
-        let evmWallet = new EvmWallet(ethKey);
-        return new MnemonicWallet(avaxAccountHdKey, evmWallet);
+        return new MnemonicWallet(mnemonic);
+        // const cleanMnemonic = mnemonic.trim();
+        // if (!bip39.validateMnemonic(cleanMnemonic)) {
+        //     throw new Error('Invalid mnemonic phrase.');
+        // }
+        //
+        // let seed: globalThis.Buffer = bip39.mnemonicToSeedSync(cleanMnemonic);
+        // let masterHdKey: HDKey = HDKey.fromMasterSeed(seed);
+        // let avaxAccountHdKey = masterHdKey.derive(AVAX_ACCOUNT_PATH);
+        // let ethAccountKey = masterHdKey.derive(ETH_ACCOUNT_PATH + '/0/0');
+        // let ethKey = ethAccountKey.privateKey;
+        // let evmWallet = new EvmWallet(ethKey);
+        // return new MnemonicWallet(avaxAccountHdKey, evmWallet);
     }
 
     /**
@@ -219,5 +238,19 @@ export default class MnemonicWallet extends WalletProvider {
     public async resetHdIndices() {
         await this.externalScan.resetIndex();
         await this.internalScan.resetIndex();
+    }
+
+    // TODO: Support internal address as well
+    signMessage(msgStr: string, index: number): string {
+        let key = this.externalScan.getKeyForIndexX(index) as AVMKeyPair;
+        let digest = digestMessage(msgStr);
+
+        // Convert to the other Buffer and sign
+        let digestHex = digest.toString('hex');
+        let digestBuff = Buffer.from(digestHex, 'hex');
+        let signed = key.sign(digestBuff);
+
+        return bintools.cb58Encode(signed);
+        return '';
     }
 }

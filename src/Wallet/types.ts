@@ -2,19 +2,19 @@
 import {
     KeyChain as AVMKeyChain,
     KeyPair as AVMKeyPair,
-    UTXOSet,
+    UTXOSet as AVMUTXOSet,
     UTXO as AVMUTXO,
     Tx as AVMTx,
     UnsignedTx as AVMUnsignedTx,
 } from 'avalanche/dist/apis/avm';
 
-// import {
-//     UTXOSet as PlatformUTXOSet,
-//     UnsignedTx as PlatformUnsignedTx,
-//     UTXO as PlatformUTXO,
-//     Tx as PlatformTx,
-// } from 'avalanche/dist/apis/platformvm';
-// import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx } from 'avalanche/dist/apis/evm';
+import {
+    UTXOSet as PlatformUTXOSet,
+    UnsignedTx as PlatformUnsignedTx,
+    UTXO as PlatformUTXO,
+    Tx as PlatformTx,
+} from 'avalanche/dist/apis/platformvm';
+import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx } from 'avalanche/dist/apis/evm';
 
 // import { ITransaction } from '@/components/wallet/transfer/types';
 import { BN } from 'avalanche';
@@ -27,6 +27,7 @@ import { BN } from 'avalanche';
 // import { SingletonWallet } from '@/wallets/SingletonWallet';
 import MnemonicWallet from './MnemonicWallet';
 import { iAssetDescriptionClean } from '@/Asset/types';
+import { Transaction } from '@ethereumjs/tx';
 
 export interface IIndexKeyCache {
     [index: number]: AVMKeyPair;
@@ -74,22 +75,36 @@ export interface ERC20Balance {
     address: string;
 }
 
-// interface IAddressManager {
-//     getCurrentAddressAvm(): string;
-//     getCurrentAddressPlatform(): string;
-//     getChangeAddressAvm(): string;
-//     getChangeAddressPlatform(): string;
-//     getDerivedAddresses(): string[];
-//     getDerivedAddressesP(): string[];
-//     getAllDerivedExternalAddresses(): string[];
-//     getAllAddressesX(): string[]; // returns all addresses this wallet own on the X chain
-//     getAllAddressesP(): string[]; // returns all addresses this wallet own on the P chain
-//     getHistoryAddresses(): string[];
-//     getPlatformRewardAddress(): string;
-//     getBaseAddress(): string;
-//     getEvmAddress(): string;
-//     getEvmAddressBech(): string;
-//     getFirstAvailableAddressPlatform(): string;
+// Every wallet class must implement this interface
+// export interface iWallet {
+//     type: WalletNameType
+//     utxosX: AVMUTXOSet
+//     utxosP: PlatformUTXOSet
+//
+//     getAddressX(): string
+//     getChangeAddressX(): string
+//     getAddressP(): string
+//     getAddressC(): string
+//     getEvmAddressBech(): string
+//
+//     getExternalAddressesX(): string[]
+//     getInternalAddressesX(): string[]
+//     getExternalAddressesP(): string[]
+//
+//     getAllAddressesX(): string[]
+//     getAllAddressesP(): string[]
+//
+//     signEvm(tx: Transaction): Promise<Transaction>
+//     signX(tx: AVMUnsignedTx): Promise<AVMTx>
+//     signP(tx: PlatformUnsignedTx): Promise<PlatformTx>
+//     signC(tx: EVMUnsignedTx): Promise<EVMTx>
+//
+//     sendAvaxX(to: string, amount: BN, memo?: string): Promise<string>
+//     sendAvaxC(to: string, amount: BN, gasPrice: BN, gasLimit: number): Promise<string>
+//     sendErc20(to: string, amount: BN, gasPrice: BN, gasLimit: number, contractAddress: string): Promise<string>
+//
+//     updateAvaxBalanceC(): Promise<BN>
+//
 // }
 
 // Every AVA Wallet must implement this.

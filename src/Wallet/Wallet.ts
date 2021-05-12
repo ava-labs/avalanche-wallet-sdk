@@ -10,9 +10,11 @@ import {
 } from './types';
 import {
     buildAvmExportTransaction,
+    buildCreateNftFamilyTx,
     buildEvmExportTransaction,
     buildEvmTransferErc20Tx,
     buildEvmTransferNativeTx,
+    buildMintNftTx,
 } from '@/helpers/TxHelper';
 import Avalanche, { BN, Buffer } from 'avalanche';
 import { Transaction } from '@ethereumjs/tx';
@@ -30,12 +32,14 @@ import {
 import {
     UTXOSet as AVMUTXOSet,
     UnsignedTx as AVMUnsignedTx,
+    UTXO as AVMUTXO,
     Tx as AvmTx,
     AVMConstants,
     AmountOutput,
 } from 'avalanche/dist/apis/avm';
 import {
     UTXOSet as PlatformUTXOSet,
+    UTXO as PlatformUTXO,
     UnsignedTx as PlatformUnsignedTx,
     Tx as PlatformTx,
     PlatformVMConstants,
@@ -43,7 +47,7 @@ import {
 } from 'avalanche/dist/apis/platformvm';
 import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, UTXOSet as EVMUTXOSet } from 'avalanche/dist/apis/evm';
 
-import { UnixNow } from 'avalanche/dist/utils';
+import { PayloadBase, UnixNow } from 'avalanche/dist/utils';
 import { getAssetDescription } from '@/Asset/Assets';
 import { balanceOf } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
@@ -147,7 +151,7 @@ export abstract class WalletProvider {
      * @param gasLimit Gas limit
      * @param contractAddress Contract address of the ERC20 token
      */
-    async sendErc20(to: string, amount: BN, gasPrice: BN, gasLimit: number, contractAddress: string) {
+    async sendErc20(to: string, amount: BN, gasPrice: BN, gasLimit: number, contractAddress: string): Promise<string> {
         let fromAddr = this.getAddressC();
         let tx = await buildEvmTransferErc20Tx(fromAddr, to, amount, gasPrice, gasLimit, contractAddress);
 
@@ -220,7 +224,7 @@ export abstract class WalletProvider {
 
         let res: WalletBalanceX = {};
 
-        for (var i = 0; i < utxos.length; i++) {
+        for (let i = 0; i < utxos.length; i++) {
             let utxo = utxos[i];
             let out = utxo.getOutput();
             let type = out.getOutputID();
@@ -280,7 +284,7 @@ export abstract class WalletProvider {
         let utxos = this.utxosP.getAllUTXOs();
         let unixNow = UnixNow();
 
-        for (var i = 0; i < utxos.length; i++) {
+        for (let i = 0; i < utxos.length; i++) {
             let utxo = utxos[i];
             let out = utxo.getOutput();
             let type = out.getOutputID();
@@ -497,4 +501,163 @@ export abstract class WalletProvider {
 
         return id;
     }
+
+    async createNftFamily(name: string, symbol: string, groupNum: number) {
+        let fromAddresses = this.getAllAddressesX();
+        let changeAddress = this.getChangeAddressX();
+
+        let minterAddress = this.getAddressX();
+
+        let utxoSet = this.utxosX;
+
+        let unsignedTx = await buildCreateNftFamilyTx(
+            name,
+            symbol,
+            groupNum,
+            fromAddresses,
+            minterAddress,
+            changeAddress,
+            utxoSet
+        );
+
+        let signed = await this.signX(unsignedTx);
+        return await xChain.issueTx(signed);
+    }
+
+    async mintNft(mintUtxo: AVMUTXO, payload: PayloadBase, quantity: number) {
+        let ownerAddress = this.getAddressX();
+        let changeAddress = this.getChangeAddressX();
+
+        let sourceAddresses = this.getAllAddressesX();
+
+        let utxoSet = this.utxosX;
+        let tx = await buildMintNftTx(
+            mintUtxo,
+            payload,
+            quantity,
+            ownerAddress,
+            changeAddress,
+            sourceAddresses,
+            utxoSet
+        );
+        let signed = await this.signX(tx);
+        return await xChain.issueTx(signed);
+    }
+
+    /**
+     * Adds a validator to the network using the given node id.
+     *
+     * @param nodeID The node id you are adding as a validator
+     * @param amt Amount of AVAX to stake in nAVAX
+     * @param start Validation period start date
+     * @param end Validation period end date
+     * @param delegationFee Minimum 2%
+     * @param rewardAddress P chain address to send staking rewards
+     * @param utxos
+     *
+     * @return Transaction id
+     */
+    async validate(
+        nodeID: string,
+        amt: BN,
+        start: Date,
+        end: Date,
+        delegationFee: number,
+        rewardAddress?: string,
+        utxos?: PlatformUTXO[]
+    ): Promise<string> {
+        let utxoSet = this.utxosP;
+
+        // If given custom UTXO set use that
+        if (utxos) {
+            utxoSet = new PlatformUTXOSet();
+            utxoSet.addArray(utxos);
+        }
+
+        let pAddressStrings = this.getAllAddressesP();
+        // let pAddressStrings = this.platformHelper.getAllDerivedAddresses()
+
+        let stakeAmount = amt;
+
+        // If reward address isn't given use index 0 address
+        if (!rewardAddress) {
+            rewardAddress = this.getAddressP();
+        }
+
+        // For change address use first available on the platform chain
+        let changeAddress = this.getAddressP();
+
+        let stakeReturnAddr = this.getAddressP();
+
+        // Convert dates to unix time
+        let startTime = new BN(Math.round(start.getTime() / 1000));
+        let endTime = new BN(Math.round(end.getTime() / 1000));
+
+        const unsignedTx = await pChain.buildAddValidatorTx(
+            utxoSet,
+            [stakeReturnAddr],
+            pAddressStrings, // from
+            [changeAddress], // change
+            nodeID,
+            startTime,
+            endTime,
+            stakeAmount,
+            [rewardAddress],
+            delegationFee
+        );
+
+        let tx = await this.signP(unsignedTx);
+        return await pChain.issueTx(tx);
+    }
+
+    async delegate(
+        nodeID: string,
+        amt: BN,
+        start: Date,
+        end: Date,
+        rewardAddress?: string,
+        utxos?: PlatformUTXO[]
+    ): Promise<string> {
+        let utxoSet = this.utxosP;
+        let pAddressStrings = this.getAllAddressesP();
+
+        let stakeAmount = amt;
+
+        // If given custom UTXO set use that
+        if (utxos) {
+            utxoSet = new PlatformUTXOSet();
+            utxoSet.addArray(utxos);
+        }
+
+        // If reward address isn't given use index 0 address
+        if (!rewardAddress) {
+            rewardAddress = this.getAddressP();
+        }
+
+        let stakeReturnAddr = this.getAddressP();
+
+        // For change address use first available on the platform chain
+        let changeAddress = this.getAddressP();
+
+        // Convert dates to unix time
+        let startTime = new BN(Math.round(start.getTime() / 1000));
+        let endTime = new BN(Math.round(end.getTime() / 1000));
+
+        const unsignedTx = await pChain.buildAddDelegatorTx(
+            utxoSet,
+            [stakeReturnAddr],
+            pAddressStrings,
+            [changeAddress],
+            nodeID,
+            startTime,
+            endTime,
+            stakeAmount,
+            [rewardAddress] // reward address
+        );
+
+        const tx = await this.signP(unsignedTx);
+        return await pChain.issueTx(tx);
+    }
+
+    // Sign message
 }
