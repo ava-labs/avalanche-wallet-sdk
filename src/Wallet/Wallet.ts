@@ -4,6 +4,7 @@ import {
     AssetBalanceX,
     AvmExportChainType,
     AvmImportChainType,
+    ERC20Balance,
     WalletBalanceERC20,
     WalletBalanceX,
     WalletNameType,
@@ -49,8 +50,9 @@ import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, UTXOSet as EVMUTXOSet } from 
 
 import { PayloadBase, UnixNow } from 'avalanche/dist/utils';
 import { getAssetDescription } from '@/Asset/Assets';
-import { balanceOf } from '@/Asset/Erc20';
+import { balanceOf, getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
+import { bnToLocaleString } from '@/utils/utils';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -208,6 +210,24 @@ export abstract class WalletProvider {
     public async updateBalanceERC20(): Promise<WalletBalanceERC20> {
         this.balanceERC20 = await balanceOf(this.getAddressC());
         return this.balanceERC20;
+    }
+
+    /**
+     * Returns the
+     * @param address ERC20 Contract address
+     */
+    public async getBalanceERC20(address: string): Promise<ERC20Balance> {
+        let token = await getErc20Token(address);
+        let bal = await token.balanceOf(this.getAddressC());
+        let res: ERC20Balance = {
+            address: address,
+            denomination: token.decimals,
+            balanceParsed: bnToLocaleString(bal, token.decimals),
+            balance: bal,
+            name: token.name,
+            symbol: token.symbol,
+        };
+        return res;
     }
 
     /**

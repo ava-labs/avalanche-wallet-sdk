@@ -69,6 +69,7 @@ export interface WalletBalanceERC20 {
 
 export interface ERC20Balance {
     balance: BN;
+    balanceParsed: string;
     name: string;
     symbol: string;
     denomination: number;

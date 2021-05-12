@@ -10,12 +10,12 @@ import { Buffer } from 'avalanche';
 // import { getPreferredHRP } from 'avalanche/dist/utils';
 import { Transaction } from '@ethereumjs/tx';
 import HdScanner from './HdScanner';
-import { Tx as AVMTx, UnsignedTx as AVMUnsignedTx } from 'avalanche/dist/apis/avm';
+import { Tx as AVMTx, UnsignedTx as AVMUnsignedTx, UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm';
 import { Tx as PlatformTx, UnsignedTx as PlatformUnsignedTx } from 'avalanche/dist/apis/platformvm';
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
 import { KeyChain as PlatformKeyChain, KeyPair as PlatformKeyPair } from 'avalanche/dist/apis/platformvm';
 import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx } from 'avalanche/dist/apis/evm';
-import { bintools } from '@/Network/network';
+import { avalanche, bintools, xChain } from '@/Network/network';
 import { digestMessage } from '@/utils/utils';
 
 // import Web3 from 'web3';
@@ -251,6 +251,30 @@ export default class MnemonicWallet extends WalletProvider {
         let signed = key.sign(digestBuff);
 
         return bintools.cb58Encode(signed);
-        return '';
+    }
+
+    public async getUtxosX(): Promise<AVMUTXOSet> {
+        let utxosX = await super.getUtxosX();
+
+        // If the current internal or external X address is in the utxo set, increment hd index
+        let utxoAddrs = utxosX.getAddresses();
+        let utxoAddrsStr = utxoAddrs.map((addr) => {
+            return bintools.addressToString(avalanche.getHRP(), 'X', addr);
+        });
+
+        let addrExternalX = this.getAddressX();
+        let addrInternalX = this.getChangeAddressX();
+
+        // Increment external index if the current address is in the utxo set
+        if (utxoAddrsStr.includes(addrExternalX)) {
+            this.externalScan.increment();
+        }
+
+        // Increment internal index if the current address is in the utxo set
+        if (utxoAddrsStr.includes(addrInternalX)) {
+            this.internalScan.increment();
+        }
+
+        return utxosX;
     }
 }

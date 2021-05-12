@@ -38,6 +38,10 @@ export default class HdScanner {
         return this.index;
     }
 
+    public increment(): number {
+        return this.index++;
+    }
+
     public getAddressX() {
         return this.getAddressForIndex(this.index, 'X');
     }
@@ -49,13 +53,13 @@ export default class HdScanner {
     public getAllAddresses(chainId: HdChainType = 'X'): string[] {
         let upTo = this.index;
         let addrs = [];
-        for (var i = 0; i <= upTo; i++) {
+        for (let i = 0; i <= upTo; i++) {
             addrs.push(this.getAddressForIndex(i, chainId));
         }
         return addrs;
     }
 
-    getAddressesInRange(start: number, end: number) {
+    getAddressesInRange(start: number, end: number): string[] {
         let res = [];
         for (let i = start; i < end; i++) {
             res.push(this.getAddressForIndex(i));
@@ -83,7 +87,7 @@ export default class HdScanner {
 
     getKeyChainX(): AVMKeyChain {
         let keychain = xChain.newKeyChain();
-        for (var i = 0; i <= this.index; i++) {
+        for (let i = 0; i <= this.index; i++) {
             let key = this.getKeyForIndexX(i);
             keychain.addKey(key);
         }
@@ -92,7 +96,7 @@ export default class HdScanner {
 
     getKeyChainP(): PlatformKeyChain {
         let keychain = pChain.newKeyChain();
-        for (var i = 0; i <= this.index; i++) {
+        for (let i = 0; i <= this.index; i++) {
             let key = this.getKeyForIndexP(i);
             keychain.addKey(key);
         }
@@ -211,10 +215,10 @@ export default class HdScanner {
         let addrs = this.getAddressesInRange(startIndex, startIndex + upTo);
         let addrChains = await getAddressChains(addrs);
 
-        for (var i = 0; i < addrs.length - INDEX_RANGE; i++) {
+        for (let i = 0; i < addrs.length - INDEX_RANGE; i++) {
             let gapSize: number = 0;
 
-            for (var n = 0; n < INDEX_RANGE; n++) {
+            for (let n = 0; n < INDEX_RANGE; n++) {
                 let scanIndex = i + n;
                 let scanAddr = addrs[scanIndex];
 

@@ -2,6 +2,7 @@ import { Erc20Store, Erc20TokenData } from '@/Asset/types';
 import { activeNetwork, web3 } from '@/Network/network';
 import Erc20Token from '@/Asset/Erc20Token';
 import { WalletBalanceERC20 } from '@/Wallet/types';
+import { bnToLocaleString } from '@/utils/utils';
 
 const DEFAULT_TOKENS: Erc20TokenData[] = [
     {
@@ -133,6 +134,14 @@ export async function addErc20Token(address: string) {
     return token;
 }
 
+export async function getErc20Token(address: string) {
+    if (erc20Store[address]) {
+        return erc20Store[address];
+    } else {
+        return addErc20Token(address);
+    }
+}
+
 export async function balanceOf(address: string): Promise<WalletBalanceERC20> {
     let balance: WalletBalanceERC20 = {};
 
@@ -145,6 +154,7 @@ export async function balanceOf(address: string): Promise<WalletBalanceERC20> {
                 symbol: token.symbol,
                 denomination: token.decimals,
                 balance: bal,
+                balanceParsed: bnToLocaleString(bal, token.decimals),
                 address: tokenAddress,
             };
         }
