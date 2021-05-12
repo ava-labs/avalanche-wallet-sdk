@@ -127,13 +127,16 @@ export async function addErc20Token(address: string) {
 
     let data: Erc20TokenData = await Erc20Token.getData(address);
     let token = new Erc20Token(data);
+
+    erc20Store[address] = token;
+
     return token;
 }
 
 export async function balanceOf(address: string): Promise<WalletBalanceERC20> {
     let balance: WalletBalanceERC20 = {};
 
-    for (var tokenAddress in erc20Store) {
+    for (let tokenAddress in erc20Store) {
         let token = erc20Store[tokenAddress];
         if (token.chainId === activeNetwork?.evmChainID) {
             let bal = await token.balanceOf(address);
