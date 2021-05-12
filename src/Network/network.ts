@@ -39,7 +39,7 @@ export const explorer_api: AxiosInstance = axios.create({
 export let activeNetwork: null | NetworkConfig = null;
 
 let isLoading = false;
-export async function setNetwork(conf: NetworkConfig) {
+export async function setNetwork(conf: NetworkConfig): Promise<void> {
     if (isLoading) {
         throw new Error('Already trying to connect, try again later.');
     }
@@ -78,6 +78,7 @@ export async function setNetwork(conf: NetworkConfig) {
     let chainID = await web3.eth.getChainId();
     activeNetwork = conf;
     isLoading = false;
+    return;
 }
 
 // Default connection is Mainnet

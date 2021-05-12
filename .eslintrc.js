@@ -13,5 +13,6 @@ module.exports = {
     rules: {
         'prefer-const': 'off',
         '@typescript-eslint/ban-ts-comment': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
     },
 };

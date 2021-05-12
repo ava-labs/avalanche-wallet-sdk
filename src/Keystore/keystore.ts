@@ -27,7 +27,7 @@ import {
 import { xChain, bintools } from '@/Network/network';
 import { Buffer } from 'buffer/';
 import MnemonicWallet from '@/Wallet/MnemonicWallet';
-import Crypto from '@/js/Crypto';
+import Crypto from './Crypto';
 import { SingletonWallet } from '@/js/wallets/SingletonWallet';
 import { AccessWalletMultipleInput } from './types';
 // import { keyToKeypair } from '@/helpers/helper'
