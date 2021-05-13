@@ -33,12 +33,11 @@ export default class MnemonicWallet extends WalletProvider {
     constructor(mnemonic: string) {
         super();
 
-        const cleanMnemonic = mnemonic.trim();
-        if (!bip39.validateMnemonic(cleanMnemonic)) {
+        if (!bip39.validateMnemonic(mnemonic)) {
             throw new Error('Invalid mnemonic phrase.');
         }
 
-        let seed: globalThis.Buffer = bip39.mnemonicToSeedSync(cleanMnemonic);
+        let seed: globalThis.Buffer = bip39.mnemonicToSeedSync(mnemonic);
         let masterHdKey: HDKey = HDKey.fromMasterSeed(seed);
         let accountKey = masterHdKey.derive(AVAX_ACCOUNT_PATH);
         let ethAccountKey = masterHdKey.derive(ETH_ACCOUNT_PATH + '/0/0');

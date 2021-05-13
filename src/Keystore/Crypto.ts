@@ -37,7 +37,7 @@ export default class CryptoHelpers {
      */
 
     async _keyMaterial(pwkey: Buffer): Promise<CryptoKey> {
-        return window.crypto.subtle.importKey('raw', new Uint8Array(pwkey), { name: 'PBKDF2' }, false, ['deriveKey']);
+        return crypto.subtle.importKey('raw', new Uint8Array(pwkey), { name: 'PBKDF2' }, false, ['deriveKey']);
     }
 
     /**
@@ -47,7 +47,7 @@ export default class CryptoHelpers {
      * @param salt
      */
     async _deriveKey(keyMaterial: CryptoKey, salt: Buffer): Promise<CryptoKey> {
-        return window.crypto.subtle.deriveKey(
+        return crypto.subtle.deriveKey(
             {
                 name: 'PBKDF2',
                 salt,
@@ -83,7 +83,7 @@ export default class CryptoHelpers {
      */
     makeSalt(): Buffer {
         const salt = Buffer.alloc(this.saltSize);
-        window.crypto.getRandomValues(salt);
+        crypto.getRandomValues(salt);
         return salt;
     }
 
@@ -140,10 +140,10 @@ export default class CryptoHelpers {
         const pwkey: Buffer = this._pwcleaner(password, slt);
         const keyMaterial: CryptoKey = await this._keyMaterial(pwkey);
         const pkey: CryptoKey = await this._deriveKey(keyMaterial, slt);
-        const iv: Buffer = Buffer.from(window.crypto.getRandomValues(new Uint8Array(this.ivSize)));
+        const iv: Buffer = Buffer.from(crypto.getRandomValues(new Uint8Array(this.ivSize)));
 
         const ciphertext: Buffer = Buffer.from(
-            await window.crypto.subtle.encrypt(
+            await crypto.subtle.encrypt(
                 {
                     name: 'AES-GCM',
                     iv,
@@ -176,7 +176,7 @@ export default class CryptoHelpers {
         const pkey: CryptoKey = await this._deriveKey(keyMaterial, salt);
 
         const pt: Buffer = Buffer.from(
-            await window.crypto.subtle.decrypt(
+            await crypto.subtle.decrypt(
                 {
                     name: 'AES-GCM',
                     iv, // The initialization vector you used to encrypt

@@ -246,6 +246,11 @@ async function readV6(data: KeyFileV6, pass: string): Promise<KeyFileDecryptedV6
     };
 }
 
+/**
+ * Will decrypt and return the keys of the encrypted wallets in the given json file
+ * @param data A JSON file of encrypted wallet keys
+ * @param pass The password to decrypt the keys
+ */
 async function readKeyFile(data: AllKeyFileTypes, pass: string): Promise<AllKeyFileDecryptedTypes> {
     switch (data.version) {
         case '6.0':
@@ -318,7 +323,13 @@ function extractKeysFromDecryptedFile(file: AllKeyFileDecryptedTypes): AccessWal
     }
 }
 
-// Given an array of wallets and a password, return an encrypted JSON object that is the keystore file
+/**
+ * Given an array of wallets, the active index, and a password, return an encrypted JSON object that is the keystore file
+ * @param wallets An array of wallet to encrypt
+ * @param pass Password used in encryption
+ * @param activeIndex Index of the active wallet in the `wallets` array
+ * @return Returns a JSON object that can later be decrypted with `readKeyfile` and the given password
+ */
 async function makeKeyfile(
     wallets: (MnemonicWallet | SingletonWallet)[],
     pass: string,
@@ -361,4 +372,4 @@ async function makeKeyfile(
     return file_data;
 }
 
-export { readKeyFile, makeKeyfile, KEYSTORE_VERSION, extractKeysFromDecryptedFile };
+export default { readKeyFile, makeKeyfile, KEYSTORE_VERSION, extractKeysFromDecryptedFile };

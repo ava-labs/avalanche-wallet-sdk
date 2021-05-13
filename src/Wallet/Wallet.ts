@@ -213,7 +213,7 @@ export abstract class WalletProvider {
     }
 
     /**
-     * Returns the
+     * Returns the wallet's balance of the given ERC20 contract
      * @param address ERC20 Contract address
      */
     public async getBalanceERC20(address: string): Promise<ERC20Balance> {
