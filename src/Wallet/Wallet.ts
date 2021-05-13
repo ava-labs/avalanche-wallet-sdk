@@ -238,6 +238,7 @@ export abstract class WalletProvider {
      * @private
      */
     private async updateBalanceX(): Promise<WalletBalanceX> {
+        if (!activeNetwork) throw NO_NETWORK;
         let utxos = this.utxosX.getAllUTXOs();
 
         let unixNow = UnixNow();
@@ -272,6 +273,17 @@ export abstract class WalletProvider {
             }
 
             res[assetId] = asset;
+        }
+
+        // If there are no AVAX UTXOs create a dummy empty balance object
+        let avaxID = activeNetwork.avaxID;
+        if (!res[avaxID]) {
+            let assetInfo = await getAssetDescription(avaxID);
+            res[avaxID] = {
+                locked: new BN(0),
+                unlocked: new BN(0),
+                meta: assetInfo,
+            };
         }
 
         this.balanceX = res;

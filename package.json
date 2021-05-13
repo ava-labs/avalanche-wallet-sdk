@@ -27,9 +27,12 @@
     "lint-staged": {
         "**/*": "prettier --write --ignore-unknown"
     },
-    "name": "avalanche-wallet-sdk",
-    "author": "Emre Kanatli",
+    "name": "@avalabs/avalanche-wallet-sdk",
+    "author": "AVA Labs",
     "module": "dist/avalanche-wallet-sdk.esm.js",
+    "publishConfig": {
+        "access": "restricted"
+    },
     "size-limit": [
         {
             "path": "dist/index.js",
