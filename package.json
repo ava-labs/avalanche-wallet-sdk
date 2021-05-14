@@ -72,6 +72,9 @@
     },
     "dependencies": {
         "@ethereumjs/tx": "^3.1.4",
+        "@ledgerhq/hw-app-eth": "^5.51.1",
+        "@ledgerhq/hw-transport-u2f": "^5.36.0-deprecated",
+        "@obsidiansystems/hw-app-avalanche": "^0.2.2",
         "@openzeppelin/contracts": "^4.1.0",
         "avalanche": "3.4.0",
         "big.js": "^6.1.1",
