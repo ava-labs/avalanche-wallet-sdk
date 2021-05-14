@@ -17,6 +17,9 @@ export default {
             tsconfig: 'tsconfig.json',
             tsconfigOverride: {
                 exclude: ['./test/**'],
+                compilerOptions: {
+                    rootDir: './src',
+                },
             },
         }),
         json(),
