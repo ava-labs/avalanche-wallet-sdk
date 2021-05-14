@@ -1,6 +1,7 @@
 import { NetworkConfig } from './types';
 // import { AVMConstants } from 'avalanche/dist/apis/avm';
 // import Avalanche, { AvalancheCore } from 'avalanche';
+import { Defaults } from 'avalanche/dist/utils';
 
 export const MainnetConfig: NetworkConfig = {
     apiProtocol: 'https',
@@ -9,8 +10,10 @@ export const MainnetConfig: NetworkConfig = {
     explorerURL: 'https://explorerapi.avax.network',
     explorerSiteURL: 'https://explorer.avax.network',
     networkID: 1,
-    evmChainID: 43114,
-    avaxID: 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z',
+    // @ts-ignore
+    evmChainID: Defaults.network[1]['C']['chainID'],
+    // @ts-ignore
+    avaxID: Defaults.network[1]['X']['avaxAssetID'],
 };
 
 export const TestnetConfig: NetworkConfig = {
@@ -20,6 +23,19 @@ export const TestnetConfig: NetworkConfig = {
     explorerURL: 'https://explorerapi.avax-test.network',
     explorerSiteURL: 'https://explorer.avax-test.network',
     networkID: 5,
-    evmChainID: 43113,
-    avaxID: 'U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK',
+    // @ts-ignore
+    evmChainID: Defaults.network[5]['C']['chainID'],
+    // @ts-ignore
+    avaxID: Defaults.network[5]['X']['avaxAssetID'],
+};
+
+export const LocalnetConfig: NetworkConfig = {
+    apiProtocol: 'http',
+    apiIp: 'localhost',
+    apiPort: 9650,
+    networkID: 12345,
+    // @ts-ignore
+    evmChainID: Defaults.network[12345]['C']['chainID'],
+    // @ts-ignore
+    avaxID: Defaults.network[12345]['X']['avaxAssetID'],
 };
