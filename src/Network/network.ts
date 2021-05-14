@@ -39,30 +39,32 @@ export const explorer_api: AxiosInstance = axios.create({
 export let activeNetwork: null | NetworkConfig = null;
 
 let isLoading = false;
-export async function setNetwork(conf: NetworkConfig): Promise<void> {
-    if (isLoading) {
-        throw new Error('Already trying to connect, try again later.');
-    }
-    isLoading = true;
+
+export function setNetwork(conf: NetworkConfig): void {
+    // if (isLoading) {
+    //     throw new Error('Already trying to connect, try again later.');
+    // }
+    // isLoading = true;
+
     avalanche.setAddress(conf.apiIp, conf.apiPort, conf.apiProtocol);
     avalanche.setNetworkID(conf.networkID);
 
-    const chainIdX = await infoApi.getBlockchainID('X');
-    const chainIdP = await infoApi.getBlockchainID('P');
-    const chainIdC = await infoApi.getBlockchainID('C');
+    // const chainIdX = await infoApi.getBlockchainID('X');
+    // const chainIdP = await infoApi.getBlockchainID('P');
+    // const chainIdC = await infoApi.getBlockchainID('C');
 
-    xChain.refreshBlockchainID(chainIdX);
+    xChain.refreshBlockchainID(conf.xChainID);
     xChain.setBlockchainAlias('X');
 
-    pChain.refreshBlockchainID(chainIdP);
+    pChain.refreshBlockchainID(conf.pChainID);
     pChain.setBlockchainAlias('P');
 
-    cChain.refreshBlockchainID(chainIdC);
+    cChain.refreshBlockchainID(conf.cChainID);
     cChain.setBlockchainAlias('C');
 
-    await xChain.getAVAXAssetID(true);
-    pChain.getAVAXAssetID(true);
-    await cChain.getAVAXAssetID(true);
+    xChain.setAVAXAssetID(conf.avaxID);
+    pChain.setAVAXAssetID(conf.avaxID);
+    cChain.setAVAXAssetID(conf.avaxID);
 
     if (conf.explorerURL) {
         explorer_api.defaults.baseURL = conf.explorerURL;
@@ -75,10 +77,8 @@ export async function setNetwork(conf: NetworkConfig): Promise<void> {
     let web3Provider = `${conf.apiProtocol}://${conf.apiIp}:${conf.apiPort}/ext/bc/C/rpc`;
     web3.setProvider(web3Provider);
 
-    let chainID = await web3.eth.getChainId();
+    // let chainID = await web3.eth.getChainId();
     activeNetwork = conf;
-    isLoading = false;
-    return;
 }
 
 // Default connection is Mainnet

@@ -6,5 +6,8 @@ export interface NetworkConfig {
     explorerSiteURL?: string;
     networkID: number;
     evmChainID: number;
+    xChainID: string;
+    pChainID: string;
+    cChainID: string;
     avaxID: string;
 }
