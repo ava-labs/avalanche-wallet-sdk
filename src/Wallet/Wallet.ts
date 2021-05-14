@@ -134,7 +134,7 @@ export abstract class WalletProvider {
      * @return Returns the transaction hash
      */
     async sendAvaxC(to: string, amount: BN, gasPrice: BN, gasLimit: number): Promise<string> {
-        let fromAddr = this.evmWallet.address;
+        let fromAddr = this.getAddressC();
 
         let tx = await buildEvmTransferNativeTx(fromAddr, to, amount, gasPrice, gasLimit);
 

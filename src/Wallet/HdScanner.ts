@@ -245,7 +245,7 @@ export default class HdScanner {
 
     // Uses the node to find last used HD index
     // Only used when there is no explorer API available
-    private async findAvailableIndexNode(start: number = 0): Promise<number> {
+    private async findAvailableIndexNode(start = 0): Promise<number> {
         let addrsX: string[] = [];
         let addrsP: string[] = [];
 

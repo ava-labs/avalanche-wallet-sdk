@@ -10,3 +10,6 @@ export const LEDGER_ETH_ACCOUNT_PATH = ETH_ACCOUNT_PATH + '/0/0';
 export const INDEX_RANGE: number = 20; // a gap of at least 20 indexes is needed to claim an index unused
 export const SCAN_SIZE: number = 70; // the total number of utxos to look at initially to calculate last index
 export const SCAN_RANGE: number = SCAN_SIZE - INDEX_RANGE; // How many items are actually scanned
+
+export const LEDGER_EXCHANGE_TIMEOUT = 90_000;
+export const MIN_EVM_SUPPORT_V = '0.5.3';
