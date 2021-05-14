@@ -31,6 +31,10 @@ export default class EvmWallet {
         return keychain.importKey(this.getPrivateKeyBech());
     }
 
+    getAddress(): string {
+        return this.address;
+    }
+
     getAddressBech(): string {
         return this.getKeyPair().getAddressString();
     }

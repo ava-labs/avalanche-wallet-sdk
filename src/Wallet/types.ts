@@ -26,6 +26,7 @@ import { BN } from 'avalanche';
 // import { LedgerWallet } from '@/wallets/LedgerWallet';
 // import { SingletonWallet } from '@/wallets/SingletonWallet';
 import MnemonicWallet from './MnemonicWallet';
+import SingletonWallet from '@/Wallet/SingletonWallet';
 import { iAssetDescriptionClean } from '@/Asset/types';
 import { Transaction } from '@ethereumjs/tx';
 
@@ -40,7 +41,7 @@ export type HdChainType = 'X' | 'P';
 
 export type WalletNameType = 'mnemonic' | 'ledger' | 'singleton';
 // export type WalletType = MnemonicWallet | LedgerWallet | SingletonWallet;
-export type WalletType = MnemonicWallet;
+export type WalletType = MnemonicWallet | SingletonWallet;
 
 export interface WalletBalanceX {
     [assetId: string]: AssetBalanceX;
