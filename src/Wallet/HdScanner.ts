@@ -1,12 +1,13 @@
 import HDKey from 'hdkey';
 import { getPreferredHRP } from 'avalanche/dist/utils';
-import { avalanche, bintools, pChain, xChain } from '@/Network/network';
+import { activeNetwork, avalanche, bintools, pChain, xChain } from '@/Network/network';
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
 import { KeyChain as PlatformKeyChain, KeyPair as PlatformKeyPair } from 'avalanche/dist/apis/platformvm';
 import { HdChainType } from './types';
 import { Buffer } from 'avalanche';
 import { INDEX_RANGE, SCAN_RANGE, SCAN_SIZE } from './constants';
 import { getAddressChains } from '../Explorer/Explorer';
+import { NO_NETWORK } from '@/errors';
 
 type AddressCache = {
     [index: string]: HDKey;
@@ -204,7 +205,13 @@ export default class HdScanner {
 
     // Uses the explorer to scan used addresses and find its starting index
     public async resetIndex() {
-        this.index = await this.findAvailableIndexExplorer();
+        if (!activeNetwork) throw NO_NETWORK;
+
+        if (activeNetwork.explorerURL) {
+            this.index = await this.findAvailableIndexExplorer();
+        } else {
+            this.index = await this.findAvailableIndexNode();
+        }
     }
 
     // Scans the address space of this hd path and finds the last used index using the
