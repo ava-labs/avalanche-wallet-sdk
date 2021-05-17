@@ -14,15 +14,16 @@ import {
     UnsignedTx as PlatformUnsignedTx,
     Tx as PlatformTx,
 } from 'avalanche/dist/apis/platformvm';
-import { bintools, pChain, xChain } from '@/Network/network';
+import { avalanche, bintools, pChain, xChain } from '@/Network/network';
 import { Buffer as BufferAvalanche } from 'avalanche';
 import EvmWallet from '@/Wallet/EvmWallet';
-import { UnsignedTx, Tx } from 'avalanche/dist/apis/evm';
+import { UnsignedTx, Tx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
 import { Transaction } from '@ethereumjs/tx';
 
 export default class SingletonWallet extends WalletProvider {
     type: WalletNameType = 'singleton';
     key = '';
+    keyBuff: BufferAvalanche;
     evmWallet: EvmWallet;
 
     /**
@@ -36,10 +37,18 @@ export default class SingletonWallet extends WalletProvider {
 
         // Derive EVM key and address
         let pkBuf = bintools.cb58Decode(privateKey.split('-')[1]);
+        this.keyBuff = pkBuf;
+
         let pkHex = pkBuf.toString('hex');
         let pkBuffNative = Buffer.from(pkHex, 'hex');
 
         this.evmWallet = new EvmWallet(pkBuffNative);
+    }
+
+    static fromEvmKey(key: string): SingletonWallet {
+        let keyBuff = bintools.cb58Encode(BufferAvalanche.from(key, 'hex'));
+        let avmKeyStr = `PrivateKey-${keyBuff}`;
+        return new SingletonWallet(avmKeyStr);
     }
 
     private getKeyChainX(): AVMKeyChain {
@@ -81,7 +90,9 @@ export default class SingletonWallet extends WalletProvider {
     }
 
     getEvmAddressBech(): string {
-        return this.evmWallet.getAddressBech();
+        let keypair = new EVMKeyPair(avalanche.getHRP(), 'C');
+        keypair.importKey(this.keyBuff);
+        return keypair.getAddressString();
     }
 
     getExternalAddressesP(): string[] {

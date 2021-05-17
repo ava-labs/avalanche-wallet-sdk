@@ -36,7 +36,7 @@ export const explorer_api: AxiosInstance = axios.create({
     },
 });
 
-export let activeNetwork: null | NetworkConfig = null;
+export let activeNetwork: NetworkConfig = MainnetConfig;
 
 let isLoading = false;
 

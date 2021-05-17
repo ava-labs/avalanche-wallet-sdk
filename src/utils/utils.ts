@@ -3,8 +3,7 @@ import Big from 'big.js';
 import { BN } from 'avalanche';
 import { validateAddress } from '@/helpers/addressHelper';
 import createHash from 'create-hash';
-
-const axios = require('axios');
+import axios from 'axios';
 
 /**
  * @param val the amount to parse
@@ -26,7 +25,7 @@ export function bnToBig(val: BN, denomination = 0): Big {
  *```
  *
  */
-export function bnToAvaxC(val: BN) {
+export function bnToAvaxC(val: BN): string {
     return bnToLocaleString(val, 18);
 }
 
@@ -35,7 +34,7 @@ export function bnToAvaxC(val: BN) {
  *
  * @param val the amount to parse given in nAVAX
  */
-export function bnToAvaxX(val: BN) {
+export function bnToAvaxX(val: BN): string {
     return bnToLocaleString(val, 9);
 }
 
@@ -44,7 +43,7 @@ export function bnToAvaxX(val: BN) {
  *
  * @param val the amount to parse given in nAVAX
  */
-export function bnToAvaxP(val: BN) {
+export function bnToAvaxP(val: BN): string {
     return bnToAvaxX(val);
 }
 
@@ -73,7 +72,7 @@ export function numberToBN(val: number | string, decimals: number): BN {
  * // will return '1,000.95'
  * ```
  */
-export function bnToLocaleString(val: BN, decimals = 9) {
+export function bnToLocaleString(val: BN, decimals = 9): string {
     let bigVal = bnToBig(val, decimals);
 
     let fixedStr = bigVal.toFixed(decimals);
@@ -113,6 +112,7 @@ export async function getAvaxPrice(): Promise<number> {
     return res.data['avalanche-2'].usd;
 }
 
+
 /**
  * Checks if address is valid.
  *
@@ -123,7 +123,9 @@ export function isValidAddress(address: string): boolean | string {
     return validateAddress(address);
 }
 
-export function digestMessage(msgStr: string) {
+
+export function digestMessage(msgStr: string): Buffer {
+
     let mBuf = Buffer.from(msgStr, 'utf8');
     let msgSize = Buffer.alloc(4);
     msgSize.writeUInt32BE(mBuf.length, 0);

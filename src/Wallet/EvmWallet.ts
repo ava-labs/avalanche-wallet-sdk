@@ -1,19 +1,23 @@
 import { BN, Buffer as BufferAvalanche } from 'avalanche';
-import { privateToAddress } from 'ethereumjs-util';
+import { privateToAddress, privateToPublic, importPublic } from 'ethereumjs-util';
 import { Transaction } from '@ethereumjs/tx';
 import { avalanche, bintools, cChain, web3 } from '@/Network/network';
-import { KeyChain as EVMKeyChain, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
-import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx } from 'avalanche/dist/apis/evm';
+import {
+    KeyChain as EVMKeyChain,
+    KeyPair as EVMKeyPair,
+    UnsignedTx as EVMUnsignedTx,
+    Tx as EVMTx,
+} from 'avalanche/dist/apis/evm';
+import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 
-export default class EvmWallet {
+export default class EvmWallet extends EvmWalletReadonly {
     private privateKey: Buffer;
-    balance = new BN(0);
-
-    address: string;
 
     constructor(key: Buffer) {
+        let pubKey = privateToPublic(key);
+        super(pubKey);
+
         this.privateKey = key;
-        this.address = '0x' + privateToAddress(key).toString('hex');
     }
 
     private getPrivateKeyBech(): string {
@@ -31,14 +35,6 @@ export default class EvmWallet {
         return keychain.importKey(this.getPrivateKeyBech());
     }
 
-    getAddress(): string {
-        return this.address;
-    }
-
-    getAddressBech(): string {
-        return this.getKeyPair().getAddressString();
-    }
-
     signEVM(tx: Transaction) {
         return tx.sign(this.privateKey);
     }
@@ -49,11 +45,5 @@ export default class EvmWallet {
 
     getPrivateKeyHex(): string {
         return this.privateKey.toString('hex');
-    }
-
-    async updateBalance() {
-        let bal = await web3.eth.getBalance(this.address);
-        this.balance = new BN(bal);
-        return this.balance;
     }
 }

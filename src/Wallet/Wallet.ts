@@ -53,10 +53,11 @@ import { getAssetDescription } from '@/Asset/Assets';
 import { balanceOf, getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
 import { bnToLocaleString } from '@/utils/utils';
+import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
-    abstract evmWallet: EvmWallet;
+    abstract evmWallet: EvmWallet | EvmWalletReadonly;
 
     abstract getAddressX(): string;
     abstract getChangeAddressX(): string;
@@ -134,7 +135,7 @@ export abstract class WalletProvider {
      * @return Returns the transaction hash
      */
     async sendAvaxC(to: string, amount: BN, gasPrice: BN, gasLimit: number): Promise<string> {
-        let fromAddr = this.evmWallet.address;
+        let fromAddr = this.getAddressC();
 
         let tx = await buildEvmTransferNativeTx(fromAddr, to, amount, gasPrice, gasLimit);
 
@@ -661,14 +662,14 @@ export abstract class WalletProvider {
             utxoSet.addArray(utxos);
         }
 
-        // If reward address isn't given use index 0 address
+        // If reward address isn't given use current P address
         if (!rewardAddress) {
             rewardAddress = this.getAddressP();
         }
 
         let stakeReturnAddr = this.getAddressP();
 
-        // For change address use first available on the platform chain
+        // For change address use the current platform chain
         let changeAddress = this.getAddressP();
 
         // Convert dates to unix time
