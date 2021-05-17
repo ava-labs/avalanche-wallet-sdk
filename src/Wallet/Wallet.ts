@@ -52,7 +52,7 @@ import { PayloadBase, UnixNow } from 'avalanche/dist/utils';
 import { getAssetDescription } from '@/Asset/Assets';
 import { balanceOf, getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
-import { bnToLocaleString } from '@/utils/utils';
+import { bnToLocaleString, waitTxP, waitTxX } from '@/utils/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 
 export abstract class WalletProvider {
@@ -122,7 +122,9 @@ export abstract class WalletProvider {
         );
         let signedTx = await this.signX(tx);
         let txId = await xChain.issueTx(signedTx);
-        return txId;
+
+        return await waitTxX(txId);
+        // return txId;
     }
 
     /**
@@ -371,7 +373,8 @@ export abstract class WalletProvider {
         let exportTx = await pChain.buildExportTx(utxoSet, amtFee, xId, [destinationAddr], fromAddrs, [pChangeAddr]);
 
         let tx = await this.signP(exportTx);
-        return await pChain.issueTx(tx);
+        let txId = await pChain.issueTx(tx);
+        return await waitTxP(txId);
     }
 
     /**
@@ -434,7 +437,8 @@ export abstract class WalletProvider {
 
         let tx = await this.signX(exportTx);
 
-        return xChain.issueTx(tx);
+        let txId = await xChain.issueTx(tx);
+        return await waitTxX(txId);
     }
 
     async getAtomicUTXOsX(chainID: AvmImportChainType) {
@@ -480,7 +484,8 @@ export abstract class WalletProvider {
         ]);
 
         const tx = await this.signX(unsignedTx);
-        return await xChain.issueTx(tx);
+        const txId = await xChain.issueTx(tx);
+        return await waitTxX(txId);
     }
 
     async importP(): Promise<string> {
@@ -510,7 +515,8 @@ export abstract class WalletProvider {
             undefined
         );
         const tx = await this.signP(unsignedTx);
-        return await pChain.issueTx(tx);
+        const txId = await pChain.issueTx(tx);
+        return await waitTxP(txId);
     }
 
     async importC() {
@@ -554,7 +560,8 @@ export abstract class WalletProvider {
         );
 
         let signed = await this.signX(unsignedTx);
-        return await xChain.issueTx(signed);
+        const txId = await xChain.issueTx(signed);
+        return await waitTxX(txId);
     }
 
     async mintNft(mintUtxo: AVMUTXO, payload: PayloadBase, quantity: number) {
@@ -574,7 +581,8 @@ export abstract class WalletProvider {
             utxoSet
         );
         let signed = await this.signX(tx);
-        return await xChain.issueTx(signed);
+        const txId = await xChain.issueTx(signed);
+        return await waitTxX(txId);
     }
 
     /**
@@ -640,7 +648,8 @@ export abstract class WalletProvider {
         );
 
         let tx = await this.signP(unsignedTx);
-        return await pChain.issueTx(tx);
+        const txId = await pChain.issueTx(tx);
+        return await waitTxP(txId);
     }
 
     async delegate(
@@ -689,7 +698,8 @@ export abstract class WalletProvider {
         );
 
         const tx = await this.signP(unsignedTx);
-        return await pChain.issueTx(tx);
+        const txId = await pChain.issueTx(tx);
+        return await waitTxP(txId);
     }
 
     // Sign message

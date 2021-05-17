@@ -4,6 +4,8 @@ import { BN } from 'avalanche';
 import { validateAddress } from '@/helpers/addressHelper';
 import createHash from 'create-hash';
 import axios from 'axios';
+import { pChain, xChain } from '@/Network/network';
+import { AvmStatusResponseType, AvmStatusType, PlatformStatusResponseType, PlatformStatusType } from '@/utils/types';
 
 /**
  * @param val the amount to parse
@@ -112,7 +114,6 @@ export async function getAvaxPrice(): Promise<number> {
     return res.data['avalanche-2'].usd;
 }
 
-
 /**
  * Checks if address is valid.
  *
@@ -123,12 +124,74 @@ export function isValidAddress(address: string): boolean | string {
     return validateAddress(address);
 }
 
-
 export function digestMessage(msgStr: string): Buffer {
-
     let mBuf = Buffer.from(msgStr, 'utf8');
     let msgSize = Buffer.alloc(4);
     msgSize.writeUInt32BE(mBuf.length, 0);
     let msgBuf = Buffer.from(`\x1AAvalanche Signed Message:\n${msgSize}${msgStr}`, 'utf8');
     return createHash('sha256').update(msgBuf).digest();
+}
+
+export async function waitTxX(txId: string, tryCount = 10): Promise<string> {
+    if (tryCount <= 0) {
+        throw new Error('Timeout');
+    }
+    let resp: AvmStatusResponseType = (await xChain.getTxStatus(txId)) as AvmStatusResponseType;
+
+    let status: AvmStatusType;
+    let reason;
+    if (typeof resp === 'string') {
+        status = resp as AvmStatusType;
+    } else {
+        status = resp.status as AvmStatusType;
+        reason = resp.reason;
+    }
+
+    if (status === 'Unknown' || status === 'Processing') {
+        return await new Promise((resolve) => {
+            setTimeout(async () => {
+                resolve(await waitTxX(txId, tryCount - 1));
+            }, 1000);
+        });
+        // return await waitTxX(txId, tryCount - 1);
+    } else if (status === 'Rejected') {
+        throw new Error(reason);
+    } else if (status === 'Accepted') {
+        return txId;
+    }
+
+    return txId;
+}
+
+export async function waitTxP(txId: string, tryCount = 10): Promise<string> {
+    if (tryCount <= 0) {
+        throw new Error('Timeout');
+    }
+    let resp: PlatformStatusResponseType = (await pChain.getTxStatus(txId)) as PlatformStatusResponseType;
+
+    let status: PlatformStatusType;
+    let reason;
+    if (typeof resp === 'string') {
+        status = resp as PlatformStatusType;
+    } else {
+        status = resp.status as PlatformStatusType;
+        reason = resp.reason;
+    }
+
+    console.log(status, reason);
+
+    if (status === 'Unknown' || status === 'Processing') {
+        return await new Promise((resolve) => {
+            setTimeout(async () => {
+                resolve(await waitTxP(txId, tryCount - 1));
+            }, 1000);
+        });
+        // return await waitTxX(txId, tryCount - 1);
+    } else if (status === 'Rejected') {
+        throw new Error(reason);
+    } else if (status === 'Committed') {
+        return txId;
+    } else {
+        throw new Error('Unknown status type.');
+    }
 }
