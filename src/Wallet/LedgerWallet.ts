@@ -335,8 +335,8 @@ export default class LedgerWallet extends HDWalletAbstract {
         // If change and destination paths are the same
         // it can cause ledger to not display the destination amt.
         // Since platform helper does not have internal/external
-        // path for change (it uses the next address)
-        // there can be an address collisions.
+        // path for change (it uses the external index)
+        // there will be address collisions. So return null.
         if (
             txType === PlatformVMConstants.IMPORTTX ||
             txType === PlatformVMConstants.EXPORTTX ||
