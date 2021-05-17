@@ -10,22 +10,10 @@ export default class EvmWalletReadonly {
     constructor(publicKey: Buffer) {
         this.publicKey = publicKey;
         this.address = '0x' + publicToAddress(publicKey).toString('hex');
-
-        console.log('import pub: ', importPublic(publicKey));
-        console.log('pub to addr: ', publicToAddress(publicKey));
-        // console.log(this.getAddress())
-        console.log(this.getAddressBech());
     }
 
     getAddress(): string {
         return this.address;
-    }
-
-    getAddressBech(): string {
-        let buff = BufferAvalanche.from(publicToAddress(this.publicKey).toString('hex'), 'hex');
-        console.log(buff);
-        // console.log(this.publicKey)
-        return bintools.addressToString(avalanche.getHRP(), 'C', buff);
     }
 
     async updateBalance() {

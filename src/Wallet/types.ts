@@ -29,6 +29,7 @@ import MnemonicWallet from './MnemonicWallet';
 import SingletonWallet from '@/Wallet/SingletonWallet';
 import { iAssetDescriptionClean } from '@/Asset/types';
 import { Transaction } from '@ethereumjs/tx';
+import LedgerWallet from '@/Wallet/LedgerWallet';
 
 export interface IIndexKeyCache {
     [index: number]: AVMKeyPair;
@@ -41,7 +42,7 @@ export type HdChainType = 'X' | 'P';
 
 export type WalletNameType = 'mnemonic' | 'ledger' | 'singleton';
 // export type WalletType = MnemonicWallet | LedgerWallet | SingletonWallet;
-export type WalletType = MnemonicWallet | SingletonWallet;
+export type WalletType = MnemonicWallet | SingletonWallet | LedgerWallet;
 
 export interface WalletBalanceX {
     [assetId: string]: AssetBalanceX;
@@ -75,6 +76,12 @@ export interface ERC20Balance {
     symbol: string;
     denomination: number;
     address: string;
+}
+
+export interface ILedgerAppConfig {
+    version: string;
+    commit: string;
+    name: 'Avalanche';
 }
 
 // Every wallet class must implement this interface

@@ -53,10 +53,11 @@ import { getAssetDescription } from '@/Asset/Assets';
 import { balanceOf, getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
 import { bnToLocaleString } from '@/utils/utils';
+import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
-    abstract evmWallet: EvmWallet;
+    abstract evmWallet: EvmWallet | EvmWalletReadonly;
 
     abstract getAddressX(): string;
     abstract getChangeAddressX(): string;

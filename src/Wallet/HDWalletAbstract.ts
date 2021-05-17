@@ -109,6 +109,8 @@ export abstract class HDWalletAbstract extends WalletProvider {
         let addrExternalX = this.getAddressX();
         let addrInternalX = this.getChangeAddressX();
 
+        // console.log(utxoAddrsStr)
+
         // Increment external index if the current address is in the utxo set
         if (utxoAddrsStr.includes(addrExternalX)) {
             this.externalScan.increment();
