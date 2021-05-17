@@ -117,9 +117,9 @@ export async function getAvaxPrice(): Promise<number> {
  * Checks if address is valid.
  *
  * @return
- * boolean
+ * boolean if address is valid, error message if not valid.
  */
-export function isValidAddress(address: string): boolean {
+export function isValidAddress(address: string): boolean | string {
     return validateAddress(address);
 }
 
