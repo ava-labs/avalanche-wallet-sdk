@@ -53,8 +53,6 @@ import { ChainIdType } from '@/types';
 import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/TxHelper';
 import createHash from 'create-hash';
 const bippath = require('bip32-path');
-// import bippath from 'bip32-path'
-// import bippath from "bip32-path"
 
 export default class LedgerWallet extends HDWalletAbstract {
     evmWallet: EvmWalletReadonly;
@@ -75,6 +73,10 @@ export default class LedgerWallet extends HDWalletAbstract {
         this.evmWallet = new EvmWalletReadonly(importPublic(evmAcct.publicKey));
     }
 
+    /**
+     * Create a new ledger wallet instance from the given transport
+     * @param transport
+     */
     static async fromTransport(transport: any) {
         transport.setExchangeTimeout(LEDGER_EXCHANGE_TIMEOUT);
         let app = new AppAvax(transport, 'w0w');

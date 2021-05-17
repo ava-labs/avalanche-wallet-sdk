@@ -3,6 +3,7 @@ import HdScanner from '@/Wallet/HdScanner';
 import HDKey from 'hdkey';
 import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
 import { avalanche, bintools } from '@/Network/network';
+import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
 
 export abstract class HDWalletAbstract extends WalletProvider {
     protected internalScan: HdScanner;
@@ -122,5 +123,26 @@ export abstract class HDWalletAbstract extends WalletProvider {
         }
 
         return utxosX;
+    }
+
+    public async getUtxosP(): Promise<PlatformUTXOSet> {
+        let utxosP = await super.getUtxosP();
+
+        // If the current internal or external X address is in the utxo set, increment hd index
+        let utxoAddrs = utxosP.getAddresses();
+        let utxoAddrsStr = utxoAddrs.map((addr) => {
+            return bintools.addressToString(avalanche.getHRP(), 'P', addr);
+        });
+
+        let addrExternalP = this.getAddressP();
+
+        // console.log(utxoAddrsStr)
+
+        // Increment external index if the current address is in the utxo set
+        if (utxoAddrsStr.includes(addrExternalP)) {
+            this.externalScan.increment();
+        }
+
+        return utxosP;
     }
 }
