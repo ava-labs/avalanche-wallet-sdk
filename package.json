@@ -74,8 +74,7 @@
     "dependencies": {
         "@ethereumjs/common": "2.2.0",
         "@ethereumjs/tx": "3.1.4",
-        "@ledgerhq/hw-app-eth": "^5.51.1",
-        "@ledgerhq/hw-transport-u2f": "^5.36.0-deprecated",
+        "@ledgerhq/hw-app-eth": "5.42.1",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
         "@openzeppelin/contracts": "4.1.0",
         "avalanche": "3.4.0",

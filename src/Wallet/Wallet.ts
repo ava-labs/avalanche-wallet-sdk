@@ -662,14 +662,14 @@ export abstract class WalletProvider {
             utxoSet.addArray(utxos);
         }
 
-        // If reward address isn't given use index 0 address
+        // If reward address isn't given use current P address
         if (!rewardAddress) {
             rewardAddress = this.getAddressP();
         }
 
         let stakeReturnAddr = this.getAddressP();
 
-        // For change address use first available on the platform chain
+        // For change address use the current platform chain
         let changeAddress = this.getAddressP();
 
         // Convert dates to unix time

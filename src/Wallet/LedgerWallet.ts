@@ -193,7 +193,7 @@ export default class LedgerWallet extends HDWalletAbstract {
         try {
             operations = (tx as OperationTx).getOperations();
         } catch (e) {
-            console.log(e);
+            console.log('Failed to get tx operations.');
         }
 
         let items = ins;
@@ -271,7 +271,7 @@ export default class LedgerWallet extends HDWalletAbstract {
         } else if (address[0] === 'C') {
             return '0/0';
         } else {
-            throw 'Unable to find source address.';
+            throw new Error('Unable to find source address.');
         }
     }
 
@@ -337,12 +337,19 @@ export default class LedgerWallet extends HDWalletAbstract {
         // Since platform helper does not have internal/external
         // path for change (it uses the next address)
         // there can be an address collisions.
-        if (txType === PlatformVMConstants.IMPORTTX || txType === PlatformVMConstants.EXPORTTX) {
+        if (
+            txType === PlatformVMConstants.IMPORTTX ||
+            txType === PlatformVMConstants.EXPORTTX ||
+            txType === PlatformVMConstants.ADDVALIDATORTX ||
+            txType === PlatformVMConstants.ADDDELEGATORTX
+        ) {
             return null;
-        } else if (txType === PlatformVMConstants.ADDVALIDATORTX || txType === PlatformVMConstants.ADDDELEGATORTX) {
-            // changeIdx = this.platformHelper.getFirstAvailableIndex()
-            changeIdx = this.externalScan.getIndex();
         }
+
+        // else if (txType === PlatformVMConstants.ADDVALIDATORTX || txType === PlatformVMConstants.ADDDELEGATORTX) {
+        // changeIdx = this.platformHelper.getFirstAvailableIndex()
+        // changeIdx = this.externalScan.getIndex();
+        // }
 
         return bippath.fromString(`${AVAX_ACCOUNT_PATH}/${chainChangePath}/${changeIdx}`);
     }
@@ -483,7 +490,7 @@ export default class LedgerWallet extends HDWalletAbstract {
         try {
             operations = (tx as OperationTx).getOperations();
         } catch (e) {
-            console.error(e);
+            console.log('Failed to get tx operations.');
         }
 
         let CredentialClass;
@@ -499,7 +506,7 @@ export default class LedgerWallet extends HDWalletAbstract {
         try {
             evmInputs = (tx as EVMExportTx).getInputs();
         } catch (e) {
-            console.error(e);
+            console.log('Failed to get EVM inputs.');
         }
 
         for (let i = 0; i < items.length; i++) {
@@ -579,6 +586,8 @@ export default class LedgerWallet extends HDWalletAbstract {
                 break;
             }
         }
+
+        console.log(unsignedTx, paths, chainId);
 
         let signedTx;
         if (canLedgerParse && isParsableType) {
