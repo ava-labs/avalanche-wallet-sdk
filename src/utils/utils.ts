@@ -1,6 +1,7 @@
 // Extending Big.js with a helper function
 import Big from 'big.js';
 import { BN } from 'avalanche';
+import { validateAddress } from '@/helpers/addressHelper';
 import createHash from 'create-hash';
 import axios from 'axios';
 
@@ -111,7 +112,20 @@ export async function getAvaxPrice(): Promise<number> {
     return res.data['avalanche-2'].usd;
 }
 
+
+/**
+ * Checks if address is valid.
+ *
+ * @return
+ * boolean if address is valid, error message if not valid.
+ */
+export function isValidAddress(address: string): boolean | string {
+    return validateAddress(address);
+}
+
+
 export function digestMessage(msgStr: string): Buffer {
+
     let mBuf = Buffer.from(msgStr, 'utf8');
     let msgSize = Buffer.alloc(4);
     msgSize.writeUInt32BE(mBuf.length, 0);
