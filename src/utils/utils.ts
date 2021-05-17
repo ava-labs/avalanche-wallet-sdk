@@ -4,7 +4,7 @@ import { BN } from 'avalanche';
 import { validateAddress } from '@/helpers/addressHelper';
 import createHash from 'create-hash';
 import axios from 'axios';
-import { pChain, xChain } from '@/Network/network';
+import { pChain, web3, xChain } from '@/Network/network';
 import { AvmStatusResponseType, AvmStatusType, PlatformStatusResponseType, PlatformStatusType } from '@/utils/types';
 
 /**
@@ -193,5 +193,50 @@ export async function waitTxP(txId: string, tryCount = 10): Promise<string> {
         return txId;
     } else {
         throw new Error('Unknown status type.');
+    }
+}
+
+export async function waitTxEvm(txHash: string, tryCount = 10): Promise<string> {
+    if (tryCount <= 0) {
+        throw new Error('Timeout');
+    }
+
+    let receipt = await web3.eth.getTransactionReceipt(txHash);
+
+    if (!receipt) {
+        return await new Promise((resolve) => {
+            setTimeout(async () => {
+                resolve(await waitTxEvm(txHash, tryCount - 1));
+            }, 1000);
+        });
+    } else {
+        if (receipt.status) {
+            return txHash;
+        } else {
+            throw new Error('Transaction reverted.');
+        }
+    }
+}
+
+//TODO: There is no getTxStatus on C chain. Switch the current setup once that is ready
+export async function waitTxC(cAddress: string, nonce?: number, tryCount = 10): Promise<string> {
+    if (tryCount <= 0) {
+        throw new Error('Timeout');
+    }
+
+    let nonceNow = await web3.eth.getTransactionCount(cAddress);
+
+    if (typeof nonce === 'undefined') {
+        nonce = nonceNow;
+    }
+
+    if (nonce === nonceNow) {
+        return await new Promise((resolve) => {
+            setTimeout(async () => {
+                resolve(await waitTxC(cAddress, nonce, tryCount - 1));
+            }, 1000);
+        });
+    } else {
+        return 'success';
     }
 }

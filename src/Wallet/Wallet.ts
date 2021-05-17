@@ -52,7 +52,7 @@ import { PayloadBase, UnixNow } from 'avalanche/dist/utils';
 import { getAssetDescription } from '@/Asset/Assets';
 import { balanceOf, getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
-import { bnToLocaleString, waitTxP, waitTxX } from '@/utils/utils';
+import { bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 
 export abstract class WalletProvider {
@@ -145,7 +145,8 @@ export abstract class WalletProvider {
 
         let txHex = signedTx.serialize().toString('hex');
         let hash = await web3.eth.sendSignedTransaction('0x' + txHex);
-        return hash.transactionHash;
+        const txHash = hash.transactionHash;
+        return await waitTxEvm(txHash);
     }
 
     /**
@@ -163,7 +164,8 @@ export abstract class WalletProvider {
         let signedTx = await this.signEvm(tx);
         let txHex = signedTx.serialize().toString('hex');
         let hash = await web3.eth.sendSignedTransaction('0x' + txHex);
-        return hash.transactionHash;
+        const txHash = hash.transactionHash;
+        return await waitTxEvm(txHash);
     }
 
     /**
@@ -385,7 +387,7 @@ export abstract class WalletProvider {
      * @param amt amount of nAVAX to transfer
      * @return returns the transaction id.
      */
-    async exportCChain(amt: BN) {
+    async exportCChain(amt: BN): Promise<string> {
         let fee = xChain.getTxFee();
         let amtFee = amt.add(fee);
 
@@ -399,7 +401,13 @@ export abstract class WalletProvider {
 
         let tx = await this.signC(exportTx);
 
-        return cChain.issueTx(tx);
+        let addrC = this.getAddressC();
+        let nonceBefore = await web3.eth.getTransactionCount(addrC);
+        let txId = await cChain.issueTx(tx);
+
+        // TODO: Return the txId from the wait function, once support is there
+        await waitTxC(addrC, nonceBefore);
+        return txId;
     }
 
     /**
