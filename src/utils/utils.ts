@@ -178,7 +178,7 @@ export async function waitTxP(txId: string, tryCount = 10): Promise<string> {
         reason = resp.reason;
     }
 
-    console.log(status, reason);
+    // console.log(status, reason);
 
     if (status === 'Unknown' || status === 'Processing') {
         return await new Promise((resolve) => {
@@ -187,7 +187,7 @@ export async function waitTxP(txId: string, tryCount = 10): Promise<string> {
             }, 1000);
         });
         // return await waitTxX(txId, tryCount - 1);
-    } else if (status === 'Rejected') {
+    } else if (status === 'Dropped') {
         throw new Error(reason);
     } else if (status === 'Committed') {
         return txId;

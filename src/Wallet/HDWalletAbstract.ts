@@ -96,6 +96,8 @@ export abstract class HDWalletAbstract extends WalletProvider {
     public async resetHdIndices() {
         await this.externalScan.resetIndex();
         await this.internalScan.resetIndex();
+
+        this.emitAddressChange();
     }
 
     public async getUtxosX(): Promise<AVMUTXOSet> {
@@ -112,15 +114,20 @@ export abstract class HDWalletAbstract extends WalletProvider {
 
         // console.log(utxoAddrsStr)
 
+        let isAddrChange = false;
         // Increment external index if the current address is in the utxo set
         if (utxoAddrsStr.includes(addrExternalX)) {
             this.externalScan.increment();
+            isAddrChange = true;
         }
 
         // Increment internal index if the current address is in the utxo set
         if (utxoAddrsStr.includes(addrInternalX)) {
             this.internalScan.increment();
+            isAddrChange = true;
         }
+
+        if (isAddrChange) this.emitAddressChange();
 
         return utxosX;
     }
@@ -128,7 +135,7 @@ export abstract class HDWalletAbstract extends WalletProvider {
     public async getUtxosP(): Promise<PlatformUTXOSet> {
         let utxosP = await super.getUtxosP();
 
-        // If the current internal or external X address is in the utxo set, increment hd index
+        // If the current P address is in the utxo set, increment hd index
         let utxoAddrs = utxosP.getAddresses();
         let utxoAddrsStr = utxoAddrs.map((addr) => {
             return bintools.addressToString(avalanche.getHRP(), 'P', addr);
@@ -136,11 +143,10 @@ export abstract class HDWalletAbstract extends WalletProvider {
 
         let addrExternalP = this.getAddressP();
 
-        // console.log(utxoAddrsStr)
-
         // Increment external index if the current address is in the utxo set
         if (utxoAddrsStr.includes(addrExternalP)) {
             this.externalScan.increment();
+            this.emitAddressChange();
         }
 
         return utxosP;

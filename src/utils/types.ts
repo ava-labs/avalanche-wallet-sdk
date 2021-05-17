@@ -1,5 +1,5 @@
 export type AvmStatusType = 'Accepted' | 'Processing' | 'Rejected' | 'Unknown';
-export type PlatformStatusType = 'Committed' | 'Processing' | 'Rejected' | 'Unknown';
+export type PlatformStatusType = 'Committed' | 'Processing' | 'Dropped' | 'Unknown';
 
 export type AvmStatusResponseType = AvmStatusType | iAvmStatusResponse;
 export type PlatformStatusResponseType = PlatformStatusType | iPlatformStatusResponse;

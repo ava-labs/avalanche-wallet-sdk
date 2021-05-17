@@ -1,12 +1,13 @@
 import {
     AssetBalanceP,
-    AssetBalanceRawX,
     AssetBalanceX,
     AvmExportChainType,
     AvmImportChainType,
     ERC20Balance,
     WalletBalanceERC20,
     WalletBalanceX,
+    WalletEventArgsType,
+    WalletEventType,
     WalletNameType,
 } from './types';
 import {
@@ -54,6 +55,7 @@ import { balanceOf, getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
 import { bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
+import EventEmitter from 'events';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -71,6 +73,41 @@ export abstract class WalletProvider {
 
     abstract getAllAddressesX(): string[];
     abstract getAllAddressesP(): string[];
+
+    protected emitter: EventEmitter;
+
+    protected constructor() {
+        const myEmitter = new EventEmitter();
+        this.emitter = myEmitter;
+    }
+
+    public on(event: WalletEventType, listener: (...args: any[]) => void): void {
+        this.emitter.on(event, listener);
+    }
+
+    public off(event: WalletEventType, listener: (...args: any[]) => void): void {
+        this.emitter.off(event, listener);
+    }
+
+    protected emit(event: WalletEventType, args: WalletEventArgsType): void {
+        this.emitter.emit(event, args);
+    }
+
+    protected emitAddressChange(): void {
+        this.emit('addressChanged', {
+            X: this.getAddressX(),
+            changeX: this.getChangeAddressX(),
+            P: this.getAddressP(),
+        });
+    }
+
+    protected emitBalanceChangeX(): void {
+        this.emit('balanceChangedX', this.balanceX);
+    }
+
+    protected emitBalanceChangeP(): void {
+        this.emit('balanceChangedP', this.getAvaxBalanceP());
+    }
 
     /**
      * The X chain UTXOs of the wallet's current state
@@ -122,9 +159,12 @@ export abstract class WalletProvider {
         );
         let signedTx = await this.signX(tx);
         let txId = await xChain.issueTx(signedTx);
+        await waitTxX(txId);
 
-        return await waitTxX(txId);
-        // return txId;
+        // Update UTXOs
+        this.getUtxosX();
+
+        return txId;
     }
 
     /**
@@ -183,8 +223,11 @@ export abstract class WalletProvider {
      */
     public async getUtxosX(): Promise<AVMUTXOSet> {
         const addresses = this.getAllAddressesX();
+        let oldUtxos = this.utxosX;
         this.utxosX = await avmGetAllUTXOs(addresses);
+
         this.updateBalanceX();
+
         return this.utxosX;
     }
 
@@ -196,6 +239,9 @@ export abstract class WalletProvider {
     public async getUtxosP(): Promise<PlatformUTXOSet> {
         let addresses = this.getAllAddressesP();
         this.utxosP = await platformGetAllUTXOs(addresses);
+
+        this.emitBalanceChangeP();
+
         return this.utxosP;
     }
 
@@ -236,10 +282,11 @@ export abstract class WalletProvider {
     }
 
     /**
-     * Fetches the X chain UTXOs owned by this wallet, gets asset description for unknown assets,
+     * Uses the X chain UTXOs owned by this wallet, gets asset description for unknown assets,
      * and returns a nicely formatted dictionary that represents
      * - Updates `this.balanceX`
-     * - Expensive operation
+     * - Expensive operation if there are unknown assets
+     * - Uses existing UTXOs
      * @private
      */
     private async updateBalanceX(): Promise<WalletBalanceX> {
@@ -292,6 +339,8 @@ export abstract class WalletProvider {
         }
 
         this.balanceX = res;
+
+        this.emitBalanceChangeX();
         return res;
     }
 
@@ -376,7 +425,11 @@ export abstract class WalletProvider {
 
         let tx = await this.signP(exportTx);
         let txId = await pChain.issueTx(tx);
-        return await waitTxP(txId);
+        await waitTxP(txId);
+
+        this.getUtxosP();
+
+        return txId;
     }
 
     /**
@@ -446,7 +499,12 @@ export abstract class WalletProvider {
         let tx = await this.signX(exportTx);
 
         let txId = await xChain.issueTx(tx);
-        return await waitTxX(txId);
+        await waitTxX(txId);
+
+        // Update UTXOs
+        this.getUtxosX();
+
+        return txId;
     }
 
     async getAtomicUTXOsX(chainID: AvmImportChainType) {
@@ -493,7 +551,13 @@ export abstract class WalletProvider {
 
         const tx = await this.signX(unsignedTx);
         const txId = await xChain.issueTx(tx);
-        return await waitTxX(txId);
+
+        await waitTxX(txId);
+
+        // Update UTXOs
+        this.getUtxosX();
+
+        return txId;
     }
 
     async importP(): Promise<string> {
@@ -524,7 +588,12 @@ export abstract class WalletProvider {
         );
         const tx = await this.signP(unsignedTx);
         const txId = await pChain.issueTx(tx);
-        return await waitTxP(txId);
+
+        await waitTxP(txId);
+
+        this.getUtxosP();
+
+        return txId;
     }
 
     async importC() {
@@ -657,7 +726,11 @@ export abstract class WalletProvider {
 
         let tx = await this.signP(unsignedTx);
         const txId = await pChain.issueTx(tx);
-        return await waitTxP(txId);
+        await waitTxP(txId);
+
+        this.getUtxosP();
+
+        return txId;
     }
 
     async delegate(
@@ -707,7 +780,10 @@ export abstract class WalletProvider {
 
         const tx = await this.signP(unsignedTx);
         const txId = await pChain.issueTx(tx);
-        return await waitTxP(txId);
+        await waitTxP(txId);
+
+        this.getUtxosP();
+        return txId;
     }
 
     // Sign message

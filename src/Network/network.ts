@@ -38,20 +38,9 @@ export const explorer_api: AxiosInstance = axios.create({
 
 export let activeNetwork: NetworkConfig = MainnetConfig;
 
-let isLoading = false;
-
 export function setNetwork(conf: NetworkConfig): void {
-    // if (isLoading) {
-    //     throw new Error('Already trying to connect, try again later.');
-    // }
-    // isLoading = true;
-
     avalanche.setAddress(conf.apiIp, conf.apiPort, conf.apiProtocol);
     avalanche.setNetworkID(conf.networkID);
-
-    // const chainIdX = await infoApi.getBlockchainID('X');
-    // const chainIdP = await infoApi.getBlockchainID('P');
-    // const chainIdC = await infoApi.getBlockchainID('C');
 
     xChain.refreshBlockchainID(conf.xChainID);
     xChain.setBlockchainAlias('X');
@@ -70,22 +59,11 @@ export function setNetwork(conf: NetworkConfig): void {
         explorer_api.defaults.baseURL = conf.explorerURL;
     }
 
-    // Update avax description
-    // await getAssetDescription(conf.avaxID);
-
     // Set web3 Network Settings
     let web3Provider = `${conf.apiProtocol}://${conf.apiIp}:${conf.apiPort}/ext/bc/C/rpc`;
     web3.setProvider(web3Provider);
-
-    // let chainID = await web3.eth.getChainId();
     activeNetwork = conf;
 }
 
 // Default connection is Mainnet
 setNetwork(MainnetConfig);
-
-// What is the AVA coin in the network
-// async function getAvaxId() {
-//     let res = await xChain.getAssetDescription('AVAX');
-//     return bintools.cb58Encode(res.assetID);
-// }
