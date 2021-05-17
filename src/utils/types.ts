@@ -10,6 +10,6 @@ export interface iAvmStatusResponse {
 }
 
 export interface iPlatformStatusResponse {
-    status: AvmStatusType;
+    status: PlatformStatusType;
     reason: string;
 }
