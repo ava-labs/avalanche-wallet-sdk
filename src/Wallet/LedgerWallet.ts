@@ -52,7 +52,9 @@ import { Buffer, BN } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/TxHelper';
 import createHash from 'create-hash';
-const bippath = require('bip32-path');
+// const bippath = require('bip32-path');
+//@ts-ignore
+import bippath from 'bip32-path';
 
 export default class LedgerWallet extends HDWalletAbstract {
     evmWallet: EvmWalletReadonly;

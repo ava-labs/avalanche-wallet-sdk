@@ -2,31 +2,23 @@ import * as bip39 from 'bip39';
 import HDKey from 'hdkey';
 import { AVAX_ACCOUNT_PATH, ETH_ACCOUNT_PATH } from './constants';
 import EvmWallet from './EvmWallet';
-import { WalletProvider } from './Wallet';
 import { WalletNameType } from './types';
-// import { KeyChain as AVMKeyChain, KeyPair as AVMKeyPair, UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm';
 import { Buffer } from 'avalanche';
-// import { avalanche, bintools } from '@/index';
-// import { getPreferredHRP } from 'avalanche/dist/utils';
 import { Transaction } from '@ethereumjs/tx';
-import { privateToAddress, publicToAddress, privateToPublic, importPublic } from 'ethereumjs-util';
-import HdScanner from './HdScanner';
-import { Tx as AVMTx, UnsignedTx as AVMUnsignedTx, UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm';
+import { privateToAddress } from 'ethereumjs-util';
+import { Tx as AVMTx, UnsignedTx as AVMUnsignedTx } from 'avalanche/dist/apis/avm';
 import { Tx as PlatformTx, UnsignedTx as PlatformUnsignedTx } from 'avalanche/dist/apis/platformvm';
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
-import { KeyChain as PlatformKeyChain, KeyPair as PlatformKeyPair } from 'avalanche/dist/apis/platformvm';
+import { KeyChain as PlatformKeyChain } from 'avalanche/dist/apis/platformvm';
 import {
     UnsignedTx as EVMUnsignedTx,
     Tx as EVMTx,
     KeyChain as EVMKeychain,
     KeyPair as EVMKeyPair,
 } from 'avalanche/dist/apis/evm';
-import { avalanche, bintools, xChain } from '@/Network/network';
+import { avalanche, bintools } from '@/Network/network';
 import { digestMessage } from '@/utils/utils';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
-
-// import Web3 from 'web3';
-// import Avalanche from 'avalanche';
 
 export default class MnemonicWallet extends HDWalletAbstract {
     evmWallet: EvmWallet;
@@ -49,36 +41,10 @@ export default class MnemonicWallet extends HDWalletAbstract {
 
         let ethAccountKey = masterHdKey.derive(ETH_ACCOUNT_PATH + '/0/0');
         this.ethAccountKey = ethAccountKey;
-        // console.log(ethAccountKey)
-        //@ts-ignore
-        // console.log("pub key hash: ",ethAccountKey.pubKeyHash.toString('hex'))
-        // console.log("account pub", ethAccountKey.publicKey.toString('hex'))
         let ethKey = ethAccountKey.privateKey;
         let evmWallet = new EvmWallet(ethKey);
-        // console.log("account priv: ", ethKey.toString('hex'))
-        // console.log("privateToPublic", privateToPublic(ethAccountKey.privateKey).toString('hex'))
-        // console.log("importPublic", importPublic(ethAccountKey.publicKey).toString('hex'))
 
-        // EVM Bech Address from private key
-        let cPrivKey = `PrivateKey-` + bintools.cb58Encode(Buffer.from(ethKey));
-        let keychain = new EVMKeychain(avalanche.getHRP(), 'C');
-        let cKeypair = keychain.importKey(cPrivKey);
-        // console.log("pub key: ", cKeypair.getPublicKey().toString('hex'))
-        // console.log("should be: ", cKeypair.getAddressString())
-
-        // console.log("keypair.addressFromPub: ", cKeypair.addressFromPublicKey(Buffer.from(ethAccountKey.publicKey)).toString('hex'))
-
-        //@ts-ignore
-        let testPubKey = bintools.addressToString(avalanche.getHRP(), 'C', ethAccountKey.pubKeyHash);
-        // console.log("addressToString pubKeyHash: ",testPubKey)
-
-        let testPublicKey = bintools.addressToString(avalanche.getHRP(), 'C', Buffer.from(ethAccountKey.publicKey));
-        // console.log("addressToString publicKey: ",testPublicKey)
-
-        let testAddr = bintools.addressToString(avalanche.getHRP(), 'C', Buffer.from(privateToAddress(ethKey)));
-        // console.log("addressToString address: ",testAddr)
         this.mnemonic = mnemonic;
-
         this.evmWallet = evmWallet;
     }
 
