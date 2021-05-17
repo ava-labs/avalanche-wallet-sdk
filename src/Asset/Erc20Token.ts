@@ -27,7 +27,6 @@ export default class Erc20Token {
         //@ts-ignore
         let contract = new web3.eth.Contract(ERC20Abi.abi, address);
 
-        console.log(address);
         let name = await contract.methods.name().call();
         let symbol = await contract.methods.symbol().call();
         let decimals = parseInt(await contract.methods.decimals().call());

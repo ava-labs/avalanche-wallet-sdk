@@ -589,8 +589,6 @@ export default class LedgerWallet extends HDWalletAbstract {
             }
         }
 
-        console.log(unsignedTx, paths, chainId);
-
         let signedTx;
         if (canLedgerParse && isParsableType) {
             signedTx = await this.signTransactionParsable<PlatformUnsignedTx, PlatformTx>(unsignedTx, paths, chainId);
