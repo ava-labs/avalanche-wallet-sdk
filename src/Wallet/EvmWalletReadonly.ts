@@ -1,6 +1,7 @@
 import { BN, Buffer as BufferAvalanche } from 'avalanche';
 import { avalanche, bintools, web3 } from '@/Network/network';
 import { publicToAddress, importPublic } from 'ethereumjs-util';
+import { ethers } from 'ethers';
 
 export default class EvmWalletReadonly {
     balance = new BN(0);
@@ -13,7 +14,7 @@ export default class EvmWalletReadonly {
     }
 
     getAddress(): string {
-        return this.address;
+        return ethers.utils.getAddress(this.address);
     }
 
     async updateBalance() {

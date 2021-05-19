@@ -56,6 +56,10 @@ import { NO_NETWORK } from '@/errors';
 import { bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
+import { getAddressHistory, getTransactionSummary } from '@/History/history';
+import { ITransactionData } from '@/History/types';
+import { BaseTxSummary } from '@/helpers/history_helper';
+import moment from 'moment';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -784,6 +788,44 @@ export abstract class WalletProvider {
 
         this.getUtxosP();
         return txId;
+    }
+
+    async getHistoryX(limit = 0): Promise<ITransactionData[]> {
+        let addrs = this.getAllAddressesX();
+        return await getAddressHistory(addrs, limit, xChain.getBlockchainID());
+    }
+
+    async getHistoryP(limit = 0): Promise<ITransactionData[]> {
+        let addrs = this.getAllAddressesP();
+        return await getAddressHistory(addrs, limit, pChain.getBlockchainID());
+    }
+
+    async getHistoryC(limit = 0): Promise<ITransactionData[]> {
+        let addrs = [this.getEvmAddressBech()];
+        return await getAddressHistory(addrs, limit, cChain.getBlockchainID());
+    }
+
+    async getHistory() {
+        let txsX = await this.getHistoryX();
+        let txsP = await this.getHistoryP();
+        let txsC = await this.getHistoryC();
+
+        console.log(txsC);
+
+        let addrs = this.getAllAddressesX();
+        let addrC = this.getAddressC();
+
+        let txsSorted = txsX
+            .concat(txsP, txsC)
+            .sort((x, y) => (moment(x.timestamp).isBefore(moment(y.timestamp)) ? 1 : -1));
+
+        let res = [];
+        for (let i = 0; i < txsSorted.length; i++) {
+            let tx = txsSorted[i];
+            let summary = await getTransactionSummary(tx, addrs, addrC);
+            res.push(summary);
+        }
+        return res;
     }
 
     // Sign message

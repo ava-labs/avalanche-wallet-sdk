@@ -141,7 +141,7 @@ export default class MnemonicWallet extends HDWalletAbstract {
      * Hex representation of the EVM address.
      */
     public getAddressC(): string {
-        return this.evmWallet.address;
+        return this.evmWallet.getAddress();
     }
 
     // TODO: Support internal address as well
