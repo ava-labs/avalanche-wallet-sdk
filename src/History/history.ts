@@ -24,6 +24,7 @@ import { ChainIdType } from '@/types';
 import { AVMConstants } from 'avalanche/dist/apis/avm';
 import { bnToAvaxP, bnToAvaxX, bnToLocaleString, parseNftPayload } from '@/utils/utils';
 import * as Assets from '@/Asset/Assets';
+import { NO_EXPLORER_API } from '@/errors';
 
 export async function getAddressHistory(
     addrs: string[],
@@ -31,6 +32,10 @@ export async function getAddressHistory(
     chainID: string,
     endTime?: string
 ): Promise<ITransactionData[]> {
+    if (!explorer_api) {
+        throw NO_EXPLORER_API;
+    }
+
     const ADDR_SIZE = 1024;
     let selection = addrs.slice(0, ADDR_SIZE);
     let remaining = addrs.slice(ADDR_SIZE);
@@ -55,7 +60,6 @@ export async function getAddressHistory(
     }
 
     if (endTime) {
-        console.log('Setting endtime');
         //@ts-ignore
         req.endTime = [endTime];
     }
@@ -386,9 +390,6 @@ function getImportSummaryC(tx: ITransactionData, ownerAddr: string) {
 }
 
 async function getBaseTxSummary(tx: ITransactionData, ownerAddrs: string[]): Promise<iHistoryBaseTx> {
-    console.log('Base tx');
-    console.log(tx);
-
     // Calculate losses from inputs
     let losses = getBaseTxTokenLosses(tx, ownerAddrs);
     let lossesNFT = getBaseTxNFTLosses(tx, ownerAddrs);

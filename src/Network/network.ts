@@ -28,15 +28,23 @@ export const bintools: BinTools = BinTools.getInstance();
 const rpcUrl = `${DefaultConfig.apiProtocol}://${DefaultConfig.apiIp}:${DefaultConfig.apiPort}/ext/bc/C/rpc`;
 export const web3 = new Web3(rpcUrl);
 
-export const explorer_api: AxiosInstance = axios.create({
-    baseURL: DefaultConfig.explorerURL,
-    withCredentials: false,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
+export let explorer_api: AxiosInstance | null = null;
 
 export let activeNetwork: NetworkConfig = MainnetConfig;
+
+function createExplorerApi(networkConfig: NetworkConfig) {
+    if (!networkConfig.explorerURL) {
+        throw new Error('Network configuration does not specify an explorer API.');
+    }
+
+    return axios.create({
+        baseURL: networkConfig.explorerURL,
+        withCredentials: false,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+}
 
 export function setNetwork(conf: NetworkConfig): void {
     avalanche.setAddress(conf.apiIp, conf.apiPort, conf.apiProtocol);
@@ -56,7 +64,9 @@ export function setNetwork(conf: NetworkConfig): void {
     cChain.setAVAXAssetID(conf.avaxID);
 
     if (conf.explorerURL) {
-        explorer_api.defaults.baseURL = conf.explorerURL;
+        explorer_api = createExplorerApi(conf);
+    } else {
+        explorer_api = null;
     }
 
     // Set web3 Network Settings
