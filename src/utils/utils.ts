@@ -1,11 +1,12 @@
 // Extending Big.js with a helper function
 import Big from 'big.js';
-import { BN } from 'avalanche';
+import { BN, Buffer as BufferAvalanche } from 'avalanche';
 import { validateAddress } from '@/helpers/addressHelper';
 import createHash from 'create-hash';
 import axios from 'axios';
 import { pChain, web3, xChain } from '@/Network/network';
 import { AvmStatusResponseType, AvmStatusType, PlatformStatusResponseType, PlatformStatusType } from '@/utils/types';
+import { PayloadBase, PayloadTypes } from 'avalanche/dist/utils';
 
 /**
  * @param val the amount to parse
@@ -239,4 +240,17 @@ export async function waitTxC(cAddress: string, nonce?: number, tryCount = 10): 
     } else {
         return 'success';
     }
+}
+
+let payloadtypes = PayloadTypes.getInstance();
+
+export function parseNftPayload(rawPayload: string): PayloadBase {
+    let payload = BufferAvalanche.from(rawPayload, 'base64');
+    payload = BufferAvalanche.concat([new BufferAvalanche(4).fill(payload.length), payload]);
+
+    let typeId = payloadtypes.getTypeID(payload);
+    let pl: BufferAvalanche = payloadtypes.getContent(payload);
+    let payloadbase: PayloadBase = payloadtypes.select(typeId, pl);
+
+    return payloadbase;
 }

@@ -1,9 +1,29 @@
-import { iHistoryAddDelegator, iHistoryExport, iHistoryImport, ITransactionData, UTXO } from '@/History/types';
+import {
+    HistoryItemType,
+    iHistoryAddDelegator,
+    iHistoryBaseTx,
+    iHistoryBaseTxNFTsReceived,
+    iHistoryBaseTxNFTsReceivedRaw,
+    iHistoryBaseTxNFTsSent,
+    iHistoryBaseTxNFTsSentRaw,
+    iHistoryBaseTxTokens,
+    iHistoryBaseTxTokensReceived,
+    iHistoryBaseTxTokensReceivedRaw,
+    iHistoryBaseTxTokensSent,
+    iHistoryBaseTxTokensSentRaw,
+    iHistoryExport,
+    iHistoryImport,
+    iHistoryItem,
+    iHistoryNftFamilyBalance,
+    ITransactionData,
+    UTXO,
+} from '@/History/types';
 import { activeNetwork, avalanche, explorer_api, xChain } from '@/Network/network';
 import { BN } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { AVMConstants } from 'avalanche/dist/apis/avm';
-import { bnToAvaxP, bnToAvaxX } from '@/utils/utils';
+import { bnToAvaxP, bnToAvaxX, bnToLocaleString, parseNftPayload } from '@/utils/utils';
+import { Assets } from '@/index';
 
 export async function getAddressHistory(
     addrs: string[],
@@ -66,11 +86,11 @@ export async function getTransactionSummary(
     tx: ITransactionData,
     walletAddrs: string[],
     evmAddress: string
-): Promise<any> {
+): Promise<HistoryItemType> {
     let sum;
-    let addrsXP = walletAddrs;
 
     let cleanAddressesXP = walletAddrs.map((addr) => addr.split('-')[1]);
+
     switch (tx.type) {
         case 'import':
         case 'pvm_import':
@@ -78,6 +98,7 @@ export async function getTransactionSummary(
             break;
         case 'export':
         case 'pvm_export':
+        case 'atomic_export_tx':
             sum = getExportSummary(tx, cleanAddressesXP);
             break;
         case 'add_validator':
@@ -88,6 +109,13 @@ export async function getTransactionSummary(
             break;
         case 'atomic_import_tx':
             sum = getImportSummaryC(tx, evmAddress);
+            break;
+        case 'operation':
+        case 'base':
+            sum = await getBaseTxSummary(tx, cleanAddressesXP);
+            break;
+        default:
+            throw new Error('Unsupported history transaction type.');
             break;
     }
     return sum;
@@ -108,7 +136,7 @@ function idToChainAlias(id: string): ChainIdType {
 // else return current chain
 function findDestinationChain(tx: ITransactionData): string {
     let baseChain = tx.chainID;
-    let outs = tx.outputs;
+    let outs = tx.outputs || [];
 
     for (let i = 0; i < outs.length; i++) {
         let outChainId = outs[i].chainID;
@@ -148,6 +176,14 @@ function isOutputOwnerC(ownerAddr: string, output: UTXO): boolean {
     return outAddrs.includes(ownerAddr);
 }
 
+/**
+ * Returns the total amount of `assetID` in the given `utxos` owned by `address`. Checks for X/P addresses.
+ * @param utxos UTXOs to calculate balance from.
+ * @param addresses The wallet's  addresses.
+ * @param assetID Only count outputs of this asset ID.
+ * @param chainID Only count the outputs on this chain.
+ * @param isStake Set to `true` if looking for staking utxos.
+ */
 function getAssetBalanceFromUTXOs(
     utxos: UTXO[],
     addresses: string[],
@@ -174,36 +210,85 @@ function getAssetBalanceFromUTXOs(
     return tot;
 }
 
-// function getInputAssetBalance(tx: ITransactionData, addresses: string[], assetID: string){
-//     let utxos = tx.inputs.map(input => input.output)
-//     return getAssetBalanceFromUTXOs(utxos, addresses, assetID)
-// }
+function getNFTBalanceFromUTXOs(utxos: UTXO[], addresses: string[], assetID: string): iHistoryNftFamilyBalance {
+    let nftUTXOs = utxos.filter((utxo) => {
+        if (
+            utxo.outputType === AVMConstants.NFTXFEROUTPUTID &&
+            utxo.assetID === assetID &&
+            isOutputOwner(addresses, utxo)
+        ) {
+            return true;
+        }
+        return false;
+    });
 
-function getImportSummary(tx: ITransactionData, addresses: string[]): any {
+    let res: iHistoryNftFamilyBalance = {};
+    for (let i = 0; i < nftUTXOs.length; i++) {
+        let utxo = nftUTXOs[i];
+        let groupID = utxo.groupID;
+
+        if (res[groupID]) {
+            res[groupID].amount++;
+        } else {
+            res[groupID] = {
+                payload: utxo.payload || '',
+                amount: 1,
+            };
+        }
+    }
+    return res;
+}
+
+/**
+ * Returns the total amount of `assetID` in the given `utxos` owned by `address`. Checks for EVM address.
+ * @param utxos UTXOs to calculate balance from.
+ * @param address The wallet's  evm address `0x...`.
+ * @param assetID Only count outputs of this asset ID.
+ * @param chainID Only count the outputs on this chain.
+ * @param isStake Set to `true` if looking for staking utxos.
+ */
+function getEvmAssetBalanceFromUTXOs(
+    utxos: UTXO[],
+    address: string,
+    assetID: string,
+    chainID: string,
+    isStake = false
+) {
+    let myOuts = utxos.filter((utxo) => {
+        if (
+            assetID === utxo.assetID &&
+            isOutputOwnerC(address, utxo) &&
+            chainID === utxo.chainID &&
+            utxo.stake === isStake
+        ) {
+            return true;
+        }
+        return false;
+    });
+
+    let tot = myOuts.reduce((acc, utxo) => {
+        return acc.add(new BN(utxo.amount));
+    }, new BN(0));
+
+    return tot;
+}
+
+function getImportSummary(tx: ITransactionData, addresses: string[]): iHistoryImport {
     let sourceChain = findSourceChain(tx);
     let chainAliasFrom = idToChainAlias(sourceChain);
     let chainAliasTo = idToChainAlias(tx.chainID);
 
-    // console.log('import from: ', chainAliasFrom);
-    // console.log('import to: ', chainAliasTo);
-    //
-    // console.log(tx);
     let avaxID = activeNetwork.avaxID;
 
-    let inUtxos = tx.inputs.map((input) => input.output);
-
-    let amtOut = getAssetBalanceFromUTXOs(tx.outputs, addresses, avaxID, tx.chainID);
-    // let amtIn = getAssetBalanceFromUTXOs(inUtxos, addresses, avaxID, chainAliasFrom);
-
-    // console.log(`${bnToAvaxX(amtIn)} -> ${bnToAvaxX(amtOut)}`);
-
-    // let amtAbs = amtIn.sub(amtOut);
+    let outs = tx.outputs || [];
+    let amtOut = getAssetBalanceFromUTXOs(outs, addresses, avaxID, tx.chainID);
 
     let time = new Date(tx.timestamp);
     let fee = xChain.getTxFee();
 
     let res: iHistoryImport = {
         id: tx.id,
+        memo: parseMemo(tx.memo),
         source: chainAliasFrom,
         destination: chainAliasTo,
         amount: amtOut,
@@ -213,35 +298,29 @@ function getImportSummary(tx: ITransactionData, addresses: string[]): any {
         fee: fee,
     };
 
-    // console.log(res);
     return res;
 }
-function getExportSummary(tx: ITransactionData, addresses: string[]): any {
+
+function getExportSummary(tx: ITransactionData, addresses: string[]): iHistoryExport {
     let inputs = tx.inputs;
     let sourceChain = inputs[0].output.chainID;
     let chainAliasFrom = idToChainAlias(sourceChain);
 
-    let outs = tx.outputs;
     let destinationChain = findDestinationChain(tx);
     let chainAliasTo = idToChainAlias(destinationChain);
 
-    // console.log('export from:', chainAliasFrom);
-    // console.log('export to:', chainAliasTo);
-    //
-    // console.log(tx);
     let avaxID = activeNetwork.avaxID;
-    let inUtxos = tx.inputs.map((input) => input.output);
 
-    let amtOut = getAssetBalanceFromUTXOs(tx.outputs, addresses, avaxID, destinationChain);
+    let outs = tx.outputs || [];
+    let amtOut = getAssetBalanceFromUTXOs(outs, addresses, avaxID, destinationChain);
     // let amtIn = getAssetBalanceFromUTXOs(inUtxos, addresses, avaxID);
 
     let time = new Date(tx.timestamp);
     let fee = xChain.getTxFee();
 
-    // let amtExported = amtIn.sub(amtOut);
-
     let res: iHistoryExport = {
         id: tx.id,
+        memo: parseMemo(tx.memo),
         source: chainAliasFrom,
         destination: chainAliasTo,
         amount: amtOut,
@@ -255,19 +334,16 @@ function getExportSummary(tx: ITransactionData, addresses: string[]): any {
 }
 
 function getValidatorSummary(tx: ITransactionData, ownerAddrs: string[]): iHistoryAddDelegator {
-    console.log('VALIDATOR');
-    console.log(tx);
-
     let time = new Date(tx.timestamp);
 
     let pChainID = activeNetwork.pChainID;
     let avaxID = activeNetwork.avaxID;
-    let stakeAmt = getAssetBalanceFromUTXOs(tx.outputs, ownerAddrs, avaxID, pChainID, true);
+
+    let outs = tx.outputs || [];
+    let stakeAmt = getAssetBalanceFromUTXOs(outs, ownerAddrs, avaxID, pChainID, true);
 
     return {
         id: tx.id,
-        source: 'P',
-        destination: 'P',
         nodeID: tx.validatorNodeID,
         stakeStart: new Date(tx.validatorStart * 1000),
         stakeEnd: new Date(tx.validatorEnd * 1000),
@@ -276,12 +352,230 @@ function getValidatorSummary(tx: ITransactionData, ownerAddrs: string[]): iHisto
         fee: new BN(0),
         amount: stakeAmt,
         amountClean: bnToAvaxP(stakeAmt),
+        memo: parseMemo(tx.memo),
     };
 }
 
 // Returns the summary for a C chain import TX
 function getImportSummaryC(tx: ITransactionData, ownerAddr: string) {
-    console.log('C IMPORT');
+    let sourceChain = findSourceChain(tx);
+    let chainAliasFrom = idToChainAlias(sourceChain);
+    let chainAliasTo = idToChainAlias(tx.chainID);
+
+    let avaxID = activeNetwork.avaxID;
+
+    let outs = tx.outputs || [];
+    let amtOut = getEvmAssetBalanceFromUTXOs(outs, ownerAddr, avaxID, tx.chainID);
+
+    let time = new Date(tx.timestamp);
+    let fee = xChain.getTxFee();
+
+    let res: iHistoryImport = {
+        id: tx.id,
+        source: chainAliasFrom,
+        destination: chainAliasTo,
+        amount: amtOut,
+        amountClean: bnToAvaxX(amtOut),
+        timestamp: time,
+        type: tx.type,
+        fee: fee,
+        memo: parseMemo(tx.memo),
+    };
+
+    return res;
+}
+
+async function getBaseTxSummary(tx: ITransactionData, ownerAddrs: string[]): Promise<iHistoryBaseTx> {
+    console.log('Base tx');
     console.log(tx);
-    console.log(ownerAddr);
+
+    // Calculate losses from inputs
+    let losses = getBaseTxTokenLosses(tx, ownerAddrs);
+    let lossesNFT = getBaseTxNFTLosses(tx, ownerAddrs);
+
+    // Calculate gains from inputs
+    let gains = getBaseTxTokenGains(tx, ownerAddrs);
+    let gainsNFT = getBaseTxNFTGains(tx, ownerAddrs);
+
+    let received: iHistoryBaseTxTokensReceived = {};
+    let receivedNFTs: iHistoryBaseTxNFTsReceived = {};
+
+    // Process Received Tokens
+    for (let assetID in gains) {
+        let fromAddrs = getBaseTxSenders(tx, assetID);
+        let tokenDesc = await Assets.getAssetDescription(assetID);
+        let amtBN = gains[assetID];
+        received[assetID] = {
+            amount: amtBN,
+            amountClean: bnToLocaleString(amtBN, tokenDesc.denomination),
+            from: fromAddrs,
+            token: tokenDesc,
+        };
+    }
+
+    // Process Received NFTs
+    for (let assetID in gainsNFT) {
+        let fromAddrs = getBaseTxSenders(tx, assetID);
+        let tokenDesc = await Assets.getAssetDescription(assetID);
+        let groups = gainsNFT[assetID];
+        receivedNFTs[assetID] = {
+            groups: groups,
+            from: fromAddrs,
+            token: tokenDesc,
+        };
+    }
+
+    // Process Sent Tokens
+    let sent: iHistoryBaseTxTokensSent = {};
+    let sentNFTs: iHistoryBaseTxNFTsSent = {};
+
+    // Process sent tokens
+    for (let assetID in losses) {
+        let toAddrs = getBaseTxReceivers(tx, assetID);
+        let tokenDesc = await Assets.getAssetDescription(assetID);
+        let amtBN = losses[assetID];
+
+        sent[assetID] = {
+            amount: amtBN,
+            amountClean: bnToLocaleString(amtBN, tokenDesc.denomination),
+            to: toAddrs,
+            token: tokenDesc,
+        };
+    }
+
+    // Process Received NFTs
+    for (let assetID in lossesNFT) {
+        let fromAddrs = getBaseTxSenders(tx, assetID);
+        let tokenDesc = await Assets.getAssetDescription(assetID);
+        let groups = lossesNFT[assetID];
+        sentNFTs[assetID] = {
+            groups: groups,
+            to: fromAddrs,
+            token: tokenDesc,
+        };
+    }
+
+    return {
+        id: tx.id,
+        fee: xChain.getTxFee(),
+        type: tx.type,
+        timestamp: new Date(tx.timestamp),
+        memo: parseMemo(tx.memo),
+        tokens: {
+            sent,
+            received,
+        },
+        nfts: {
+            sent: sentNFTs,
+            received: receivedNFTs,
+        },
+    };
+}
+
+function getBaseTxNFTLosses(tx: ITransactionData, ownerAddrs: string[]): iHistoryBaseTxNFTsSentRaw {
+    let inUTXOs = tx.inputs.map((input) => input.output);
+    let nftUTXOs = inUTXOs.filter((utxo) => {
+        return utxo.outputType === AVMConstants.NFTXFEROUTPUTID;
+    });
+
+    let res: iHistoryBaseTxNFTsSentRaw = {};
+    for (let assetID in tx.inputTotals) {
+        let nftBal = getNFTBalanceFromUTXOs(nftUTXOs, ownerAddrs, assetID);
+
+        // If empty dictionary pass
+        if (Object.keys(nftBal).length === 0) continue;
+
+        res[assetID] = nftBal;
+    }
+    return res;
+}
+
+function getBaseTxNFTGains(tx: ITransactionData, ownerAddrs: string[]): iHistoryBaseTxNFTsReceivedRaw {
+    let outs = tx.outputs || [];
+    let nftUTXOs = outs.filter((utxo) => {
+        return utxo.outputType === AVMConstants.NFTXFEROUTPUTID;
+    });
+    let res: iHistoryBaseTxNFTsReceivedRaw = {};
+
+    for (let assetID in tx.inputTotals) {
+        let nftBal = getNFTBalanceFromUTXOs(nftUTXOs, ownerAddrs, assetID);
+        // If empty dictionary pass
+        if (Object.keys(nftBal).length === 0) continue;
+
+        res[assetID] = nftBal;
+    }
+    return res;
+}
+
+function getBaseTxTokenLosses(tx: ITransactionData, ownerAddrs: string[]): iHistoryBaseTxTokensSentRaw {
+    let inUTXOs = tx.inputs.map((input) => input.output);
+    let tokenUTXOs = inUTXOs.filter((utxo) => {
+        return utxo.outputType === AVMConstants.SECPXFEROUTPUTID;
+    });
+
+    let chainID = xChain.getBlockchainID();
+    let res: any = {};
+    for (let assetID in tx.inputTotals) {
+        let bal = getAssetBalanceFromUTXOs(tokenUTXOs, ownerAddrs, assetID, chainID);
+        if (bal.isZero()) continue;
+        res[assetID] = bal;
+    }
+    return res;
+}
+
+function getBaseTxTokenGains(tx: ITransactionData, ownerAddrs: string[]): iHistoryBaseTxTokensReceivedRaw {
+    let chainID = xChain.getBlockchainID();
+    let outs = tx.outputs || [];
+    let tokenUTXOs = outs.filter((utxo) => {
+        return utxo.outputType === AVMConstants.SECPXFEROUTPUTID;
+    });
+
+    let res: any = {};
+    for (let assetID in tx.outputTotals) {
+        let bal = getAssetBalanceFromUTXOs(tokenUTXOs, ownerAddrs, assetID, chainID);
+        if (bal.isZero()) continue;
+        res[assetID] = bal;
+    }
+    return res;
+}
+
+// Look at the inputs and check where the assetID came from.
+function getBaseTxSenders(tx: ITransactionData, assetID: string): string[] {
+    let inUTXOs = tx.inputs.map((input) => input.output);
+    let res: string[] = [];
+    for (let i = 0; i < inUTXOs.length; i++) {
+        let utxo = inUTXOs[i];
+        if (utxo.assetID === assetID && utxo.addresses) {
+            res.push(...utxo.addresses);
+        }
+    }
+    // Eliminate Duplicates
+    return res.filter((addr, i) => {
+        return res.indexOf(addr) === i;
+    });
+}
+
+// Look at the inputs and check where the assetID came from.
+function getBaseTxReceivers(tx: ITransactionData, assetID: string): string[] {
+    let res: string[] = [];
+    let outs = tx.outputs || [];
+    for (let i = 0; i < outs.length; i++) {
+        let utxo = outs[i];
+        if (utxo.assetID === assetID && utxo.addresses) {
+            res.push(...utxo.addresses);
+        }
+    }
+    // Eliminate Duplicates
+    return res.filter((addr, i) => {
+        return res.indexOf(addr) === i;
+    });
+}
+
+function parseMemo(raw: string): string {
+    const memoText = new Buffer(raw, 'base64').toString('utf8');
+
+    // Bug that sets memo to empty string (AAAAAA==) for some
+    // tx types
+    if (!memoText.length || raw === 'AAAAAA==') return '';
+    return memoText;
 }

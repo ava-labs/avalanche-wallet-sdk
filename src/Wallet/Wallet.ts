@@ -805,12 +805,10 @@ export abstract class WalletProvider {
         return await getAddressHistory(addrs, limit, cChain.getBlockchainID());
     }
 
-    async getHistory() {
-        let txsX = await this.getHistoryX();
-        let txsP = await this.getHistoryP();
-        let txsC = await this.getHistoryC();
-
-        console.log(txsC);
+    async getHistory(limit: number = 0) {
+        let txsX = await this.getHistoryX(limit);
+        let txsP = await this.getHistoryP(limit);
+        let txsC = await this.getHistoryC(limit);
 
         let addrs = this.getAllAddressesX();
         let addrC = this.getAddressC();
@@ -822,11 +820,18 @@ export abstract class WalletProvider {
         let res = [];
         for (let i = 0; i < txsSorted.length; i++) {
             let tx = txsSorted[i];
-            let summary = await getTransactionSummary(tx, addrs, addrC);
-            res.push(summary);
+            try {
+                let summary = await getTransactionSummary(tx, addrs, addrC);
+                res.push(summary);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // If there is a limit only return that much
+        if (limit > 0) {
+            return res.slice(0, limit);
         }
         return res;
     }
-
-    // Sign message
 }
