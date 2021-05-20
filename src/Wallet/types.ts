@@ -1,10 +1,12 @@
 import { KeyPair as AVMKeyPair } from 'avalanche/dist/apis/avm';
 
 import { BN } from 'avalanche';
-import MnemonicWallet from './MnemonicWallet';
+
+import MnemonicWallet from '@/Wallet/MnemonicWallet';
 import SingletonWallet from '@/Wallet/SingletonWallet';
-import { iAssetDescriptionClean } from '@/Asset/types';
 import LedgerWallet from '@/Wallet/LedgerWallet';
+
+import { iAssetDescriptionClean } from '@/Asset/types';
 
 export interface IIndexKeyCache {
     [index: number]: AVMKeyPair;
