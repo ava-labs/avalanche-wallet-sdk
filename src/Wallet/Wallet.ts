@@ -58,7 +58,6 @@ import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
 import { getAddressHistory, getTransactionSummary } from '@/History/history';
 import { ITransactionData } from '@/History/types';
-import { BaseTxSummary } from '@/helpers/history_helper';
 import moment from 'moment';
 
 export abstract class WalletProvider {
