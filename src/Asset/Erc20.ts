@@ -134,6 +134,11 @@ export async function addErc20Token(address: string) {
     return token;
 }
 
+export async function getContractData(address: string) {
+    let data: Erc20TokenData = await Erc20Token.getData(address);
+    return data;
+}
+
 export async function getErc20Token(address: string) {
     if (erc20Store[address]) {
         return erc20Store[address];
