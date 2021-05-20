@@ -23,7 +23,7 @@ import { BN } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { AVMConstants } from 'avalanche/dist/apis/avm';
 import { bnToAvaxP, bnToAvaxX, bnToLocaleString, parseNftPayload } from '@/utils/utils';
-import { Assets } from '@/index';
+import * as Assets from '@/Asset/Assets';
 
 export async function getAddressHistory(
     addrs: string[],
