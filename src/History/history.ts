@@ -119,7 +119,7 @@ export async function getTransactionSummary(
             sum = await getBaseTxSummary(tx, cleanAddressesXP);
             break;
         default:
-            throw new Error('Unsupported history transaction type.');
+            throw new Error(`Unsupported history transaction type. (${tx.type})`);
             break;
     }
     return sum;
@@ -410,7 +410,7 @@ async function getBaseTxSummary(tx: ITransactionData, ownerAddrs: string[]): Pro
             amount: amtBN,
             amountClean: bnToLocaleString(amtBN, tokenDesc.denomination),
             from: fromAddrs,
-            token: tokenDesc,
+            asset: tokenDesc,
         };
     }
 
@@ -422,7 +422,7 @@ async function getBaseTxSummary(tx: ITransactionData, ownerAddrs: string[]): Pro
         receivedNFTs[assetID] = {
             groups: groups,
             from: fromAddrs,
-            token: tokenDesc,
+            asset: tokenDesc,
         };
     }
 
@@ -440,7 +440,7 @@ async function getBaseTxSummary(tx: ITransactionData, ownerAddrs: string[]): Pro
             amount: amtBN,
             amountClean: bnToLocaleString(amtBN, tokenDesc.denomination),
             to: toAddrs,
-            token: tokenDesc,
+            asset: tokenDesc,
         };
     }
 
@@ -452,7 +452,7 @@ async function getBaseTxSummary(tx: ITransactionData, ownerAddrs: string[]): Pro
         sentNFTs[assetID] = {
             groups: groups,
             to: fromAddrs,
-            token: tokenDesc,
+            asset: tokenDesc,
         };
     }
 

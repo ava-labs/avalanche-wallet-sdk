@@ -122,7 +122,7 @@ export interface iHistoryBaseTxTokensReceived {
         amount: BN;
         amountClean: string;
         from: string[];
-        token: iAssetDescriptionClean;
+        asset: iAssetDescriptionClean;
     };
 }
 
@@ -138,7 +138,7 @@ export interface iHistoryBaseTxTokensSent {
         amount: BN;
         amountClean: string;
         to: string[];
-        token: iAssetDescriptionClean;
+        asset: iAssetDescriptionClean;
     };
 }
 
@@ -160,7 +160,7 @@ export interface iHistoryBaseTxNFTsSent {
     [assetID: string]: {
         groups: iHistoryNftFamilyBalance;
         to: string[];
-        token: iAssetDescriptionClean;
+        asset: iAssetDescriptionClean;
     };
 }
 
@@ -168,6 +168,6 @@ export interface iHistoryBaseTxNFTsReceived {
     [assetID: string]: {
         groups: iHistoryNftFamilyBalance;
         from: string[];
-        token: iAssetDescriptionClean;
+        asset: iAssetDescriptionClean;
     };
 }
