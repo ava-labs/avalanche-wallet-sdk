@@ -204,14 +204,17 @@ export default class HdScanner {
     }
 
     // Uses the explorer to scan used addresses and find its starting index
-    public async resetIndex() {
+    public async resetIndex(startIndex = 0): Promise<number> {
         if (!activeNetwork) throw NO_NETWORK;
 
+        let index;
         if (activeNetwork.explorerURL) {
-            this.index = await this.findAvailableIndexExplorer();
+            index = await this.findAvailableIndexExplorer(startIndex);
         } else {
-            this.index = await this.findAvailableIndexNode();
+            index = await this.findAvailableIndexNode(startIndex);
         }
+        this.index = index;
+        return index;
     }
 
     // Scans the address space of this hd path and finds the last used index using the

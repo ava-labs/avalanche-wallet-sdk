@@ -68,3 +68,8 @@ export interface iWalletAddressChanged {
     P: string;
     changeX: string;
 }
+
+export interface iHDWalletIndex {
+    external: number;
+    internal: number;
+}

@@ -4,6 +4,7 @@ import HDKey from 'hdkey';
 import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
 import { avalanche, bintools } from '@/Network/network';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
+import { iHDWalletIndex } from '@/Wallet/types';
 
 export abstract class HDWalletAbstract extends WalletProvider {
     protected internalScan: HdScanner;
@@ -93,11 +94,15 @@ export abstract class HDWalletAbstract extends WalletProvider {
      * - MUST use the explorer api to find the last used address
      * - If explorer is not available it will use the connected node. This may result in invalid balances.
      */
-    public async resetHdIndices() {
-        await this.externalScan.resetIndex();
-        await this.internalScan.resetIndex();
-
+    public async resetHdIndices(externalStart = 0, internalStart = 0): Promise<iHDWalletIndex> {
+        let indexExt = await this.externalScan.resetIndex(externalStart);
+        let indexInt = await this.internalScan.resetIndex(internalStart);
         this.emitAddressChange();
+
+        return {
+            internal: indexInt,
+            external: indexExt,
+        };
     }
 
     public async getUtxosX(): Promise<AVMUTXOSet> {
