@@ -100,6 +100,7 @@ export interface iHistoryAddDelegator extends iHistoryItem {
     stakeEnd: Date;
     amount: BN;
     amountClean: string;
+    isRewarded: boolean;
 }
 
 export interface iHistoryBaseTx extends iHistoryItem {

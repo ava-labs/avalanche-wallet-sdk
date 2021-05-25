@@ -357,6 +357,7 @@ function getValidatorSummary(tx: ITransactionData, ownerAddrs: string[]): iHisto
         amount: stakeAmt,
         amountClean: bnToAvaxP(stakeAmt),
         memo: parseMemo(tx.memo),
+        isRewarded: tx.rewarded,
     };
 }
 

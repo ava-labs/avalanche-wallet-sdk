@@ -16,6 +16,18 @@ export function bnToBig(val: BN, denomination = 0): Big {
     return new Big(val.toString()).div(Math.pow(10, denomination));
 }
 
+export function bnToBigX(val: BN): Big {
+    return bnToBig(val, 9);
+}
+
+export function bnToBigP(val: BN): Big {
+    return bnToBigX(val);
+}
+
+export function bnToBigC(val: BN): Big {
+    return bnToBig(val, 18);
+}
+
 /**
  * Parses the value using a denomination of 18
  *
