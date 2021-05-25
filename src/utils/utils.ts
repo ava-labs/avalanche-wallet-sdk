@@ -16,15 +16,15 @@ export function bnToBig(val: BN, denomination = 0): Big {
     return new Big(val.toString()).div(Math.pow(10, denomination));
 }
 
-export function bnToBigX(val: BN): Big {
+export function bnToBigAvaxX(val: BN): Big {
     return bnToBig(val, 9);
 }
 
-export function bnToBigP(val: BN): Big {
-    return bnToBigX(val);
+export function bnToBigAvaxP(val: BN): Big {
+    return bnToBigAvaxX(val);
 }
 
-export function bnToBigC(val: BN): Big {
+export function bnToBigAvaxC(val: BN): Big {
     return bnToBig(val, 18);
 }
 
