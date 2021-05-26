@@ -56,7 +56,12 @@ import { NO_NETWORK } from '@/errors';
 import { bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
-import { getAddressHistory, getTransactionSummary } from '@/History/history';
+import {
+    getAddressHistory,
+    getAddressHistoryEVM,
+    getTransactionSummary,
+    getTransactionSummaryEVM,
+} from '@/History/history';
 import { ITransactionData } from '@/History/types';
 import moment from 'moment';
 
@@ -804,33 +809,47 @@ export abstract class WalletProvider {
         return await getAddressHistory(addrs, limit, cChain.getBlockchainID());
     }
 
+    async getHistoryEVM() {
+        let addr = this.getAddressC();
+        return await getAddressHistoryEVM(addr);
+    }
+
     async getHistory(limit: number = 0) {
         let txsX = await this.getHistoryX(limit);
         let txsP = await this.getHistoryP(limit);
         let txsC = await this.getHistoryC(limit);
 
+        let txsXPC = txsX.concat(txsP, txsC);
+
+        let txsEVM = await this.getHistoryEVM();
+
         let addrs = this.getAllAddressesX();
         let addrC = this.getAddressC();
 
-        let txsSorted = txsX
-            .concat(txsP, txsC)
-            .sort((x, y) => (moment(x.timestamp).isBefore(moment(y.timestamp)) ? 1 : -1));
-
-        let res = [];
-        for (let i = 0; i < txsSorted.length; i++) {
-            let tx = txsSorted[i];
+        // Parse X,P,C transactions
+        // Have to loop because of the asynchronous call
+        let parsedXPC = [];
+        for (let i = 0; i < txsXPC.length; i++) {
+            let tx = txsXPC[i];
             try {
                 let summary = await getTransactionSummary(tx, addrs, addrC);
-                res.push(summary);
+                parsedXPC.push(summary);
             } catch (err) {
                 console.error(err);
             }
         }
 
+        // Parse EVM Transactions
+        let parsedEVM = txsEVM.map((tx) => getTransactionSummaryEVM(tx, addrC));
+
+        // Sort and join X,P,C transactions
+        let parsedAll = [...parsedXPC, ...parsedEVM];
+        let txsSorted = parsedAll.sort((x, y) => (moment(x.timestamp).isBefore(moment(y.timestamp)) ? 1 : -1));
+
         // If there is a limit only return that much
         if (limit > 0) {
-            return res.slice(0, limit);
+            return txsSorted.slice(0, limit);
         }
-        return res;
+        return txsSorted;
     }
 }

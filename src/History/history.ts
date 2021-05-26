@@ -11,20 +11,43 @@ import {
     iHistoryBaseTxTokensReceivedRaw,
     iHistoryBaseTxTokensSent,
     iHistoryBaseTxTokensSentRaw,
-    iHistoryExport,
-    iHistoryImport,
+    iHistoryEVMTx,
+    iHistoryImportExport,
     iHistoryItem,
     iHistoryNftFamilyBalance,
     ITransactionData,
+    ITransactionDataEVM,
     UTXO,
 } from '@/History/types';
 import { activeNetwork, avalanche, explorer_api, xChain } from '@/Network/network';
 import { BN } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { AVMConstants } from 'avalanche/dist/apis/avm';
-import { bnToAvaxP, bnToAvaxX, bnToLocaleString, parseNftPayload } from '@/utils/utils';
+import { bnToAvaxC, bnToAvaxP, bnToAvaxX, bnToLocaleString, parseNftPayload } from '@/utils/utils';
 import * as Assets from '@/Asset/Assets';
 import { NO_EXPLORER_API } from '@/errors';
+
+/**
+ * Returns transactions FROM and TO the address given
+ * @param addr The address to get historic transactions for.
+ */
+export async function getAddressHistoryEVM(addr: string): Promise<ITransactionDataEVM[]> {
+    if (!explorer_api) {
+        throw NO_EXPLORER_API;
+    }
+
+    let endpoint = `v2/ctransactions?address=${addr}`;
+    let data: ITransactionDataEVM[] = (await explorer_api.get(endpoint)).data.Transactions;
+
+    data.sort((a, b) => {
+        let dateA = new Date(a.createdAt);
+        let dateB = new Date(b.createdAt);
+
+        return dateB.getTime() - dateA.getTime();
+    });
+
+    return data;
+}
 
 export async function getAddressHistory(
     addrs: string[],
@@ -125,6 +148,35 @@ export async function getTransactionSummary(
     return sum;
 }
 
+export function getTransactionSummaryEVM(tx: ITransactionDataEVM, walletAddress: string): iHistoryEVMTx {
+    let isSender = tx.fromAddr.toUpperCase() === walletAddress.toUpperCase();
+
+    let amt = new BN(tx.value);
+    let amtClean = bnToAvaxC(amt);
+    let date = new Date(tx.createdAt);
+
+    let gasLimit = new BN(tx.gasLimit);
+    let gasPrice = new BN(tx.gasPrice);
+    let feeBN = gasLimit.mul(gasPrice); // in gwei
+
+    return {
+        id: tx.hash,
+        fee: feeBN,
+        memo: '',
+        hash: tx.hash,
+        block: tx.block,
+        isSender,
+        type: 'transaction_evm',
+        amount: amt,
+        amountClean: amtClean,
+        gasLimit: tx.gasLimit,
+        gasPrice: tx.gasPrice,
+        from: tx.fromAddr,
+        to: tx.toAddr,
+        timestamp: date,
+    };
+}
+
 function idToChainAlias(id: string): ChainIdType {
     if (id === activeNetwork.xChainID) {
         return 'X';
@@ -143,7 +195,7 @@ function findDestinationChain(tx: ITransactionData): string {
     let outs = tx.outputs || [];
 
     for (let i = 0; i < outs.length; i++) {
-        let outChainId = outs[i].chainID;
+        let outChainId = outs[i].outChainID;
 
         if (outChainId !== baseChain) return outChainId;
     }
@@ -157,7 +209,7 @@ function findSourceChain(tx: ITransactionData): string {
     let ins = tx.inputs;
 
     for (let i = 0; i < ins.length; i++) {
-        let inChainId = ins[i].output.chainID;
+        let inChainId = ins[i].output.inChainID;
         if (inChainId !== baseChain) return inChainId;
     }
     return baseChain;
@@ -231,11 +283,17 @@ function getNFTBalanceFromUTXOs(utxos: UTXO[], addresses: string[], assetID: str
         let utxo = nftUTXOs[i];
         let groupID = utxo.groupID;
 
+        let content;
+        if (utxo.payload) {
+            let parsedPayload = parseNftPayload(utxo.payload);
+            content = parsedPayload.getContent().toString();
+        }
+
         if (res[groupID]) {
             res[groupID].amount++;
         } else {
             res[groupID] = {
-                payload: utxo.payload || '',
+                payload: content || '',
                 amount: 1,
             };
         }
@@ -277,7 +335,7 @@ function getEvmAssetBalanceFromUTXOs(
     return tot;
 }
 
-function getImportSummary(tx: ITransactionData, addresses: string[]): iHistoryImport {
+function getImportSummary(tx: ITransactionData, addresses: string[]): iHistoryImportExport {
     let sourceChain = findSourceChain(tx);
     let chainAliasFrom = idToChainAlias(sourceChain);
     let chainAliasTo = idToChainAlias(tx.chainID);
@@ -290,7 +348,7 @@ function getImportSummary(tx: ITransactionData, addresses: string[]): iHistoryIm
     let time = new Date(tx.timestamp);
     let fee = xChain.getTxFee();
 
-    let res: iHistoryImport = {
+    let res: iHistoryImportExport = {
         id: tx.id,
         memo: parseMemo(tx.memo),
         source: chainAliasFrom,
@@ -298,14 +356,14 @@ function getImportSummary(tx: ITransactionData, addresses: string[]): iHistoryIm
         amount: amtOut,
         amountClean: bnToAvaxX(amtOut),
         timestamp: time,
-        type: tx.type,
+        type: 'import',
         fee: fee,
     };
 
     return res;
 }
 
-function getExportSummary(tx: ITransactionData, addresses: string[]): iHistoryExport {
+function getExportSummary(tx: ITransactionData, addresses: string[]): iHistoryImportExport {
     let inputs = tx.inputs;
     let sourceChain = inputs[0].output.chainID;
     let chainAliasFrom = idToChainAlias(sourceChain);
@@ -322,7 +380,7 @@ function getExportSummary(tx: ITransactionData, addresses: string[]): iHistoryEx
     let time = new Date(tx.timestamp);
     let fee = xChain.getTxFee();
 
-    let res: iHistoryExport = {
+    let res: iHistoryImportExport = {
         id: tx.id,
         memo: parseMemo(tx.memo),
         source: chainAliasFrom,
@@ -330,7 +388,7 @@ function getExportSummary(tx: ITransactionData, addresses: string[]): iHistoryEx
         amount: amtOut,
         amountClean: bnToAvaxX(amtOut),
         timestamp: time,
-        type: tx.type,
+        type: 'export',
         fee: fee,
     };
 
@@ -352,7 +410,7 @@ function getValidatorSummary(tx: ITransactionData, ownerAddrs: string[]): iHisto
         stakeStart: new Date(tx.validatorStart * 1000),
         stakeEnd: new Date(tx.validatorEnd * 1000),
         timestamp: time,
-        type: tx.type,
+        type: 'add_validator',
         fee: new BN(0),
         amount: stakeAmt,
         amountClean: bnToAvaxP(stakeAmt),
@@ -375,14 +433,14 @@ function getImportSummaryC(tx: ITransactionData, ownerAddr: string) {
     let time = new Date(tx.timestamp);
     let fee = xChain.getTxFee();
 
-    let res: iHistoryImport = {
+    let res: iHistoryImportExport = {
         id: tx.id,
         source: chainAliasFrom,
         destination: chainAliasTo,
         amount: amtOut,
         amountClean: bnToAvaxX(amtOut),
         timestamp: time,
-        type: tx.type,
+        type: 'import',
         fee: fee,
         memo: parseMemo(tx.memo),
     };
@@ -398,6 +456,9 @@ async function getBaseTxSummary(tx: ITransactionData, ownerAddrs: string[]): Pro
     // Calculate gains from inputs
     let gains = getBaseTxTokenGains(tx, ownerAddrs);
     let gainsNFT = getBaseTxNFTGains(tx, ownerAddrs);
+
+    // TODO: Calculate absolutes
+    // gains - losses
 
     let received: iHistoryBaseTxTokensReceived = {};
     let receivedNFTs: iHistoryBaseTxNFTsReceived = {};
@@ -460,7 +521,7 @@ async function getBaseTxSummary(tx: ITransactionData, ownerAddrs: string[]): Pro
     return {
         id: tx.id,
         fee: xChain.getTxFee(),
-        type: tx.type,
+        type: 'transaction',
         timestamp: new Date(tx.timestamp),
         memo: parseMemo(tx.memo),
         tokens: {
@@ -576,8 +637,7 @@ function getBaseTxReceivers(tx: ITransactionData, assetID: string): string[] {
 function parseMemo(raw: string): string {
     const memoText = new Buffer(raw, 'base64').toString('utf8');
 
-    // Bug that sets memo to empty string (AAAAAA==) for some
-    // tx types
+    // Bug that sets memo to empty string (AAAAAA==) for some tx types
     if (!memoText.length || raw === 'AAAAAA==') return '';
     return memoText;
 }
