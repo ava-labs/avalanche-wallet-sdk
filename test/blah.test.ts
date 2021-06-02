@@ -2,6 +2,7 @@ import MnemonicWallet from '@/Wallet/MnemonicWallet';
 
 const MNEMONIC =
     'chimney noodle canyon tunnel sample stuff scan symbol sight club net own arrive cause suffer purity manage squirrel boost diesel bring cement father slide';
+
 describe('blah', () => {
     it('works', () => {
         const wallet = MnemonicWallet.fromMnemonic(MNEMONIC);

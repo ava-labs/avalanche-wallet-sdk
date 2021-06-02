@@ -29,7 +29,7 @@ import {
     getStakeForAddresses,
     platformGetAllUTXOs,
     platformGetAtomicUTXOs,
-} from '../helpers/utxo_helper';
+} from '@/helpers/utxo_helper';
 
 import {
     UTXOSet as AVMUTXOSet,
