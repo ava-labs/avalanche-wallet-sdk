@@ -1,16 +1,18 @@
-import { Avalanche, Socket } from 'avalanche/dist';
+import { Avalanche, Socket, PubSub } from 'avalanche/dist';
 import { AVMAPI } from 'avalanche/dist/apis/avm';
 import { InfoAPI } from 'avalanche/dist/apis/info';
 import BinTools from 'avalanche/dist/utils/bintools';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import Web3 from 'web3';
-import { MainnetConfig } from './constants';
+import { MainnetConfig, TestnetConfig } from './constants';
 import { NetworkConfig } from './types';
 import axios, { AxiosInstance } from 'axios';
+import { setSocketNetwork } from '@/Network/socket_manager';
+import { rpcUrlFromConfig } from '@/helpers/network_helper';
 // import { getAssetDescription } from '@/Asset/Assets';
 
 // Default network connection
-const DefaultConfig = MainnetConfig;
+export const DefaultConfig = MainnetConfig;
 
 export const avalanche: Avalanche = new Avalanche(
     DefaultConfig.apiIp,
@@ -29,17 +31,7 @@ const rpcUrl = rpcUrlFromConfig(DefaultConfig);
 export const web3 = new Web3(rpcUrl);
 
 export let explorer_api: AxiosInstance | null = null;
-
 export let activeNetwork: NetworkConfig = MainnetConfig;
-
-let wsURL = wsUrlFromConfig(DefaultConfig);
-let socket = new Socket(wsURL);
-socket.onopen = function (data: any) {
-    console.log('open', data);
-};
-socket.onmessage = function (data: any) {
-    console.log(data);
-};
 
 function createExplorerApi(networkConfig: NetworkConfig) {
     if (!networkConfig.explorerURL) {
@@ -72,6 +64,8 @@ export function setNetwork(conf: NetworkConfig): void {
     pChain.setAVAXAssetID(conf.avaxID);
     cChain.setAVAXAssetID(conf.avaxID);
 
+    setSocketNetwork(conf);
+
     if (conf.explorerURL) {
         explorer_api = createExplorerApi(conf);
     } else {
@@ -82,15 +76,6 @@ export function setNetwork(conf: NetworkConfig): void {
     let web3Provider = rpcUrlFromConfig(conf);
     web3.setProvider(web3Provider);
     activeNetwork = conf;
-}
-
-function wsUrlFromConfig(config: NetworkConfig): string {
-    let protocol = config.apiProtocol === 'http' ? 'ws' : 'wss';
-    return `${protocol}://${config.apiIp}:${config.apiPort}/ext/bc/C/ws`;
-}
-
-function rpcUrlFromConfig(conf: NetworkConfig): string {
-    return `${conf.apiProtocol}://${conf.apiIp}:${conf.apiPort}/ext/bc/C/rpc`;
 }
 
 // Default connection is Mainnet

@@ -82,11 +82,16 @@ export abstract class WalletProvider {
     abstract getAllAddressesX(): string[];
     abstract getAllAddressesP(): string[];
 
-    protected emitter: EventEmitter;
+    protected emitter: EventEmitter = new EventEmitter();
+    static instances: WalletProvider[] = [];
 
     protected constructor() {
-        const myEmitter = new EventEmitter();
-        this.emitter = myEmitter;
+        WalletProvider.instances.push(this);
+    }
+
+    destroy() {
+        let index = WalletProvider.instances.indexOf(this);
+        WalletProvider.instances.splice(index, 1);
     }
 
     public on(event: WalletEventType, listener: (...args: any[]) => void): void {
