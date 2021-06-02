@@ -1,4 +1,4 @@
-import { Avalanche } from 'avalanche/dist';
+import { Avalanche, Socket } from 'avalanche/dist';
 import { AVMAPI } from 'avalanche/dist/apis/avm';
 import { InfoAPI } from 'avalanche/dist/apis/info';
 import BinTools from 'avalanche/dist/utils/bintools';
@@ -25,12 +25,21 @@ export const pChain = avalanche.PChain();
 export const infoApi: InfoAPI = avalanche.Info();
 export const bintools: BinTools = BinTools.getInstance();
 
-const rpcUrl = `${DefaultConfig.apiProtocol}://${DefaultConfig.apiIp}:${DefaultConfig.apiPort}/ext/bc/C/rpc`;
+const rpcUrl = rpcUrlFromConfig(DefaultConfig);
 export const web3 = new Web3(rpcUrl);
 
 export let explorer_api: AxiosInstance | null = null;
 
 export let activeNetwork: NetworkConfig = MainnetConfig;
+
+let wsURL = wsUrlFromConfig(DefaultConfig);
+let socket = new Socket(wsURL);
+socket.onopen = function (data: any) {
+    console.log('open', data);
+};
+socket.onmessage = function (data: any) {
+    console.log(data);
+};
 
 function createExplorerApi(networkConfig: NetworkConfig) {
     if (!networkConfig.explorerURL) {
@@ -70,9 +79,18 @@ export function setNetwork(conf: NetworkConfig): void {
     }
 
     // Set web3 Network Settings
-    let web3Provider = `${conf.apiProtocol}://${conf.apiIp}:${conf.apiPort}/ext/bc/C/rpc`;
+    let web3Provider = rpcUrlFromConfig(conf);
     web3.setProvider(web3Provider);
     activeNetwork = conf;
+}
+
+function wsUrlFromConfig(config: NetworkConfig): string {
+    let protocol = config.apiProtocol === 'http' ? 'ws' : 'wss';
+    return `${protocol}://${config.apiIp}:${config.apiPort}/ext/bc/C/ws`;
+}
+
+function rpcUrlFromConfig(conf: NetworkConfig): string {
+    return `${conf.apiProtocol}://${conf.apiIp}:${conf.apiPort}/ext/bc/C/rpc`;
 }
 
 // Default connection is Mainnet
