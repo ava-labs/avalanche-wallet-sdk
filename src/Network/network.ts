@@ -7,9 +7,7 @@ import Web3 from 'web3';
 import { MainnetConfig, TestnetConfig } from './constants';
 import { NetworkConfig } from './types';
 import axios, { AxiosInstance } from 'axios';
-import { setSocketNetwork } from '@/Network/socket_manager';
 import { rpcUrlFromConfig } from '@/helpers/network_helper';
-// import { getAssetDescription } from '@/Asset/Assets';
 
 // Default network connection
 export const DefaultConfig = MainnetConfig;
@@ -47,7 +45,7 @@ function createExplorerApi(networkConfig: NetworkConfig) {
     });
 }
 
-export function setNetwork(conf: NetworkConfig): void {
+export function setRpcNetwork(conf: NetworkConfig): void {
     avalanche.setAddress(conf.apiIp, conf.apiPort, conf.apiProtocol);
     avalanche.setNetworkID(conf.networkID);
 
@@ -64,8 +62,6 @@ export function setNetwork(conf: NetworkConfig): void {
     pChain.setAVAXAssetID(conf.avaxID);
     cChain.setAVAXAssetID(conf.avaxID);
 
-    setSocketNetwork(conf);
-
     if (conf.explorerURL) {
         explorer_api = createExplorerApi(conf);
     } else {
@@ -77,6 +73,3 @@ export function setNetwork(conf: NetworkConfig): void {
     web3.setProvider(web3Provider);
     activeNetwork = conf;
 }
-
-// Default connection is Mainnet
-setNetwork(MainnetConfig);

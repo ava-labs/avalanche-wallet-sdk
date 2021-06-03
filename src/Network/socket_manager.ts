@@ -7,13 +7,7 @@ import { WalletProvider } from '@/Wallet/Wallet';
 // let wsURL = wsUrlFromConfigX(DefaultConfig);
 export let socketX: Socket;
 
-const bloomSize = 1000;
-let pubsub = new PubSub();
-let bloom = pubsub.newBloom(bloomSize);
-let addAddrs = pubsub.addAddresses(['X-fuji1fwr9479vg7hm895n5q4cxgnsfj23x5uxaxzhuz']);
-
-console.log(bloom);
-console.log(addAddrs);
+const BLOOM_SIZE = 1000;
 
 export function setSocketNetwork(config: NetworkConfig) {
     if (socketX) {
@@ -24,13 +18,11 @@ export function setSocketNetwork(config: NetworkConfig) {
     socketX = new Socket(wsURL);
 
     socketX.onopen = function () {
-        console.log('Socket Connected');
-        socketX.send(bloom);
-        socketX.send(addAddrs);
+        updateFilterAddresses();
     };
 
-    socketX.onmessage = function (data: any) {
-        console.log(data);
+    socketX.onmessage = function () {
+        refreshWalletBalancesX();
     };
 
     socketX.onclose = () => {
@@ -46,6 +38,20 @@ export function updateFilterAddresses() {
     let wallets = WalletProvider.instances;
     let addrs = wallets.map((w) => w.getAddressX());
 
-    console.log(addrs);
-    console.log(wallets);
+    let pubsub = new PubSub();
+    let bloom = pubsub.newBloom(BLOOM_SIZE);
+    let addAddrs = pubsub.addAddresses(addrs);
+
+    socketX.send(bloom);
+    socketX.send(addAddrs);
+}
+
+/**
+ * Refreshes X chain UTXOs for every wallet instance
+ */
+function refreshWalletBalancesX() {
+    let wallets = WalletProvider.instances;
+    wallets.forEach((w) => {
+        w.getUtxosX();
+    });
 }

@@ -1,6 +1,5 @@
 import { WalletProvider } from '@/Wallet/Wallet';
 import { WalletNameType } from '@/Wallet/types';
-import { Socket, PubSub } from 'avalanche';
 
 import {
     KeyChain as AVMKeyChain,
@@ -20,7 +19,7 @@ import { Buffer as BufferAvalanche } from 'avalanche';
 import EvmWallet from '@/Wallet/EvmWallet';
 import { UnsignedTx, Tx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
 import { Transaction } from '@ethereumjs/tx';
-import { socketX } from '@/Network/socket_manager';
+import { updateFilterAddresses } from '@/Network/socket_manager';
 
 export default class SingletonWallet extends WalletProvider {
     type: WalletNameType = 'singleton';
@@ -45,6 +44,7 @@ export default class SingletonWallet extends WalletProvider {
         let pkBuffNative = Buffer.from(pkHex, 'hex');
 
         this.evmWallet = new EvmWallet(pkBuffNative);
+        updateFilterAddresses();
     }
 
     // socketSubscribe(){

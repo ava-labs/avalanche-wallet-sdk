@@ -64,6 +64,7 @@ import {
 } from '@/History/history';
 import { ITransactionData } from '@/History/types';
 import moment from 'moment';
+// import { updateFilterAddresses } from '@/Network/socket_manager';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -89,6 +90,10 @@ export abstract class WalletProvider {
         WalletProvider.instances.push(this);
     }
 
+    /**
+     * Call this when you are done with a wallet instance.
+     * You MUST call this function to avoid memory leaks.
+     */
     destroy() {
         let index = WalletProvider.instances.indexOf(this);
         WalletProvider.instances.splice(index, 1);
