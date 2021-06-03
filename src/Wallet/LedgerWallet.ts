@@ -47,7 +47,7 @@ import {
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import { KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm/keychain';
-import { activeNetwork, avalanche, bintools, web3 } from '@/Network/network';
+import { activeNetwork, avalanche, web3 } from '@/Network/network';
 import { Buffer, BN } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/TxHelper';
@@ -55,6 +55,7 @@ import createHash from 'create-hash';
 // const bippath = require('bip32-path');
 //@ts-ignore
 import bippath from 'bip32-path';
+import { bintools } from '@/common';
 
 export default class LedgerWallet extends HDWalletAbstract {
     evmWallet: EvmWalletReadonly;

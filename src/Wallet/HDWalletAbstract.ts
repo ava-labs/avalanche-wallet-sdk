@@ -2,10 +2,11 @@ import { WalletProvider } from '@/Wallet/Wallet';
 import HdScanner from '@/Wallet/HdScanner';
 import HDKey from 'hdkey';
 import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
-import { avalanche, bintools } from '@/Network/network';
+import { avalanche } from '@/Network/network';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
 import { iHDWalletIndex } from '@/Wallet/types';
 import { updateFilterAddresses } from '@/Network/socket_manager';
+import { bintools } from '@/common';
 
 export abstract class HDWalletAbstract extends WalletProvider {
     protected internalScan: HdScanner;

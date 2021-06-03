@@ -20,7 +20,7 @@ import {
 } from '@/helpers/TxHelper';
 import { BN, Buffer } from 'avalanche';
 import { Transaction } from '@ethereumjs/tx';
-import { activeNetwork, avalanche, bintools, cChain, pChain, web3, xChain } from '@/Network/network';
+import { activeNetwork, avalanche, cChain, pChain, web3, xChain } from '@/Network/network';
 import EvmWallet from '@/Wallet/EvmWallet';
 
 import {
@@ -64,6 +64,7 @@ import {
 } from '@/History/history';
 import { ITransactionData } from '@/History/types';
 import moment from 'moment';
+import { bintools } from '@/common';
 // import { updateFilterAddresses } from '@/Network/socket_manager';
 
 export abstract class WalletProvider {

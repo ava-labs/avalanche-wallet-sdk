@@ -5,7 +5,6 @@ import EvmWallet from './EvmWallet';
 import { WalletNameType } from './types';
 import { Buffer } from 'avalanche';
 import { Transaction } from '@ethereumjs/tx';
-import { privateToAddress } from 'ethereumjs-util';
 import { Tx as AVMTx, UnsignedTx as AVMUnsignedTx } from 'avalanche/dist/apis/avm';
 import { Tx as PlatformTx, UnsignedTx as PlatformUnsignedTx } from 'avalanche/dist/apis/platformvm';
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
@@ -16,9 +15,10 @@ import {
     KeyChain as EVMKeychain,
     KeyPair as EVMKeyPair,
 } from 'avalanche/dist/apis/evm';
-import { avalanche, bintools } from '@/Network/network';
+import { avalanche } from '@/Network/network';
 import { digestMessage } from '@/utils/utils';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
+import { bintools } from '@/common';
 
 export default class MnemonicWallet extends HDWalletAbstract {
     evmWallet: EvmWallet;

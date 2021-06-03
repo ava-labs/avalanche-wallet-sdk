@@ -1,5 +1,5 @@
 import MnemonicWallet from '@/Wallet/MnemonicWallet';
-import { bintools } from '@/Network/network';
+// import { bintools } from '@/Network/network';
 
 jest.mock('@/Network/network', () => {
     return {
@@ -7,9 +7,9 @@ jest.mock('@/Network/network', () => {
             getNetworkID: jest.fn().mockReturnValue(1),
             getHRP: jest.fn().mockReturnValue('avax'),
         },
-        bintools: {
-            addressToString: jest.fn(),
-        },
+        // bintools: {
+        //     addressToString: jest.fn(),
+        // },
         //@ts-ignore
         web3: {
             provider: {
@@ -30,12 +30,12 @@ describe('Mnemonic Wallet', () => {
     const wallet = MnemonicWallet.fromMnemonic(MNEMONIC);
 
     it('can return initial X address', () => {
-        (bintools.addressToString as jest.Mock).mockReturnValue('X-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh');
+        // (bintools.addressToString as jest.Mock).mockReturnValue('X-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh');
         expect(wallet.getAddressX()).toEqual('X-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh');
     });
 
     it('can return initial P address', () => {
-        (bintools.addressToString as jest.Mock).mockReturnValue('P-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh');
+        // (bintools.addressToString as jest.Mock).mockReturnValue('P-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh');
         expect(wallet.getAddressP()).toEqual('P-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh');
     });
 

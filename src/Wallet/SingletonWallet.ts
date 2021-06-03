@@ -14,12 +14,13 @@ import {
     UnsignedTx as PlatformUnsignedTx,
     Tx as PlatformTx,
 } from 'avalanche/dist/apis/platformvm';
-import { avalanche, bintools, pChain, xChain } from '@/Network/network';
+import { avalanche, pChain, xChain } from '@/Network/network';
 import { Buffer as BufferAvalanche } from 'avalanche';
 import EvmWallet from '@/Wallet/EvmWallet';
 import { UnsignedTx, Tx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
 import { Transaction } from '@ethereumjs/tx';
 import { updateFilterAddresses } from '@/Network/socket_manager';
+import { bintools } from '@/common';
 
 export default class SingletonWallet extends WalletProvider {
     type: WalletNameType = 'singleton';

@@ -1,5 +1,5 @@
 import { BN, Buffer as BufferAvalanche } from 'avalanche';
-import { avalanche, bintools, web3 } from '@/Network/network';
+import { web3 } from '@/Network/network';
 import { publicToAddress, importPublic } from 'ethereumjs-util';
 import { ethers } from 'ethers';
 

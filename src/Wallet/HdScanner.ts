@@ -1,6 +1,6 @@
 import HDKey from 'hdkey';
 import { getPreferredHRP } from 'avalanche/dist/utils';
-import { activeNetwork, avalanche, bintools, pChain, xChain } from '@/Network/network';
+import { activeNetwork, avalanche, pChain, xChain } from '@/Network/network';
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
 import { KeyChain as PlatformKeyChain, KeyPair as PlatformKeyPair } from 'avalanche/dist/apis/platformvm';
 import { HdChainType } from './types';
@@ -8,6 +8,7 @@ import { Buffer } from 'avalanche';
 import { INDEX_RANGE, SCAN_RANGE, SCAN_SIZE } from './constants';
 import { getAddressChains } from '../Explorer/Explorer';
 import { NO_NETWORK } from '@/errors';
+import { bintools } from '@/common';
 
 type AddressCache = {
     [index: string]: HDKey;

@@ -1,7 +1,7 @@
 import { BN, Buffer as BufferAvalanche } from 'avalanche';
 import { privateToAddress, privateToPublic, importPublic } from 'ethereumjs-util';
 import { Transaction } from '@ethereumjs/tx';
-import { avalanche, bintools, cChain, web3 } from '@/Network/network';
+import { avalanche, cChain, web3 } from '@/Network/network';
 import {
     KeyChain as EVMKeyChain,
     KeyPair as EVMKeyPair,
@@ -9,6 +9,7 @@ import {
     Tx as EVMTx,
 } from 'avalanche/dist/apis/evm';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
+import { bintools } from '@/common';
 
 export default class EvmWallet extends EvmWalletReadonly {
     private privateKey: Buffer;

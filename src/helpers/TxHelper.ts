@@ -1,4 +1,4 @@
-import { xChain, bintools, cChain, pChain, web3 } from '@/Network/network';
+import { xChain, cChain, pChain, web3 } from '@/Network/network';
 
 // import { ITransaction } from '@/components/wallet/transfer/types';
 import { BN, Buffer } from 'avalanche';
@@ -32,6 +32,7 @@ import EthereumjsCommon from '@ethereumjs/common';
 
 import ERC20Abi from '@openzeppelin/contracts/build/contracts/ERC20.json';
 import ERC721Abi from '@openzeppelin/contracts/build/contracts/ERC721.json';
+import { bintools } from '@/common';
 
 // export async function buildUnsignedTransaction(
 //     orders: (ITransaction | AVMUTXO)[],
