@@ -3,11 +3,9 @@ import { Socket, PubSub } from 'avalanche';
 import { NetworkConfig } from './types';
 import { wsUrlFromConfigEVM, wsUrlFromConfigX } from '@/helpers/network_helper';
 import { WalletProvider } from '@/Wallet/Wallet';
-import { web3 } from '@/Network/network';
 import Web3 from 'web3';
 import { DefaultConfig } from '@/Network/constants';
 
-// let wsURL = wsUrlFromConfigX(DefaultConfig);
 export let socketX: Socket;
 
 let wsUrl = wsUrlFromConfigEVM(DefaultConfig);
@@ -43,6 +41,10 @@ function connectSocketEVM(config: NetworkConfig) {
     }
 }
 
+/**
+ * Add the event listeners to the socket events.
+ * @param socket The socket instance to add event listeners to.
+ */
 function addListenersX(socket: Socket) {
     socket.onopen = function () {
         updateFilterAddresses();
@@ -75,7 +77,10 @@ function blockHeaderCallback() {
 }
 
 const BLOOM_SIZE = 1000;
-export function updateFilterAddresses() {
+export function updateFilterAddresses(): void {
+    if (!socketX) {
+        return;
+    }
     let wallets = WalletProvider.instances;
     let addrs = wallets.map((w) => w.getAddressX());
 

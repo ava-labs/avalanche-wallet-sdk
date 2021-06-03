@@ -1,4 +1,4 @@
-import BinTools from 'avalanche/dist/utils/bintools';
+import { BinTools } from 'avalanche';
 export const bintools: BinTools = BinTools.getInstance();
 
 export const validateAddress = (address: string): boolean | string => {

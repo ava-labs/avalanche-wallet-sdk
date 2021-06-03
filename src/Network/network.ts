@@ -1,7 +1,7 @@
 import { Avalanche } from 'avalanche/dist';
 import { AVMAPI } from 'avalanche/dist/apis/avm';
 import { InfoAPI } from 'avalanche/dist/apis/info';
-import BinTools from 'avalanche/dist/utils/bintools';
+import { BinTools } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import Web3 from 'web3';
 import { DefaultConfig } from './constants';
