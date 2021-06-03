@@ -12,7 +12,7 @@ export abstract class HDWalletAbstract extends WalletProvider {
     protected externalScan: HdScanner;
     protected accountKey: HDKey;
 
-    constructor(accountKey: HDKey) {
+    protected constructor(accountKey: HDKey) {
         super();
 
         this.internalScan = new HdScanner(accountKey, true);

@@ -1,7 +1,7 @@
 // Extending Big.js with a helper function
 import Big from 'big.js';
 import { BN, Buffer as BufferAvalanche } from 'avalanche';
-import { validateAddress } from '@/helpers/addressHelper';
+import { validateAddress } from '@/helpers/address_helper';
 import createHash from 'create-hash';
 import axios from 'axios';
 import { pChain, web3, xChain } from '@/Network/network';

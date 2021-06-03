@@ -1,5 +1,4 @@
 import { NetworkConfig } from '@/Network/types';
-import { WalletProvider } from '@/Wallet/Wallet';
 
 export function wsUrlFromConfigX(config: NetworkConfig): string {
     let protocol = config.apiProtocol === 'http' ? 'ws' : 'wss';

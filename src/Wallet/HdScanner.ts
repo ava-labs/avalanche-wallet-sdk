@@ -68,24 +68,6 @@ export default class HdScanner {
         return res;
     }
 
-    // updateKeychains() {
-    //     let keychainX = xChain.newKeyChain();
-    //     let keychainP = pChain.newKeyChain();
-    //
-    //     for (let i: number = 0; i <= this.index; i++) {
-    //         let key: AVMKeyPair | PlatformVMKeyPair;
-    //         if (this.chainId === 'X') {
-    //             key = this.getKeyForIndex(i) as AVMKeyPair;
-    //             (keychain as AVMKeyChain).addKey(key);
-    //         } else {
-    //             key = this.getKeyForIndex(i) as PlatformVMKeyPair;
-    //             (keychain as PlatformVMKeyChain).addKey(key);
-    //         }
-    //     }
-    //     this.keyChain = keychain;
-    //     return keychain;
-    // }
-
     getKeyChainX(): AVMKeyChain {
         let keychain = xChain.newKeyChain();
         for (let i = 0; i <= this.index; i++) {
@@ -136,46 +118,6 @@ export default class HdScanner {
 
         return keypair;
     }
-
-    // getKeyForIndex<keyType extends AVMKeyPair | PlatformKeyPair>(index: number, chainId: HdChainType = 'X'): keyType {
-    //     // if (chainId === 'X' && this.keyCacheX[index]) {
-    //     //     return this.keyCacheX[index.to] as KeyType;
-    //     // }
-    //     // If key is cached return that
-    //     // let cacheExternal: AVMKeyPair | PlatformVMKeyPair
-    //
-    //     // if (this.chainId === 'X') {
-    //     //     cacheExternal = this.keyCache[index] as AVMKeyPair
-    //     // } else {
-    //     //     cacheExternal = this.keyCache[index] as PlatformVMKeyPair
-    //     // }
-    //     //
-    //     // if (cacheExternal) return cacheExternal
-    //
-    //     // let derivationPath: string = `${this.changePath}/${index.toString()}`;
-    //
-    //     // Get key from cache, if not generate it
-    //     // let key: HDKey;
-    //     // if (this.hdCache[index]) {
-    //     //     key = this.hdCache[index];
-    //     // } else {
-    //     //     key = this.masterKey.derive(derivationPath) as HDKey;
-    //     //     this.hdCache[index] = key;
-    //     // }
-    //
-    //     let hdKey = this.getHdKeyForIndex(index);
-    //     let pkHex = hdKey.privateKey.toString('hex');
-    //
-    //     let pkBuf: Buffer = new Buffer(pkHex, 'hex');
-    //
-    //     if (chainId === 'X') {
-    //         let keychain = xChain.newKeyChain();
-    //         return keychain.importKey(pkBuf) as keyType;
-    //     } else {
-    //         let keychain = pChain.newKeyChain();
-    //         return keychain.importKey(pkBuf) as keyType;
-    //     }
-    // }
 
     private getHdKeyForIndex(index: number): HDKey {
         let key: HDKey;
