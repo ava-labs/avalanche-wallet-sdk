@@ -50,7 +50,7 @@ import { KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm/keychain';
 import { activeNetwork, avalanche, web3 } from '@/Network/network';
 import { Buffer, BN } from 'avalanche';
 import { ChainIdType } from '@/types';
-import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/TxHelper';
+import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/tx_helper';
 import createHash from 'create-hash';
 // const bippath = require('bip32-path');
 //@ts-ignore

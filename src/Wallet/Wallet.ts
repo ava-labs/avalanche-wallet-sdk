@@ -17,7 +17,7 @@ import {
     buildEvmTransferErc20Tx,
     buildEvmTransferNativeTx,
     buildMintNftTx,
-} from '@/helpers/TxHelper';
+} from '@/helpers/tx_helper';
 import { BN, Buffer } from 'avalanche';
 import { Transaction } from '@ethereumjs/tx';
 import { activeNetwork, avalanche, cChain, pChain, web3, xChain } from '@/Network/network';
