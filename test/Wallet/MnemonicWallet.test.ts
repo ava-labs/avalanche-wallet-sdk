@@ -2,9 +2,8 @@ import MnemonicWallet from '@/Wallet/MnemonicWallet';
 
 const MNEMONIC =
     'chimney noodle canyon tunnel sample stuff scan symbol sight club net own arrive cause suffer purity manage squirrel boost diesel bring cement father slide';
-
-describe('blah', () => {
-    it('works', () => {
+describe('Mnemonic Wallet', () => {
+    it('Can init from mnemonic', () => {
         const wallet = MnemonicWallet.fromMnemonic(MNEMONIC);
         expect(wallet.getAddressX()).toEqual('X-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh');
         expect(wallet.getAddressP()).toEqual('P-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh');

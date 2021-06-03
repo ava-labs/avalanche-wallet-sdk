@@ -1,4 +1,4 @@
-import { Avalanche, Socket, PubSub } from 'avalanche/dist';
+import { Avalanche } from 'avalanche/dist';
 import { AVMAPI } from 'avalanche/dist/apis/avm';
 import { InfoAPI } from 'avalanche/dist/apis/info';
 import BinTools from 'avalanche/dist/utils/bintools';
