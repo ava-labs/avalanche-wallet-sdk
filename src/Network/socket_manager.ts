@@ -1,39 +1,80 @@
 //Testing pubsub
 import { Socket, PubSub } from 'avalanche';
 import { NetworkConfig } from './types';
-import { wsUrlFromConfigX } from '@/helpers/network_helper';
+import { wsUrlFromConfigEVM, wsUrlFromConfigX } from '@/helpers/network_helper';
 import { WalletProvider } from '@/Wallet/Wallet';
+import { web3 } from '@/Network/network';
+import Web3 from 'web3';
+import { DefaultConfig } from '@/Network/constants';
 
 // let wsURL = wsUrlFromConfigX(DefaultConfig);
 export let socketX: Socket;
 
-const BLOOM_SIZE = 1000;
+let wsUrl = wsUrlFromConfigEVM(DefaultConfig);
+export let socketEVM = new Web3(wsUrl);
+let activeNetwork: NetworkConfig = DefaultConfig;
 
 export function setSocketNetwork(config: NetworkConfig) {
+    // Setup X chain connection
+    connectSocketX(config);
+    // Setup EVM socket connection
+    connectSocketEVM(config);
+    activeNetwork = config;
+}
+
+function connectSocketX(config: NetworkConfig) {
     if (socketX) {
         socketX.close();
     }
 
+    // Setup the X chain socket connection
     let wsURL = wsUrlFromConfigX(config);
     socketX = new Socket(wsURL);
+    addListenersX(socketX);
+}
 
-    socketX.onopen = function () {
+function connectSocketEVM(config: NetworkConfig) {
+    try {
+        let wsUrl = wsUrlFromConfigEVM(config);
+        socketEVM.setProvider(wsUrl);
+        addListenersEVM(socketEVM);
+    } catch (e) {
+        console.info('EVM Websocket connection failed.');
+    }
+}
+
+function addListenersX(socket: Socket) {
+    socket.onopen = function () {
         updateFilterAddresses();
     };
 
-    socketX.onmessage = function () {
-        refreshWalletBalancesX();
+    socket.onmessage = function () {
+        WalletProvider.refreshInstanceBalancesX();
     };
 
-    socketX.onclose = () => {
-        console.log('Socket Disconnected');
-    };
+    socket.onclose = () => {};
 
-    socketX.onerror = (error: any) => {
+    socket.onerror = (error: any) => {
         console.log(error);
     };
 }
 
+function addListenersEVM(provider: Web3) {
+    let sub = provider.eth.subscribe('newBlockHeaders');
+    sub.on('data', blockHeaderCallback);
+    sub.on('error', onErrorEVM);
+}
+
+function onErrorEVM(err: any) {
+    console.info(err);
+    connectSocketEVM(activeNetwork);
+}
+
+function blockHeaderCallback() {
+    WalletProvider.refreshInstanceBalancesC();
+}
+
+const BLOOM_SIZE = 1000;
 export function updateFilterAddresses() {
     let wallets = WalletProvider.instances;
     let addrs = wallets.map((w) => w.getAddressX());
@@ -44,14 +85,4 @@ export function updateFilterAddresses() {
 
     socketX.send(bloom);
     socketX.send(addAddrs);
-}
-
-/**
- * Refreshes X chain UTXOs for every wallet instance
- */
-function refreshWalletBalancesX() {
-    let wallets = WalletProvider.instances;
-    wallets.forEach((w) => {
-        w.getUtxosX();
-    });
 }

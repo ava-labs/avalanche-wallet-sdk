@@ -57,3 +57,6 @@ export const LocalnetConfig: NetworkConfig = {
     // @ts-ignore
     avaxID: Defaults.network[12345]['X']['avaxAssetID'],
 };
+
+// Default network connection
+export const DefaultConfig = MainnetConfig;

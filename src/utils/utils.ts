@@ -191,8 +191,6 @@ export async function waitTxP(txId: string, tryCount = 10): Promise<string> {
         reason = resp.reason;
     }
 
-    // console.log(status, reason);
-
     if (status === 'Unknown' || status === 'Processing') {
         return await new Promise((resolve) => {
             setTimeout(async () => {

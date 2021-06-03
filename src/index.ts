@@ -1,7 +1,8 @@
+export * as Network from '@/Network/index';
+
 import MnemonicWallet from '@/Wallet/MnemonicWallet';
 import SingletonWallet from '@/Wallet/SingletonWallet';
 import LedgerWallet from '@/Wallet/LedgerWallet';
-export * as Network from '@/Network/index';
 import * as NetworkConstants from '@/Network/constants';
 import * as Utils from '@/utils/utils';
 import * as Assets from '@/Asset/Assets';

@@ -4,13 +4,10 @@ import { InfoAPI } from 'avalanche/dist/apis/info';
 import BinTools from 'avalanche/dist/utils/bintools';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import Web3 from 'web3';
-import { MainnetConfig, TestnetConfig } from './constants';
+import { DefaultConfig } from './constants';
 import { NetworkConfig } from './types';
 import axios, { AxiosInstance } from 'axios';
 import { rpcUrlFromConfig } from '@/helpers/network_helper';
-
-// Default network connection
-export const DefaultConfig = MainnetConfig;
 
 export const avalanche: Avalanche = new Avalanche(
     DefaultConfig.apiIp,
@@ -29,7 +26,7 @@ const rpcUrl = rpcUrlFromConfig(DefaultConfig);
 export const web3 = new Web3(rpcUrl);
 
 export let explorer_api: AxiosInstance | null = null;
-export let activeNetwork: NetworkConfig = MainnetConfig;
+export let activeNetwork: NetworkConfig = DefaultConfig;
 
 function createExplorerApi(networkConfig: NetworkConfig) {
     if (!networkConfig.explorerURL) {
@@ -68,8 +65,8 @@ export function setRpcNetwork(conf: NetworkConfig): void {
         explorer_api = null;
     }
 
-    // Set web3 Network Settings
-    let web3Provider = rpcUrlFromConfig(conf);
-    web3.setProvider(web3Provider);
+    let rpcUrl = rpcUrlFromConfig(conf);
+    web3.setProvider(rpcUrl);
+
     activeNetwork = conf;
 }
