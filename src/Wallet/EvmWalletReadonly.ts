@@ -13,6 +13,10 @@ export default class EvmWalletReadonly {
         this.address = '0x' + publicToAddress(publicKey).toString('hex');
     }
 
+    getBalance(): BN {
+        return this.balance;
+    }
+
     getAddress(): string {
         return ethers.utils.getAddress(this.address);
     }

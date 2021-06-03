@@ -10,7 +10,6 @@ async function isAddressUsedX(addr: string) {
     let url = `/x/transactions?address=${addrRaw}&limit=1&disableCount=1`;
 
     let res = await explorer_api.get(url);
-    // console.log(res);
     if (res.data.transactions.length > 0) return true;
     else return false;
 }

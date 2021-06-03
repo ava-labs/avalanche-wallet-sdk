@@ -64,6 +64,7 @@ import {
 } from '@/History/history';
 import { ITransactionData } from '@/History/types';
 import moment from 'moment';
+// import { updateFilterAddresses } from '@/Network/socket_manager';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -82,11 +83,40 @@ export abstract class WalletProvider {
     abstract getAllAddressesX(): string[];
     abstract getAllAddressesP(): string[];
 
-    protected emitter: EventEmitter;
+    protected emitter: EventEmitter = new EventEmitter();
+    static instances: WalletProvider[] = [];
 
     protected constructor() {
-        const myEmitter = new EventEmitter();
-        this.emitter = myEmitter;
+        WalletProvider.instances.push(this);
+    }
+
+    /**
+     * Refreshes X chain UTXOs for every wallet instance
+     */
+    static refreshInstanceBalancesX(): void {
+        let wallets = WalletProvider.instances;
+        wallets.forEach((w) => {
+            w.getUtxosX();
+        });
+    }
+
+    /**
+     * Refreshes X chain UTXOs for every wallet instance
+     */
+    static refreshInstanceBalancesC(): void {
+        let wallets = WalletProvider.instances;
+        wallets.forEach((w) => {
+            w.updateAvaxBalanceC();
+        });
+    }
+
+    /**
+     * Call this when you are done with a wallet instance.
+     * You MUST call this function to avoid memory leaks.
+     */
+    destroy() {
+        let index = WalletProvider.instances.indexOf(this);
+        WalletProvider.instances.splice(index, 1);
     }
 
     public on(event: WalletEventType, listener: (...args: any[]) => void): void {
@@ -115,6 +145,10 @@ export abstract class WalletProvider {
 
     protected emitBalanceChangeP(): void {
         this.emit('balanceChangedP', this.getAvaxBalanceP());
+    }
+
+    protected emitBalanceChangeC(): void {
+        this.emit('balanceChangedC', this.getAvaxBalanceC());
     }
 
     /**
@@ -220,7 +254,14 @@ export abstract class WalletProvider {
      * Returns the C chain AVAX balance of the wallet in WEI format.
      */
     async updateAvaxBalanceC(): Promise<BN> {
-        return await this.evmWallet.updateBalance();
+        let balOld = this.evmWallet.getBalance();
+        let balNew = await this.evmWallet.updateBalance();
+
+        if (!balOld.eq(balNew)) {
+            this.emitBalanceChangeC();
+        }
+
+        return balNew;
     }
 
     /**
@@ -363,6 +404,10 @@ export abstract class WalletProvider {
             throw new Error('Network not selected.');
         }
         return this.balanceX[activeNetwork.avaxID];
+    }
+
+    public getAvaxBalanceC(): BN {
+        return this.evmWallet.getBalance();
     }
 
     /**

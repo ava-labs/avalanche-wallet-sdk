@@ -5,6 +5,7 @@ import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
 import { avalanche, bintools } from '@/Network/network';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
 import { iHDWalletIndex } from '@/Wallet/types';
+import { updateFilterAddresses } from '@/Network/socket_manager';
 
 export abstract class HDWalletAbstract extends WalletProvider {
     protected internalScan: HdScanner;
@@ -17,6 +18,7 @@ export abstract class HDWalletAbstract extends WalletProvider {
         this.internalScan = new HdScanner(accountKey, true);
         this.externalScan = new HdScanner(accountKey, false);
         this.accountKey = accountKey;
+        updateFilterAddresses();
     }
 
     /**
@@ -99,6 +101,7 @@ export abstract class HDWalletAbstract extends WalletProvider {
         let indexInt = await this.internalScan.resetIndex(internalStart);
         this.emitAddressChange();
 
+        updateFilterAddresses();
         return {
             internal: indexInt,
             external: indexExt,
@@ -122,19 +125,28 @@ export abstract class HDWalletAbstract extends WalletProvider {
         let isAddrChange = false;
         // Increment external index if the current address is in the utxo set
         if (utxoAddrsStr.includes(addrExternalX)) {
-            this.externalScan.increment();
+            this.incrementExternal();
             isAddrChange = true;
         }
 
         // Increment internal index if the current address is in the utxo set
         if (utxoAddrsStr.includes(addrInternalX)) {
-            this.internalScan.increment();
+            this.incrementInternal();
             isAddrChange = true;
         }
 
         if (isAddrChange) this.emitAddressChange();
 
         return utxosX;
+    }
+
+    private incrementExternal() {
+        this.externalScan.increment();
+        updateFilterAddresses();
+    }
+
+    private incrementInternal() {
+        this.internalScan.increment();
     }
 
     public async getUtxosP(): Promise<PlatformUTXOSet> {
@@ -150,7 +162,7 @@ export abstract class HDWalletAbstract extends WalletProvider {
 
         // Increment external index if the current address is in the utxo set
         if (utxoAddrsStr.includes(addrExternalP)) {
-            this.externalScan.increment();
+            this.incrementExternal();
             this.emitAddressChange();
         }
 

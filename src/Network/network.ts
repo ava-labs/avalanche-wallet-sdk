@@ -1,16 +1,13 @@
-import { Avalanche } from 'avalanche/dist';
+import { Avalanche, Socket, PubSub } from 'avalanche/dist';
 import { AVMAPI } from 'avalanche/dist/apis/avm';
 import { InfoAPI } from 'avalanche/dist/apis/info';
 import BinTools from 'avalanche/dist/utils/bintools';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import Web3 from 'web3';
-import { MainnetConfig } from './constants';
+import { DefaultConfig } from './constants';
 import { NetworkConfig } from './types';
 import axios, { AxiosInstance } from 'axios';
-// import { getAssetDescription } from '@/Asset/Assets';
-
-// Default network connection
-const DefaultConfig = MainnetConfig;
+import { rpcUrlFromConfig } from '@/helpers/network_helper';
 
 export const avalanche: Avalanche = new Avalanche(
     DefaultConfig.apiIp,
@@ -25,12 +22,11 @@ export const pChain = avalanche.PChain();
 export const infoApi: InfoAPI = avalanche.Info();
 export const bintools: BinTools = BinTools.getInstance();
 
-const rpcUrl = `${DefaultConfig.apiProtocol}://${DefaultConfig.apiIp}:${DefaultConfig.apiPort}/ext/bc/C/rpc`;
+const rpcUrl = rpcUrlFromConfig(DefaultConfig);
 export const web3 = new Web3(rpcUrl);
 
 export let explorer_api: AxiosInstance | null = null;
-
-export let activeNetwork: NetworkConfig = MainnetConfig;
+export let activeNetwork: NetworkConfig = DefaultConfig;
 
 function createExplorerApi(networkConfig: NetworkConfig) {
     if (!networkConfig.explorerURL) {
@@ -46,7 +42,7 @@ function createExplorerApi(networkConfig: NetworkConfig) {
     });
 }
 
-export function setNetwork(conf: NetworkConfig): void {
+export function setRpcNetwork(conf: NetworkConfig): void {
     avalanche.setAddress(conf.apiIp, conf.apiPort, conf.apiProtocol);
     avalanche.setNetworkID(conf.networkID);
 
@@ -69,11 +65,8 @@ export function setNetwork(conf: NetworkConfig): void {
         explorer_api = null;
     }
 
-    // Set web3 Network Settings
-    let web3Provider = `${conf.apiProtocol}://${conf.apiIp}:${conf.apiPort}/ext/bc/C/rpc`;
-    web3.setProvider(web3Provider);
+    let rpcUrl = rpcUrlFromConfig(conf);
+    web3.setProvider(rpcUrl);
+
     activeNetwork = conf;
 }
-
-// Default connection is Mainnet
-setNetwork(MainnetConfig);
