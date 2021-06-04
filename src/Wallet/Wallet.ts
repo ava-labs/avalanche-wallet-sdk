@@ -214,7 +214,7 @@ export abstract class WalletProvider {
      * Sends AVAX to another address on the C chain.
      * @param to Hex address to send AVAX to.
      * @param amount Amount of AVAX to send, represented in WEI format.
-     * @param gasPrice Gas price in gWEI format
+     * @param gasPrice Gas price in WEI format
      * @param gasLimit Gas limit
      *
      * @return Returns the transaction hash
@@ -236,7 +236,7 @@ export abstract class WalletProvider {
      * Makes a transfer call on a ERC20 contract.
      * @param to Hex address to transfer tokens to.
      * @param amount Amount of the ERC20 token to send, donated in the token's correct denomination.
-     * @param gasPrice Gas price in gWEI format
+     * @param gasPrice Gas price in WEI format
      * @param gasLimit Gas limit
      * @param contractAddress Contract address of the ERC20 token
      */
