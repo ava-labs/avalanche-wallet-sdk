@@ -4,6 +4,7 @@ import {
     AvmExportChainType,
     AvmImportChainType,
     ERC20Balance,
+    iAvaxBalance,
     WalletBalanceERC20,
     WalletBalanceX,
     WalletEventArgsType,
@@ -65,7 +66,6 @@ import {
 import { ITransactionData } from '@/History/types';
 import moment from 'moment';
 import { bintools } from '@/common';
-// import { updateFilterAddresses } from '@/Network/socket_manager';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -115,7 +115,7 @@ export abstract class WalletProvider {
      * Call this when you are done with a wallet instance.
      * You MUST call this function to avoid memory leaks.
      */
-    destroy() {
+    public destroy() {
         let index = WalletProvider.instances.indexOf(this);
         WalletProvider.instances.splice(index, 1);
     }
@@ -399,12 +399,27 @@ export abstract class WalletProvider {
     }
 
     /**
+     * A helpful method that returns the AVAX balance on X, P, C chains.
+     * Internally calls chain specific getAvaxBalance methods.
+     */
+    public getAvaxBalance(): iAvaxBalance {
+        let X = this.getAvaxBalanceX();
+        let P = this.getAvaxBalanceP();
+        let C = this.getAvaxBalanceC();
+
+        return {
+            X,
+            P,
+            C,
+        };
+    }
+
+    /**
      * Returns the X chain AVAX balance of the current wallet state.
      * - Does not make a network request.
      * - Does not refresh wallet balance.
      */
     public getAvaxBalanceX(): AssetBalanceX {
-        // checkNetworkConnection()
         if (!activeNetwork) {
             throw new Error('Network not selected.');
         }

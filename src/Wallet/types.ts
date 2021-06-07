@@ -24,6 +24,12 @@ export interface WalletBalanceX {
     [assetId: string]: AssetBalanceX;
 }
 
+export interface iAvaxBalance {
+    X: AssetBalanceX;
+    P: AssetBalanceP;
+    C: BN;
+}
+
 export interface AssetBalanceX {
     locked: BN;
     unlocked: BN;
