@@ -394,6 +394,10 @@ export abstract class WalletProvider {
         return res;
     }
 
+    public getBalanceX(): WalletBalanceX {
+        return this.balanceX;
+    }
+
     /**
      * Returns the X chain AVAX balance of the current wallet state.
      * - Does not make a network request.
