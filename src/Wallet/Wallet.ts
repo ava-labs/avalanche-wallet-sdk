@@ -1,5 +1,6 @@
 import {
     AssetBalanceP,
+    AssetBalanceRawX,
     AssetBalanceX,
     AvmExportChainType,
     AvmImportChainType,
@@ -333,7 +334,7 @@ export abstract class WalletProvider {
 
     /**
      * Uses the X chain UTXOs owned by this wallet, gets asset description for unknown assets,
-     * and returns a nicely formatted dictionary that represents
+     * and returns a dictionary of Asset IDs to balance amounts.
      * - Updates `this.balanceX`
      * - Expensive operation if there are unknown assets
      * - Uses existing UTXOs
@@ -395,6 +396,7 @@ export abstract class WalletProvider {
     }
 
     public getBalanceX(): WalletBalanceX {
+        this.updateBalanceX();
         return this.balanceX;
     }
 
@@ -419,11 +421,16 @@ export abstract class WalletProvider {
      * - Does not make a network request.
      * - Does not refresh wallet balance.
      */
-    public getAvaxBalanceX(): AssetBalanceX {
+    public getAvaxBalanceX(): AssetBalanceRawX {
         if (!activeNetwork) {
             throw new Error('Network not selected.');
         }
-        return this.balanceX[activeNetwork.avaxID];
+        return (
+            this.balanceX[activeNetwork.avaxID] || {
+                unlocked: new BN(0),
+                locked: new BN(0),
+            }
+        );
     }
 
     public getAvaxBalanceC(): BN {

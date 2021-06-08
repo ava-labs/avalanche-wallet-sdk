@@ -25,20 +25,18 @@ export interface WalletBalanceX {
 }
 
 export interface iAvaxBalance {
-    X: AssetBalanceX;
+    X: AssetBalanceRawX;
     P: AssetBalanceP;
     C: BN;
-}
-
-export interface AssetBalanceX {
-    locked: BN;
-    unlocked: BN;
-    meta: iAssetDescriptionClean;
 }
 
 export interface AssetBalanceRawX {
     locked: BN;
     unlocked: BN;
+}
+
+export interface AssetBalanceX extends AssetBalanceRawX {
+    meta: iAssetDescriptionClean;
 }
 
 export interface AssetBalanceP {
