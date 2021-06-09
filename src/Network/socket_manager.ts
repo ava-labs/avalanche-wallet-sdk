@@ -9,7 +9,20 @@ import { DefaultConfig } from '@/Network/constants';
 export let socketX: Socket;
 
 let wsUrl = wsUrlFromConfigEVM(DefaultConfig);
-export let socketEVM = new Web3(wsUrl);
+
+const wsOptions = {
+    timeout: 30000, // ms
+    // Enable auto reconnection
+    reconnect: {
+        auto: true,
+        delay: 5000, // ms
+        maxAttempts: 5,
+        onTimeout: false,
+    },
+};
+let wsProvider = new Web3.providers.WebsocketProvider(wsUrl, wsOptions);
+export let socketEVM = new Web3(wsProvider);
+
 let activeNetwork: NetworkConfig = DefaultConfig;
 
 export function setSocketNetwork(config: NetworkConfig) {
@@ -34,7 +47,8 @@ function connectSocketX(config: NetworkConfig) {
 function connectSocketEVM(config: NetworkConfig) {
     try {
         let wsUrl = wsUrlFromConfigEVM(config);
-        socketEVM.setProvider(wsUrl);
+        let wsProvider = new Web3.providers.WebsocketProvider(wsUrl, wsOptions);
+        socketEVM.setProvider(wsProvider);
         addListenersEVM(socketEVM);
     } catch (e) {
         console.info('EVM Websocket connection failed.');
@@ -69,7 +83,6 @@ function addListenersEVM(provider: Web3) {
 
 function onErrorEVM(err: any) {
     console.info(err);
-    connectSocketEVM(activeNetwork);
 }
 
 function blockHeaderCallback() {
@@ -81,6 +94,7 @@ export function updateFilterAddresses(): void {
     if (!socketX) {
         return;
     }
+
     let wallets = WalletProvider.instances;
     let addrs = wallets.map((w) => w.getAddressX());
 
