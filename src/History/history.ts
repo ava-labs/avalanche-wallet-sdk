@@ -1,4 +1,5 @@
 import {
+    AVMHistoryItemType,
     HistoryItemType,
     iHistoryAddDelegator,
     iHistoryBaseTx,
@@ -113,7 +114,7 @@ export async function getTransactionSummary(
     tx: ITransactionData,
     walletAddrs: string[],
     evmAddress: string
-): Promise<HistoryItemType> {
+): Promise<AVMHistoryItemType> {
     let sum;
 
     let cleanAddressesXP = walletAddrs.map((addr) => addr.split('-')[1]);

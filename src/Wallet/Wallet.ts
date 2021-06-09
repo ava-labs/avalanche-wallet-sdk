@@ -64,7 +64,7 @@ import {
     getTransactionSummary,
     getTransactionSummaryEVM,
 } from '@/History/history';
-import { ITransactionData } from '@/History/types';
+import { HistoryItemType, iHistoryEVMTx, ITransactionData } from '@/History/types';
 import moment from 'moment';
 import { bintools } from '@/common';
 
@@ -396,7 +396,6 @@ export abstract class WalletProvider {
     }
 
     public getBalanceX(): WalletBalanceX {
-        this.updateBalanceX();
         return this.balanceX;
     }
 
@@ -886,7 +885,7 @@ export abstract class WalletProvider {
         return await getAddressHistoryEVM(addr);
     }
 
-    async getHistory(limit: number = 0) {
+    async getHistory(limit: number = 0): Promise<HistoryItemType[]> {
         let txsX = await this.getHistoryX(limit);
         let txsP = await this.getHistoryP(limit);
         let txsC = await this.getHistoryC(limit);

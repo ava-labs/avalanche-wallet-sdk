@@ -89,7 +89,10 @@ export function numberToBN(val: number | string, decimals: number): BN {
  */
 export function bnToLocaleString(val: BN, decimals = 9): string {
     let bigVal = bnToBig(val, decimals);
+    return bigToLocaleString(bigVal, decimals);
+}
 
+export function bigToLocaleString(bigVal: Big, decimals: number = 9): string {
     let fixedStr = bigVal.toFixed(decimals);
     let split = fixedStr.split('.');
     let wholeStr = parseInt(split[0]).toLocaleString('en-US');

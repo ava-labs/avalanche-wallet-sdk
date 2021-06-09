@@ -101,7 +101,11 @@ export type TransactionType =
     | 'advance_time'
     | 'reward_validator';
 
-export type HistoryItemType = iHistoryBaseTx | iHistoryImportExport | iHistoryAddDelegator;
+export type HistoryItemType = AVMHistoryItemType | EVMHistoryITemType;
+
+export type AVMHistoryItemType = iHistoryBaseTx | iHistoryImportExport | iHistoryAddDelegator;
+export type EVMHistoryITemType = iHistoryEVMTx;
+
 export type HistoryImportExportTypeName = 'import' | 'export';
 export type HistoryItemTypeName =
     | HistoryImportExportTypeName
