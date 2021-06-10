@@ -109,6 +109,7 @@ export abstract class WalletProvider {
         let wallets = WalletProvider.instances;
         wallets.forEach((w) => {
             w.updateAvaxBalanceC();
+            w.updateBalanceERC20();
         });
     }
 
@@ -310,7 +311,11 @@ export abstract class WalletProvider {
      * - Updates the value of `this.balanceERC20`
      */
     public async updateBalanceERC20(): Promise<WalletBalanceERC20> {
-        this.balanceERC20 = await balanceOf(this.getAddressC());
+        let newBal = await balanceOf(this.getAddressC());
+        if (this.balanceERC20 !== newBal) {
+            this.emitBalanceChangeC();
+        }
+        this.balanceERC20 = newBal;
         return this.balanceERC20;
     }
 

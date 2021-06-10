@@ -3,6 +3,8 @@ import { activeNetwork, web3 } from '@/Network/network';
 import Erc20Token from '@/Asset/Erc20Token';
 import { WalletBalanceERC20 } from '@/Wallet/types';
 import { bnToLocaleString } from '@/utils/utils';
+import { Wallet } from 'ethers';
+import { WalletProvider } from '@/Wallet/Wallet';
 
 const DEFAULT_TOKENS: Erc20TokenData[] = [
     {
@@ -131,10 +133,12 @@ export async function addErc20Token(address: string) {
 
     erc20Store[address] = token;
 
+    //TODO: Circular dependency
+    WalletProvider.refreshInstanceBalancesC();
     return token;
 }
 
-export async function getContractData(address: string) {
+export async function getContractData(address: string): Promise<Erc20TokenData> {
     let data: Erc20TokenData = await Erc20Token.getData(address);
     return data;
 }
