@@ -11,6 +11,7 @@ export default class Erc20Token {
     symbol: string;
     decimals: number;
     chainId: number;
+    data: Erc20TokenData;
 
     constructor(data: Erc20TokenData) {
         this.name = data.name;
@@ -18,9 +19,14 @@ export default class Erc20Token {
         this.address = data.address;
         this.decimals = data.decimals;
         this.chainId = data.chainId;
+        this.data = data;
 
         //@ts-ignore
         this.contract = new web3.eth.Contract(ERC20Abi.abi, data.address);
+    }
+
+    toData(): Erc20TokenData {
+        return this.data;
     }
 
     static async getData(address: string): Promise<Erc20TokenData> {

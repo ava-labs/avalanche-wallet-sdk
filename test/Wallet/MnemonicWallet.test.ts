@@ -1,4 +1,5 @@
 import MnemonicWallet from '@/Wallet/MnemonicWallet';
+import Web3 from 'web3';
 // import { bintools } from '@/Network/network';
 
 jest.mock('@/Network/network', () => {
@@ -12,6 +13,9 @@ jest.mock('@/Network/network', () => {
         // },
         //@ts-ignore
         web3: {
+            providers: {
+                WebsocketProvider: jest.fn().mockImplementation(() => function () {}),
+            },
             provider: {
                 send: jest.fn().mockReturnValue('send'),
             },

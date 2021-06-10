@@ -122,19 +122,45 @@ const DEFAULT_TOKENS: Erc20TokenData[] = [
 ];
 
 export let erc20Store: Erc20Store = {};
+export let erc20StoreCustom: Erc20Store = {};
 
-export async function addErc20Token(address: string) {
-    if (erc20Store[address]) {
+export function getErc20Store(): Erc20Store {
+    return {
+        ...erc20Store,
+    };
+}
+
+export function getErc20StoreCustom() {
+    return {
+        ...erc20StoreCustom,
+    };
+}
+
+/**
+ * Fetches ERC20 data from the given contract address and adds the token to the given store.
+ * @param address ERC20 Contract address
+ * @param store Which ERC20 store to add to
+ */
+export async function addErc20Token(address: string, store: Erc20Store = erc20StoreCustom) {
+    if (erc20Store[address] || erc20StoreCustom[address]) {
         throw new Error(`${address} ERC20 token is already added.`);
     }
 
     let data: Erc20TokenData = await Erc20Token.getData(address);
     let token = new Erc20Token(data);
 
-    erc20Store[address] = token;
+    store[address] = token;
+    return token;
+}
 
-    //TODO: Circular dependency
-    WalletProvider.refreshInstanceBalancesC();
+export function addErc20TokenFromData(data: Erc20TokenData, store: Erc20Store = erc20StoreCustom) {
+    let address = data.address;
+    if (erc20Store[address] || erc20StoreCustom[address]) {
+        throw new Error(`${address} ERC20 token is already added.`);
+    }
+
+    let token = new Erc20Token(data);
+    store[address] = token;
     return token;
 }
 
@@ -144,18 +170,28 @@ export async function getContractData(address: string): Promise<Erc20TokenData> 
 }
 
 export async function getErc20Token(address: string) {
-    if (erc20Store[address]) {
-        return erc20Store[address];
+    let storeItem = erc20Store[address] || erc20StoreCustom[address];
+    if (storeItem) {
+        return storeItem;
     } else {
         return addErc20Token(address);
     }
 }
 
+/**
+ * Returns the balance of the given address for each ERC20 Token in the SDK.
+ * @param address EVM address `0x...`
+ */
 export async function balanceOf(address: string): Promise<WalletBalanceERC20> {
     let balance: WalletBalanceERC20 = {};
 
-    for (let tokenAddress in erc20Store) {
-        let token = erc20Store[tokenAddress];
+    let store = {
+        ...erc20Store,
+        ...erc20StoreCustom,
+    };
+
+    for (let tokenAddress in store) {
+        let token = store[tokenAddress];
         if (token.chainId === activeNetwork?.evmChainID) {
             let bal = await token.balanceOf(address);
             balance[tokenAddress] = {
@@ -174,7 +210,7 @@ export async function balanceOf(address: string): Promise<WalletBalanceERC20> {
 
 function initStore() {
     DEFAULT_TOKENS.forEach((token) => {
-        erc20Store[token.address] = new Erc20Token(token);
+        addErc20TokenFromData(token, erc20Store);
     });
 }
 initStore();
