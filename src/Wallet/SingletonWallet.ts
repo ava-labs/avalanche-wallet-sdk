@@ -1,5 +1,5 @@
 import { WalletProvider } from '@/Wallet/Wallet';
-import { WalletNameType } from '@/Wallet/types';
+import { UnsafeWallet, WalletNameType } from '@/Wallet/types';
 
 import {
     KeyChain as AVMKeyChain,
@@ -22,7 +22,7 @@ import { Transaction } from '@ethereumjs/tx';
 import { updateFilterAddresses } from '@/Network/socket_manager';
 import { bintools } from '@/common';
 
-export default class SingletonWallet extends WalletProvider {
+export default class SingletonWallet extends WalletProvider implements UnsafeWallet {
     type: WalletNameType = 'singleton';
     key = '';
     keyBuff: BufferAvalanche;
@@ -52,6 +52,10 @@ export default class SingletonWallet extends WalletProvider {
     //     socketX.
     // }
 
+    static fromPrivateKey(key: string): SingletonWallet {
+        return new SingletonWallet(key);
+    }
+
     static fromEvmKey(key: string): SingletonWallet {
         let keyBuff = bintools.cb58Encode(BufferAvalanche.from(key, 'hex'));
         let avmKeyStr = `PrivateKey-${keyBuff}`;
@@ -68,6 +72,13 @@ export default class SingletonWallet extends WalletProvider {
         let keyChain = pChain.newKeyChain();
         keyChain.importKey(this.key);
         return keyChain;
+    }
+
+    /**
+     * Returns the derived private key used by the EVM wallet.
+     */
+    public getEvmPrivateKeyHex(): string {
+        return this.evmWallet.getPrivateKeyHex();
     }
 
     getAddressC(): string {

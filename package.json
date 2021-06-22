@@ -23,7 +23,9 @@
         "docs": "typedoc src/index.ts",
         "docs:watch": "typedoc --watch src/index.ts"
     },
-    "peerDependencies": {},
+    "peerDependencies": {
+        "avalanche": "3.5.*"
+    },
     "lint-staged": {
         "**/*": "prettier --write --ignore-unknown"
     },
@@ -77,7 +79,7 @@
         "@ledgerhq/hw-app-eth": "5.42.1",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
         "@openzeppelin/contracts": "4.1.0",
-        "avalanche": "3.5.2",
+        "avalanche": "3.6.2",
         "big.js": "^6.1.1",
         "bip32-path": "^0.4.2",
         "bip39": "^3.0.4",

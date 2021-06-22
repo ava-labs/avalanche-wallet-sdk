@@ -8,6 +8,7 @@ import {
     iAvaxBalance,
     WalletBalanceERC20,
     WalletBalanceX,
+    WalletCollectiblesX,
     WalletEventArgsType,
     WalletEventType,
     WalletNameType,
@@ -67,6 +68,7 @@ import {
 import { HistoryItemType, iHistoryEVMTx, ITransactionData } from '@/History/types';
 import moment from 'moment';
 import { bintools } from '@/common';
+import * as Utils from '@/utils/utils';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -85,6 +87,14 @@ export abstract class WalletProvider {
     abstract getAllAddressesX(): string[];
     abstract getAllAddressesP(): string[];
 
+    /***
+     * Used to get an identifier string that is consistent across different network connections.
+     * Currently returns the C address of this wallet.
+     */
+    public getBaseAddress(): string {
+        return this.getAddressC();
+    }
+
     protected emitter: EventEmitter = new EventEmitter();
     static instances: WalletProvider[] = [];
 
@@ -98,7 +108,7 @@ export abstract class WalletProvider {
     static refreshInstanceBalancesX(): void {
         let wallets = WalletProvider.instances;
         wallets.forEach((w) => {
-            w.getUtxosX();
+            w.updateUtxosX();
         });
     }
 
@@ -173,6 +183,22 @@ export abstract class WalletProvider {
     abstract signP(tx: PlatformUnsignedTx): Promise<PlatformTx>;
     abstract signC(tx: EVMUnsignedTx): Promise<EVMTx>;
 
+    /***
+     * Moves AVAX internally between chains to send to the given address.
+     * @param to X or C chain address
+     * @param amount Amount of nAVAX to send.
+     */
+    // async sendAvaxUniversal(to: string, amount: BN) {
+    //     let balX = this.getAvaxBalanceX().unlocked;
+    //     let balC = Utils.avaxCtoX(this.getAvaxBalanceC());
+    //     let balP = this.getAvaxBalanceP().unlocked;
+    //
+    //     console.log(to, amount.toString());
+    //
+    //     // let txs = buildUniversalAvaxTransferTxs(balX, balP, balC, to, amount);
+    //     // console.log(txs);
+    // }
+
     /**
      *
      * @param to - the address funds are being send to.
@@ -207,7 +233,7 @@ export abstract class WalletProvider {
         await waitTxX(txId);
 
         // Update UTXOs
-        this.getUtxosX();
+        this.updateUtxosX();
 
         return txId;
     }
@@ -272,14 +298,22 @@ export abstract class WalletProvider {
      *  - Makes network request.
      *  - Updates `this.utxosX` with new UTXOs
      *  - Calls `this.updateBalanceX()` after success.
-     */
-    public async getUtxosX(): Promise<AVMUTXOSet> {
+     *  */
+    public async updateUtxosX(): Promise<AVMUTXOSet> {
         const addresses = this.getAllAddressesX();
         let oldUtxos = this.utxosX;
         this.utxosX = await avmGetAllUTXOs(addresses);
 
+        this.updateUnknownAssetsX;
         this.updateBalanceX();
 
+        return this.utxosX;
+    }
+
+    /**
+     *  Returns the fetched UTXOs on the X chain that belong to this wallet.
+     */
+    public getUtxosX(): AVMUTXOSet {
         return this.utxosX;
     }
 
@@ -288,12 +322,19 @@ export abstract class WalletProvider {
      *  - Makes network request.
      *  - Updates `this.utxosP` with the new UTXOs
      */
-    public async getUtxosP(): Promise<PlatformUTXOSet> {
+    public async updateUtxosP(): Promise<PlatformUTXOSet> {
         let addresses = this.getAllAddressesP();
         this.utxosP = await platformGetAllUTXOs(addresses);
 
         this.emitBalanceChangeP();
 
+        return this.utxosP;
+    }
+
+    /**
+     * Returns the fetched UTXOs on the P chain that belong to this wallet.
+     */
+    public getUtxosP(): PlatformUTXOSet {
         return this.utxosP;
     }
 
@@ -335,6 +376,17 @@ export abstract class WalletProvider {
             symbol: token.symbol,
         };
         return res;
+    }
+
+    private updateUnknownAssetsX() {
+        let utxos = this.utxosX.getAllUTXOs();
+
+        for (let i = 0; i < utxos.length; i++) {
+            let utxo = utxos[i];
+            let assetIdBuff = utxo.getAssetID();
+            let assetId = bintools.cb58Encode(assetIdBuff);
+            getAssetDescription(assetId);
+        }
     }
 
     /**
@@ -511,7 +563,7 @@ export abstract class WalletProvider {
         let txId = await pChain.issueTx(tx);
         await waitTxP(txId);
 
-        this.getUtxosP();
+        this.updateUtxosP();
 
         return txId;
     }
@@ -586,7 +638,7 @@ export abstract class WalletProvider {
         await waitTxX(txId);
 
         // Update UTXOs
-        this.getUtxosX();
+        this.updateUtxosX();
 
         return txId;
     }
@@ -639,7 +691,7 @@ export abstract class WalletProvider {
         await waitTxX(txId);
 
         // Update UTXOs
-        this.getUtxosX();
+        this.updateUtxosX();
 
         return txId;
     }
@@ -675,7 +727,7 @@ export abstract class WalletProvider {
 
         await waitTxP(txId);
 
-        this.getUtxosP();
+        this.updateUtxosP();
 
         return txId;
     }
@@ -812,7 +864,7 @@ export abstract class WalletProvider {
         const txId = await pChain.issueTx(tx);
         await waitTxP(txId);
 
-        this.getUtxosP();
+        this.updateUtxosP();
 
         return txId;
     }
@@ -866,7 +918,7 @@ export abstract class WalletProvider {
         const txId = await pChain.issueTx(tx);
         await waitTxP(txId);
 
-        this.getUtxosP();
+        this.updateUtxosP();
         return txId;
     }
 

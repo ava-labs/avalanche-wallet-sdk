@@ -20,7 +20,6 @@ export const xChain: AVMAPI = avalanche.XChain();
 export const cChain: EVMAPI = avalanche.CChain();
 export const pChain = avalanche.PChain();
 export const infoApi: InfoAPI = avalanche.Info();
-// export const bintools: BinTools = BinTools.getInstance();
 
 const rpcUrl = rpcUrlFromConfig(DefaultConfig);
 export const web3 = new Web3(rpcUrl);
