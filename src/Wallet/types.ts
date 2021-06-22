@@ -93,3 +93,10 @@ export interface iHDWalletIndex {
     external: number;
     internal: number;
 }
+
+/**
+ * Used by wallets which can access their private keys
+ */
+export interface UnsafeWallet {
+    getEvmPrivateKeyHex(): string;
+}

@@ -1,7 +1,7 @@
 import { BN, Buffer as BufferAvalanche } from 'avalanche';
 import { privateToAddress, privateToPublic, importPublic } from 'ethereumjs-util';
 import { Transaction } from '@ethereumjs/tx';
-import { avalanche, cChain, web3 } from '@/Network/network';
+import { avalanche } from '@/Network/network';
 import {
     KeyChain as EVMKeyChain,
     KeyPair as EVMKeyPair,

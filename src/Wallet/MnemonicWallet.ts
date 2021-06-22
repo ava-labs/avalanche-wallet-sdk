@@ -2,7 +2,7 @@ import * as bip39 from 'bip39';
 import HDKey from 'hdkey';
 import { AVAX_ACCOUNT_PATH, ETH_ACCOUNT_PATH } from './constants';
 import EvmWallet from './EvmWallet';
-import { WalletNameType } from './types';
+import { UnsafeWallet, WalletNameType } from './types';
 import { Buffer } from 'avalanche';
 import { Transaction } from '@ethereumjs/tx';
 import { Tx as AVMTx, UnsignedTx as AVMUnsignedTx } from 'avalanche/dist/apis/avm';
@@ -20,7 +20,7 @@ import { digestMessage } from '@/utils/utils';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
 import { bintools } from '@/common';
 
-export default class MnemonicWallet extends HDWalletAbstract {
+export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
     evmWallet: EvmWallet;
     type: WalletNameType;
     mnemonic: string;
@@ -53,10 +53,17 @@ export default class MnemonicWallet extends HDWalletAbstract {
      * @return
      * Bech32 representation of the EVM address.
      */
-    getEvmAddressBech(): string {
+    public getEvmAddressBech(): string {
         let keypair = new EVMKeyPair(avalanche.getHRP(), 'C');
         let addr = keypair.addressFromPublicKey(Buffer.from(this.ethAccountKey.publicKey));
         return bintools.addressToString(avalanche.getHRP(), 'C', addr);
+    }
+
+    /**
+     * Returns the derived private key used by the EVM wallet.
+     */
+    public getEvmPrivateKeyHex(): string {
+        return this.evmWallet.getPrivateKeyHex();
     }
 
     /**
