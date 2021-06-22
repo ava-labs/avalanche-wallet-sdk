@@ -24,6 +24,22 @@ export interface WalletBalanceX {
     [assetId: string]: AssetBalanceX;
 }
 
+export interface WalletCollectiblesX {
+    [familyId: string]: WalletCollectiblesXFamily;
+}
+
+export interface WalletCollectiblesXFamily {
+    groups: {
+        [groupID: number]: WalletCollectiblesXGroup;
+    };
+}
+
+export interface WalletCollectiblesXGroup {
+    payload: string;
+    quantity: number;
+    id: number;
+}
+
 export interface iAvaxBalance {
     X: AssetBalanceRawX;
     P: AssetBalanceP;

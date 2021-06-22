@@ -22,6 +22,10 @@ export abstract class HDWalletAbstract extends WalletProvider {
         updateFilterAddresses();
     }
 
+    public getBaseAddress(): string {
+        return this.getAddressC();
+    }
+
     /**
      * Returns current index used for external address derivation.
      */
@@ -109,8 +113,8 @@ export abstract class HDWalletAbstract extends WalletProvider {
         };
     }
 
-    public async getUtxosX(): Promise<AVMUTXOSet> {
-        let utxosX = await super.getUtxosX();
+    public async updateUtxosX(): Promise<AVMUTXOSet> {
+        let utxosX = await super.updateUtxosX();
 
         // If the current internal or external X address is in the utxo set, increment hd index
         let utxoAddrs = utxosX.getAddresses();
@@ -150,8 +154,8 @@ export abstract class HDWalletAbstract extends WalletProvider {
         this.internalScan.increment();
     }
 
-    public async getUtxosP(): Promise<PlatformUTXOSet> {
-        let utxosP = await super.getUtxosP();
+    public async updateUtxosP(): Promise<PlatformUTXOSet> {
+        let utxosP = await super.updateUtxosP();
 
         // If the current P address is in the utxo set, increment hd index
         let utxoAddrs = utxosP.getAddresses();

@@ -3,8 +3,6 @@ import { activeNetwork, web3 } from '@/Network/network';
 import Erc20Token from '@/Asset/Erc20Token';
 import { WalletBalanceERC20 } from '@/Wallet/types';
 import { bnToLocaleString } from '@/utils/utils';
-import { Wallet } from 'ethers';
-import { WalletProvider } from '@/Wallet/Wallet';
 
 const DEFAULT_TOKENS: Erc20TokenData[] = [
     {

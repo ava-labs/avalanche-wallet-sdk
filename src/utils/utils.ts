@@ -16,6 +16,16 @@ export function bnToBig(val: BN, denomination = 0): Big {
     return new Big(val.toString()).div(Math.pow(10, denomination));
 }
 
+/**
+ * Converts a BN amount of 18 decimals to 9.
+ * Used for AVAX C <-> X,P conversions
+ * @param amount
+ */
+export function avaxCtoX(amount: BN) {
+    let tens = new BN(10).pow(new BN(9));
+    return amount.div(tens);
+}
+
 export function bnToBigAvaxX(val: BN): Big {
     return bnToBig(val, 9);
 }
@@ -72,6 +82,18 @@ export function numberToBN(val: number | string, decimals: number): BN {
     let tens = Big(10).pow(decimals);
     let valBN = new BN(valBig.times(tens).toString());
     return valBN;
+}
+
+export function numberToBNAvaxX(val: number | string) {
+    return numberToBN(val, 9);
+}
+
+export function numberToBNAvaxP(val: number | string) {
+    return numberToBNAvaxX(val);
+}
+
+export function numberToBBAvaxC(val: number | string) {
+    return numberToBN(val, 18);
 }
 
 /**
@@ -136,8 +158,8 @@ export async function getAvaxPrice(): Promise<number> {
  * @return
  * boolean if address is valid, error message if not valid.
  */
-export function isValidAddress(address: string): boolean | string {
-    return validateAddress(address);
+export function isValidAddress(address: string): boolean {
+    return validateAddress(address) === true;
 }
 
 export function digestMessage(msgStr: string): Buffer {

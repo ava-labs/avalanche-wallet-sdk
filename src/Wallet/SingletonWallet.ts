@@ -52,6 +52,10 @@ export default class SingletonWallet extends WalletProvider {
     //     socketX.
     // }
 
+    static fromPrivateKey(key: string): SingletonWallet {
+        return new SingletonWallet(key);
+    }
+
     static fromEvmKey(key: string): SingletonWallet {
         let keyBuff = bintools.cb58Encode(BufferAvalanche.from(key, 'hex'));
         let avmKeyStr = `PrivateKey-${keyBuff}`;
