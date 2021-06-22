@@ -92,7 +92,7 @@ export function numberToBNAvaxP(val: number | string) {
     return numberToBNAvaxX(val);
 }
 
-export function numberToBBAvaxC(val: number | string) {
+export function numberToBNAvaxC(val: number | string) {
     return numberToBN(val, 18);
 }
 
