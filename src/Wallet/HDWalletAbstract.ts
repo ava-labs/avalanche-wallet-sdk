@@ -22,10 +22,6 @@ export abstract class HDWalletAbstract extends WalletProvider {
         updateFilterAddresses();
     }
 
-    public getBaseAddress(): string {
-        return this.getAddressC();
-    }
-
     /**
      * Returns current index used for external address derivation.
      */

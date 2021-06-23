@@ -353,7 +353,12 @@ export abstract class WalletProvider {
      */
     public async updateBalanceERC20(): Promise<WalletBalanceERC20> {
         let newBal = await balanceOf(this.getAddressC());
-        if (this.balanceERC20 !== newBal) {
+        let balNow = this.balanceERC20;
+
+        let strNewBal = JSON.stringify(newBal);
+        let strBalNow = JSON.stringify(balNow);
+        // Compare stringified balances
+        if (strNewBal !== strBalNow) {
             this.emitBalanceChangeC();
         }
         this.balanceERC20 = newBal;
