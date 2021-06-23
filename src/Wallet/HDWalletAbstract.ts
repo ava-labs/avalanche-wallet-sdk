@@ -5,7 +5,7 @@ import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
 import { avalanche } from '@/Network/network';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
 import { iHDWalletIndex } from '@/Wallet/types';
-import { updateFilterAddresses } from '@/Network/socket_manager';
+import { updateFilterAddresses } from '@/Network/providers/socket_x';
 import { bintools } from '@/common';
 
 export abstract class HDWalletAbstract extends WalletProvider {

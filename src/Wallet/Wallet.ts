@@ -304,7 +304,7 @@ export abstract class WalletProvider {
         let oldUtxos = this.utxosX;
         this.utxosX = await avmGetAllUTXOs(addresses);
 
-        this.updateUnknownAssetsX;
+        await this.updateUnknownAssetsX();
         this.updateBalanceX();
 
         return this.utxosX;
@@ -378,14 +378,14 @@ export abstract class WalletProvider {
         return res;
     }
 
-    private updateUnknownAssetsX() {
+    private async updateUnknownAssetsX() {
         let utxos = this.utxosX.getAllUTXOs();
 
         for (let i = 0; i < utxos.length; i++) {
             let utxo = utxos[i];
             let assetIdBuff = utxo.getAssetID();
             let assetId = bintools.cb58Encode(assetIdBuff);
-            getAssetDescription(assetId);
+            await getAssetDescription(assetId);
         }
     }
 
