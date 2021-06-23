@@ -216,7 +216,6 @@ export default class HdScanner {
         // Scan UTXOs of these indexes and try to find a gap of INDEX_RANGE
         for (let i: number = 0; i < addrsX.length - INDEX_RANGE; i++) {
             let gapSize: number = 0;
-            // console.log(`Scan index: ${this.chainId} ${this.changePath}/${i+start}`);
             for (let n: number = 0; n < INDEX_RANGE; n++) {
                 let scanIndex: number = i + n;
                 let addr: string = addrsX[scanIndex];

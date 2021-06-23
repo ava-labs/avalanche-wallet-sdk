@@ -29,12 +29,10 @@ export function connectSocketC(conf: NetworkConfig) {
         let defaultOnClose = wsProvider._websocket.onclose;
 
         wsProvider._websocket.onopen = (ev: any) => {
-            console.log('EVM On open');
             if (defaultOnOpen) defaultOnOpen(ev);
         };
 
         wsProvider._websocket.onclose = (ev: any) => {
-            console.log('EVM On close');
             if (defaultOnClose) defaultOnClose(ev);
 
             setTimeout(() => {
