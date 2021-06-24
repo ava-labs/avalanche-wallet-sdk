@@ -17,7 +17,7 @@ export type AvmImportChainType = 'P' | 'C';
 export type AvmExportChainType = 'P' | 'C';
 export type HdChainType = 'X' | 'P';
 
-export type WalletNameType = 'mnemonic' | 'ledger' | 'singleton';
+export type WalletNameType = 'mnemonic' | 'ledger' | 'singleton' | 'xpub';
 export type WalletType = MnemonicWallet | SingletonWallet | LedgerWallet;
 
 export interface WalletBalanceX {

@@ -5,6 +5,8 @@ export * as Common from './common';
 import MnemonicWallet from '@/Wallet/MnemonicWallet';
 import SingletonWallet from '@/Wallet/SingletonWallet';
 import LedgerWallet from '@/Wallet/LedgerWallet';
+import PublicMnemonicWallet from '@/Wallet/PublicMnemonicWallet';
+
 import * as NetworkConstants from '@/Network/constants';
 import * as Utils from '@/utils/utils';
 import Keystore from '@/Keystore/keystore';
@@ -40,4 +42,14 @@ Big.prototype.toLocaleString = function (toFixed: number = 9) {
     }
 };
 
-export { MnemonicWallet, SingletonWallet, NetworkConstants, Utils, BN, Keystore, LedgerWallet, Big };
+export {
+    MnemonicWallet,
+    SingletonWallet,
+    NetworkConstants,
+    Utils,
+    BN,
+    Keystore,
+    LedgerWallet,
+    Big,
+    PublicMnemonicWallet,
+};
