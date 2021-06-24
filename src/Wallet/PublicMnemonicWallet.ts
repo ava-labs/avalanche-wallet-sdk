@@ -7,25 +7,28 @@ import { WalletNameType } from '@/Wallet/types';
 import EvmWallet from '@/Wallet/EvmWallet';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import HDKey from 'hdkey';
+import { importPublic } from 'ethereumjs-util';
 
 export default class PublicMnemonicWallet extends HDWalletAbstract {
-    constructor(xpub: string) {
-        let accountKey = HDKey.fromExtendedKey(xpub);
-        super(accountKey);
+    constructor(xpubAVM: string, xpubEVM: string) {
+        let avmAcct = HDKey.fromExtendedKey(xpubAVM);
+        super(avmAcct);
 
         this.type = 'xpub';
+
+        let evmAcct = HDKey.fromExtendedKey(xpubEVM);
+        this.evmWallet = new EvmWalletReadonly(importPublic(evmAcct.publicKey));
     }
 
-    //@ts-ignore
     evmWallet: EvmWallet | EvmWalletReadonly;
     type: WalletNameType;
 
     getAddressC(): string {
-        return '';
+        return this.evmWallet.getAddress();
     }
 
     getEvmAddressBech(): string {
-        return '';
+        return this.evmWallet.getAddressBech32();
     }
 
     //@ts-ignore
