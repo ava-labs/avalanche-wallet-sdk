@@ -10,13 +10,18 @@ import HDKey from 'hdkey';
 import { importPublic } from 'ethereumjs-util';
 
 export default class PublicMnemonicWallet extends HDWalletAbstract {
+    /**
+     *
+     * @param xpubAVM of derivation path m/44'/9000'/0'
+     * @param xpubEVM of derivation path m/44'/60'/0'
+     */
     constructor(xpubAVM: string, xpubEVM: string) {
         let avmAcct = HDKey.fromExtendedKey(xpubAVM);
+        let evmAcct = HDKey.fromExtendedKey(xpubEVM).derive('m/0/0');
         super(avmAcct);
 
         this.type = 'xpub';
 
-        let evmAcct = HDKey.fromExtendedKey(xpubEVM);
         this.evmWallet = new EvmWalletReadonly(importPublic(evmAcct.publicKey));
     }
 
