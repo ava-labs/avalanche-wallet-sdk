@@ -7,6 +7,7 @@ import { WalletProvider } from '@/Wallet/Wallet';
 const FILTER_ADDRESS_SIZE = 1000;
 
 export let socketX: Sockette;
+let isConnected = false;
 
 export function connectSocketX(network: NetworkConfig) {
     if (socketX) {
@@ -24,7 +25,7 @@ export function connectSocketX(network: NetworkConfig) {
 }
 
 export function updateFilterAddresses(): void {
-    if (!socketX) {
+    if (!socketX || !isConnected) {
         return;
     }
 
@@ -69,6 +70,7 @@ function updateWalletBalanceX() {
 // AVM Socket Listeners
 
 function xOnOpen() {
+    isConnected = true;
     updateFilterAddresses();
 }
 
@@ -76,6 +78,8 @@ function xOnMessage() {
     updateWalletBalanceX();
 }
 
-function xOnClose() {}
+function xOnClose() {
+    isConnected = false;
+}
 
 function xOnError() {}
