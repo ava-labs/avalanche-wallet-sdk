@@ -140,8 +140,9 @@ export function getErc20StoreCustom() {
  * @param store Which ERC20 store to add to
  */
 export async function addErc20Token(address: string, store: Erc20Store = erc20StoreCustom) {
-    if (erc20Store[address] || erc20StoreCustom[address]) {
-        throw new Error(`${address} ERC20 token is already added.`);
+    let existing = erc20Store[address] || erc20StoreCustom[address];
+    if (existing) {
+        return existing;
     }
 
     let data: Erc20TokenData = await Erc20Token.getData(address);
@@ -153,8 +154,10 @@ export async function addErc20Token(address: string, store: Erc20Store = erc20St
 
 export function addErc20TokenFromData(data: Erc20TokenData, store: Erc20Store = erc20StoreCustom) {
     let address = data.address;
-    if (erc20Store[address] || erc20StoreCustom[address]) {
-        throw new Error(`${address} ERC20 token is already added.`);
+    let existing = erc20Store[address] || erc20StoreCustom[address];
+    if (existing) {
+        return existing;
+        // throw new Error(`${address} ERC20 token is already added.`);
     }
 
     let token = new Erc20Token(data);

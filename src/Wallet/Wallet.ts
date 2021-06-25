@@ -96,41 +96,41 @@ export abstract class WalletProvider {
     }
 
     protected emitter: EventEmitter = new EventEmitter();
-    static instances: WalletProvider[] = [];
+    // static instances: WalletProvider[] = [];
 
-    protected constructor() {
-        WalletProvider.instances.push(this);
-    }
-
-    /**
-     * Refreshes X chain UTXOs for every wallet instance
-     */
-    static refreshInstanceBalancesX(): void {
-        let wallets = WalletProvider.instances;
-        wallets.forEach((w) => {
-            w.updateUtxosX();
-        });
-    }
+    // protected constructor() {
+    //     WalletProvider.instances.push(this);
+    // }
 
     /**
      * Refreshes X chain UTXOs for every wallet instance
      */
-    static refreshInstanceBalancesC(): void {
-        let wallets = WalletProvider.instances;
-        wallets.forEach((w) => {
-            w.updateAvaxBalanceC();
-            w.updateBalanceERC20();
-        });
-    }
+    // static refreshInstanceBalancesX(): void {
+    //     let wallets = WalletProvider.instances;
+    //     wallets.forEach((w) => {
+    //         w.updateUtxosX();
+    //     });
+    // }
+
+    /**
+     * Refreshes X chain UTXOs for every wallet instance
+     */
+    // static refreshInstanceBalancesC(): void {
+    //     let wallets = WalletProvider.instances;
+    //     wallets.forEach((w) => {
+    //         w.updateAvaxBalanceC();
+    //         w.updateBalanceERC20();
+    //     });
+    // }
 
     /**
      * Call this when you are done with a wallet instance.
      * You MUST call this function to avoid memory leaks.
      */
-    public destroy() {
-        let index = WalletProvider.instances.indexOf(this);
-        WalletProvider.instances.splice(index, 1);
-    }
+    // public destroy() {
+    //     let index = WalletProvider.instances.indexOf(this);
+    //     WalletProvider.instances.splice(index, 1);
+    // }
 
     public on(event: WalletEventType, listener: (...args: any[]) => void): void {
         this.emitter.on(event, listener);

@@ -5,7 +5,7 @@ import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
 import { avalanche } from '@/Network/network';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
 import { iHDWalletIndex } from '@/Wallet/types';
-import { updateFilterAddresses } from '@/Network/providers/socket_x';
+// import { updateFilterAddresses } from '@/Network/providers/socket_x';
 import { bintools } from '@/common';
 
 export abstract class HDWalletAbstract extends WalletProvider {
@@ -19,7 +19,7 @@ export abstract class HDWalletAbstract extends WalletProvider {
         this.internalScan = new HdScanner(accountKey, true);
         this.externalScan = new HdScanner(accountKey, false);
         this.accountKey = accountKey;
-        updateFilterAddresses();
+        // updateFilterAddresses();
     }
 
     /**
@@ -102,7 +102,7 @@ export abstract class HDWalletAbstract extends WalletProvider {
         let indexInt = await this.internalScan.resetIndex(internalStart);
         this.emitAddressChange();
 
-        updateFilterAddresses();
+        // updateFilterAddresses();
         return {
             internal: indexInt,
             external: indexExt,
@@ -143,7 +143,7 @@ export abstract class HDWalletAbstract extends WalletProvider {
 
     private incrementExternal() {
         this.externalScan.increment();
-        updateFilterAddresses();
+        // updateFilterAddresses();
     }
 
     private incrementInternal() {
