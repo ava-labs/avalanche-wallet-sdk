@@ -3,10 +3,11 @@ import ERC20Abi from '@openzeppelin/contracts/build/contracts/ERC20.json';
 import { Erc20TokenData } from '@/Asset/types';
 import { NO_NETWORK } from '@/errors';
 import { BN } from 'avalanche';
+import { Contract } from 'web3-eth-contract';
 
 export default class Erc20Token {
-    contract: any;
-    address: any;
+    contract: Contract;
+    address: string;
     name: string;
     symbol: string;
     decimals: number;

@@ -5,7 +5,6 @@ import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
 import { avalanche } from '@/Network/network';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
 import { iHDWalletIndex } from '@/Wallet/types';
-import { updateFilterAddresses } from '@/Network/providers/socket_x';
 import { bintools } from '@/common';
 
 export abstract class HDWalletAbstract extends WalletProvider {
@@ -19,7 +18,6 @@ export abstract class HDWalletAbstract extends WalletProvider {
         this.internalScan = new HdScanner(accountKey, true);
         this.externalScan = new HdScanner(accountKey, false);
         this.accountKey = accountKey;
-        updateFilterAddresses();
     }
 
     /**
@@ -102,7 +100,6 @@ export abstract class HDWalletAbstract extends WalletProvider {
         let indexInt = await this.internalScan.resetIndex(internalStart);
         this.emitAddressChange();
 
-        updateFilterAddresses();
         return {
             internal: indexInt,
             external: indexExt,
@@ -120,8 +117,6 @@ export abstract class HDWalletAbstract extends WalletProvider {
 
         let addrExternalX = this.getAddressX();
         let addrInternalX = this.getChangeAddressX();
-
-        // console.log(utxoAddrsStr)
 
         let isAddrChange = false;
         // Increment external index if the current address is in the utxo set
@@ -143,7 +138,6 @@ export abstract class HDWalletAbstract extends WalletProvider {
 
     private incrementExternal() {
         this.externalScan.increment();
-        updateFilterAddresses();
     }
 
     private incrementInternal() {

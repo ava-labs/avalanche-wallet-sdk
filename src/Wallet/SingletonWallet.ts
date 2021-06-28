@@ -1,16 +1,9 @@
 import { WalletProvider } from '@/Wallet/Wallet';
 import { UnsafeWallet, WalletNameType } from '@/Wallet/types';
 
-import {
-    KeyChain as AVMKeyChain,
-    KeyPair as AVMKeyPair,
-    UTXOSet as AVMUTXOSet,
-    UnsignedTx as AVMUnsignedTx,
-    Tx as AVMTx,
-} from 'avalanche/dist/apis/avm';
+import { KeyChain as AVMKeyChain, UnsignedTx as AVMUnsignedTx, Tx as AVMTx } from 'avalanche/dist/apis/avm';
 import {
     KeyChain as PlatformKeyChain,
-    KeyPair as PlatformKeyPair,
     UnsignedTx as PlatformUnsignedTx,
     Tx as PlatformTx,
 } from 'avalanche/dist/apis/platformvm';
@@ -19,7 +12,6 @@ import { Buffer as BufferAvalanche } from 'avalanche';
 import EvmWallet from '@/Wallet/EvmWallet';
 import { UnsignedTx, Tx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
 import { Transaction } from '@ethereumjs/tx';
-import { updateFilterAddresses } from '@/Network/providers/socket_x';
 import { bintools } from '@/common';
 
 export default class SingletonWallet extends WalletProvider implements UnsafeWallet {
@@ -45,12 +37,7 @@ export default class SingletonWallet extends WalletProvider implements UnsafeWal
         let pkBuffNative = Buffer.from(pkHex, 'hex');
 
         this.evmWallet = new EvmWallet(pkBuffNative);
-        updateFilterAddresses();
     }
-
-    // socketSubscribe(){
-    //     socketX.
-    // }
 
     static fromPrivateKey(key: string): SingletonWallet {
         return new SingletonWallet(key);

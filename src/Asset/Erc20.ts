@@ -1,5 +1,5 @@
 import { Erc20Store, Erc20TokenData } from '@/Asset/types';
-import { activeNetwork, web3 } from '@/Network/network';
+import { activeNetwork } from '@/Network/network';
 import Erc20Token from '@/Asset/Erc20Token';
 import { WalletBalanceERC20 } from '@/Wallet/types';
 import { bnToLocaleString } from '@/utils/utils';
@@ -128,7 +128,7 @@ export function getErc20Store(): Erc20Store {
     };
 }
 
-export function getErc20StoreCustom() {
+export function getErc20StoreCustom(): Erc20Store {
     return {
         ...erc20StoreCustom,
     };
@@ -139,9 +139,10 @@ export function getErc20StoreCustom() {
  * @param address ERC20 Contract address
  * @param store Which ERC20 store to add to
  */
-export async function addErc20Token(address: string, store: Erc20Store = erc20StoreCustom) {
-    if (erc20Store[address] || erc20StoreCustom[address]) {
-        throw new Error(`${address} ERC20 token is already added.`);
+export async function addErc20Token(address: string, store: Erc20Store = erc20StoreCustom): Promise<Erc20Token> {
+    let existing = erc20Store[address] || erc20StoreCustom[address];
+    if (existing) {
+        return existing;
     }
 
     let data: Erc20TokenData = await Erc20Token.getData(address);
@@ -151,10 +152,11 @@ export async function addErc20Token(address: string, store: Erc20Store = erc20St
     return token;
 }
 
-export function addErc20TokenFromData(data: Erc20TokenData, store: Erc20Store = erc20StoreCustom) {
+export function addErc20TokenFromData(data: Erc20TokenData, store: Erc20Store = erc20StoreCustom): Erc20Token {
     let address = data.address;
-    if (erc20Store[address] || erc20StoreCustom[address]) {
-        throw new Error(`${address} ERC20 token is already added.`);
+    let existing = erc20Store[address] || erc20StoreCustom[address];
+    if (existing) {
+        return existing;
     }
 
     let token = new Erc20Token(data);
@@ -167,12 +169,12 @@ export async function getContractData(address: string): Promise<Erc20TokenData> 
     return data;
 }
 
-export async function getErc20Token(address: string) {
+export async function getErc20Token(address: string): Promise<Erc20Token> {
     let storeItem = erc20Store[address] || erc20StoreCustom[address];
     if (storeItem) {
         return storeItem;
     } else {
-        return addErc20Token(address);
+        return await addErc20Token(address);
     }
 }
 
