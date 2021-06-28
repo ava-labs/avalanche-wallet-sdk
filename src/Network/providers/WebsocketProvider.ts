@@ -3,6 +3,7 @@ import EVMWebSocketProvider from '@/Network/providers/EVMWebSocketProvider';
 import { WalletType } from '@/Wallet/types';
 import { NetworkConfig } from '@/Network/types';
 import { wsUrlFromConfigEVM, wsUrlFromConfigX } from '@/helpers/network_helper';
+import { activeNetwork } from '@/Network/network';
 
 export default class WebsocketProvider {
     avmProvider: AVMWebSocketProvider;
@@ -11,6 +12,10 @@ export default class WebsocketProvider {
     constructor(avmEndpoint: string, evmEndpoint: string) {
         this.avmProvider = new AVMWebSocketProvider(avmEndpoint);
         this.evmProvider = new EVMWebSocketProvider(evmEndpoint);
+    }
+
+    static fromActiveNetwork(): WebsocketProvider {
+        return WebsocketProvider.fromNetworkConfig(activeNetwork);
     }
 
     static fromNetworkConfig(config: NetworkConfig): WebsocketProvider {
