@@ -9,7 +9,7 @@ Wallet types supported:
 -   Singleton Wallets
 -   Ledger Wallets
 -   Mnemonic Wallets
--   XPUB Wallets
+-   Public Mnemonic Wallets (XPUB)
 
 Using the avalanche-wallet-sdk developers can:
 
