@@ -32,8 +32,7 @@ export function getStepsForTargetAvaxBalance(
     balP: BN,
     balC: BN,
     targetAmount: BN,
-    targetChain: ChainIdType,
-    useChains: ChainIdType[] = ['X', 'P', 'C']
+    targetChain: ChainIdType
 ): UniversalTx[] {
     // Compute destination chain
     let balances = {
@@ -65,88 +64,3 @@ export function getStepsForTargetAvaxBalance(
     }
     return [];
 }
-
-// export function buildUniversalAvaxTransferTxs(balX: BN, balP: BN, balC: BN, to: string, amount: BN): UniversalTx[] {
-// // Verify destination address and chain
-// let destinationChain = getAddressChain(to);
-// console.log(to, amount.toString(), destinationChain);
-//
-// // Compute destination chain
-// let balances = {
-//     X: balX,
-//     P: balP,
-//     C: balC,
-// };
-//
-// console.log(balances.X.toString());
-// console.log(balances.P.toString());
-// console.log(balances.C.toString());
-//
-// let txs: UniversalTx[] = [];
-//
-// // Check if we have enough balance on destination chain
-// // Total sum is ALL AVAX - ()
-//
-// let balDestination = balances[destinationChain];
-//
-// let gasLimit = 21000;
-// let gasPrice = new BN(225);
-//
-// // If we have enough balance on the destination chain
-// // TODO: Add fee to the calculation?
-// if (balDestination.lte(amount)) {
-//     switch (destinationChain) {
-//         case 'X':
-//             txs.push({
-//                 action: 'send_x',
-//                 amount: amount,
-//             });
-//             break;
-//         case 'C':
-//             txs.push({
-//                 action: 'send_c',
-//                 amount: amount,
-//             });
-//     }
-//     return txs;
-// }
-//
-// // If we dont have enough balance on the destination chain
-// let remaining = amount.sub(balDestination);
-// let importExportFee = xChain.getTxFee().mul(new BN(2));
-//
-// if (destinationChain === 'C') {
-//     // Check if X balance can finish the transaction
-//     // Take the 2 tx fees (import,export) into consideration
-//     let xAmtRequired = remaining.add(importExportFee);
-//     if (xAmtRequired.lte(balX)) {
-//         // Export From X to C
-//         txs.push({
-//             action: 'export_x_c',
-//             amount: remaining,
-//         });
-//
-//         txs.push({
-//             action: 'send_c',
-//             amount,
-//         });
-//     }
-// } else if (destinationChain === 'X') {
-//     // Check if C chain balance can finish the transaction
-//     let cAmtRequired = remaining.add(importExportFee);
-//     if (cAmtRequired.lte(balC)) {
-//         // Export From X to C
-//         txs.push({
-//             action: 'export_c_x',
-//             amount: remaining,
-//         });
-//
-//         txs.push({
-//             action: 'send_x',
-//             amount,
-//         });
-//     }
-// }
-//
-// return txs;
-// }
