@@ -61,10 +61,18 @@ export default class AVMWebSocketProvider {
         this.socket.close();
 
         this.socket = new Sockette(wsUrl, {
-            onopen: this.onOpen,
-            onclose: this.onClose,
-            onmessage: this.onMessage,
-            onerror: this.onError,
+            onopen: () => {
+                this.onOpen();
+            },
+            onclose: () => {
+                this.onClose();
+            },
+            onmessage: () => {
+                this.onMessage();
+            },
+            onerror: () => {
+                this.onError();
+            },
         });
     }
 

@@ -13,29 +13,29 @@ export default class WebsocketProvider {
         this.evmProvider = new EVMWebSocketProvider(evmEndpoint);
     }
 
-    static fromNetworkConfig(config: NetworkConfig) {
+    static fromNetworkConfig(config: NetworkConfig): WebsocketProvider {
         let evm = wsUrlFromConfigEVM(config);
         let avm = wsUrlFromConfigX(config);
         return new WebsocketProvider(avm, evm);
     }
 
-    public setEndpoints(avmEndpoint: string, evmEndpoint: string) {
+    public setEndpoints(avmEndpoint: string, evmEndpoint: string): void {
         this.avmProvider.setEndpoint(avmEndpoint);
         this.evmProvider.setEndpoint(evmEndpoint);
     }
 
-    public setNetwork(config: NetworkConfig) {
+    public setNetwork(config: NetworkConfig): void {
         let evm = wsUrlFromConfigEVM(config);
         let avm = wsUrlFromConfigX(config);
         this.setEndpoints(avm, evm);
     }
 
-    public trackWallet(wallet: WalletType) {
+    public trackWallet(wallet: WalletType): void {
         this.avmProvider.trackWallet(wallet);
         this.evmProvider.trackWallet(wallet);
     }
 
-    public removeWallet(wallet: WalletType) {
+    public removeWallet(wallet: WalletType): void {
         this.avmProvider.removeWallet(wallet);
         this.evmProvider.removeWallet(wallet);
     }

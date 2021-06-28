@@ -65,10 +65,9 @@ import {
     getTransactionSummary,
     getTransactionSummaryEVM,
 } from '@/History/history';
-import { HistoryItemType, iHistoryEVMTx, ITransactionData } from '@/History/types';
+import { HistoryItemType, ITransactionData } from '@/History/types';
 import moment from 'moment';
 import { bintools } from '@/common';
-import * as Utils from '@/utils/utils';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -96,41 +95,6 @@ export abstract class WalletProvider {
     }
 
     protected emitter: EventEmitter = new EventEmitter();
-    // static instances: WalletProvider[] = [];
-
-    // protected constructor() {
-    //     WalletProvider.instances.push(this);
-    // }
-
-    /**
-     * Refreshes X chain UTXOs for every wallet instance
-     */
-    // static refreshInstanceBalancesX(): void {
-    //     let wallets = WalletProvider.instances;
-    //     wallets.forEach((w) => {
-    //         w.updateUtxosX();
-    //     });
-    // }
-
-    /**
-     * Refreshes X chain UTXOs for every wallet instance
-     */
-    // static refreshInstanceBalancesC(): void {
-    //     let wallets = WalletProvider.instances;
-    //     wallets.forEach((w) => {
-    //         w.updateAvaxBalanceC();
-    //         w.updateBalanceERC20();
-    //     });
-    // }
-
-    /**
-     * Call this when you are done with a wallet instance.
-     * You MUST call this function to avoid memory leaks.
-     */
-    // public destroy() {
-    //     let index = WalletProvider.instances.indexOf(this);
-    //     WalletProvider.instances.splice(index, 1);
-    // }
 
     public on(event: WalletEventType, listener: (...args: any[]) => void): void {
         this.emitter.on(event, listener);
@@ -183,22 +147,6 @@ export abstract class WalletProvider {
     abstract signP(tx: PlatformUnsignedTx): Promise<PlatformTx>;
     abstract signC(tx: EVMUnsignedTx): Promise<EVMTx>;
 
-    /***
-     * Moves AVAX internally between chains to send to the given address.
-     * @param to X or C chain address
-     * @param amount Amount of nAVAX to send.
-     */
-    // async sendAvaxUniversal(to: string, amount: BN) {
-    //     let balX = this.getAvaxBalanceX().unlocked;
-    //     let balC = Utils.avaxCtoX(this.getAvaxBalanceC());
-    //     let balP = this.getAvaxBalanceP().unlocked;
-    //
-    //     console.log(to, amount.toString());
-    //
-    //     // let txs = buildUniversalAvaxTransferTxs(balX, balP, balC, to, amount);
-    //     // console.log(txs);
-    // }
-
     /**
      *
      * @param to - the address funds are being send to.
@@ -213,11 +161,6 @@ export abstract class WalletProvider {
         let froms = this.getAllAddressesX();
         let changeAddress = this.getChangeAddressX();
         let utxoSet = this.utxosX;
-
-        // Add Tx Fee to amount
-        // let fee = xChain.getTxFee();
-        // Amt + Fee
-        // let feeAmt = amount.add(fee);
 
         let tx = await xChain.buildBaseTx(
             utxoSet,
