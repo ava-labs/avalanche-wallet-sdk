@@ -1,6 +1,7 @@
 # 🔴WARNING: Beta Release🔴
 
-This library is under development and there might be frequent breaking changes.
+-   This library is under development and there might be frequent breaking changes.
+-   Audit pending.
 
 # Avalanche Wallet SDK (Beta)
 
@@ -23,6 +24,16 @@ Using the avalanche-wallet-sdk developers can:
 -   Create keystore files from wallet instances
 -   Get transaction history of wallets
 -   Mint NFTs on the X chain
+
+## Installation
+
+With npm
+
+`npm install --save @avalabs/avalanche-wallet-sdk`
+
+or yarn
+
+`yarn add @avalabs/avalanche-wallet-sdk`
 
 ## Local build
 
