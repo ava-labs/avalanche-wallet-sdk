@@ -8,7 +8,7 @@
         "src"
     ],
     "engines": {
-        "node": ">=15"
+        "node": ">=14.17.1"
     },
     "scripts": {
         "start": "rollup -c --watch",
