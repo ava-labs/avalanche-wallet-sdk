@@ -17,11 +17,9 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version: 16
-            - id: npm-cache-dir
-              run: echo "::set-output name=dir::$(npm config get cache)"
             - uses: actions/cache@v2
               with:
-                  path: ${{ steps.npm-cache-dir.outputs.dir }}
+                  path: '**/node_modules'
                   key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
                   restore-keys: ${{ runner.os }}-node-
             - run: yarn --frozen-lockfile
@@ -33,11 +31,9 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version: 16
-            - id: npm-cache-dir
-              run: echo "::set-output name=dir::$(npm config get cache)"
             - uses: actions/cache@v2
               with:
-                  path: ${{ steps.npm-cache-dir.outputs.dir }}
+                  path: '**/node_modules'
                   key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
                   restore-keys: ${{ runner.os }}-node-
             - run: yarn --frozen-lockfile
