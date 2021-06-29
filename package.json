@@ -32,6 +32,10 @@
     "name": "@avalabs/avalanche-wallet-sdk",
     "author": "AVA Labs",
     "module": "dist/avalanche-wallet-sdk.esm.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ava-labs/avalanche-wallet-sdk"
+    },
     "publishConfig": {
         "access": "restricted"
     },
