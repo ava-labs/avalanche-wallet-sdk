@@ -17,9 +17,7 @@
         "test": "jest",
         "test:watch": "jest --watch",
         "lint": "eslint .",
-        "prepare": "husky install && rollup -c",
-        "size": "size-limit",
-        "analyze": "size-limit --why",
+        "prepare": "husky install",
         "docs": "typedoc src/index.ts",
         "docs:watch": "typedoc --watch src/index.ts"
     },
@@ -38,19 +36,12 @@
     "publishConfig": {
         "access": "restricted"
     },
-    "size-limit": [
-        {
-            "path": "dist/index.js",
-            "limit": "1 MB"
-        }
-    ],
     "devDependencies": {
         "@babel/core": "^7.14.0",
         "@babel/preset-env": "^7.14.1",
         "@babel/preset-typescript": "^7.13.0",
         "@rollup/plugin-json": "^4.1.0",
         "@rollup/plugin-typescript": "^8.2.1",
-        "@size-limit/preset-small-lib": "^4.10.2",
         "@types/big.js": "^6.0.2",
         "@types/bn.js": "4.11.6",
         "@types/create-hash": "^1.2.2",
@@ -70,7 +61,6 @@
         "rollup": "^2.47.0",
         "rollup-plugin-delete": "^2.0.0",
         "rollup-plugin-typescript2": "^0.30.0",
-        "size-limit": "^4.10.2",
         "ts-node": "^9.1.1",
         "tslib": "^2.2.0",
         "ttypescript": "^1.5.12",
