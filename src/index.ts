@@ -13,6 +13,8 @@ import Keystore from '@/Keystore/keystore';
 import { BN } from 'avalanche';
 import Big from 'big.js';
 
+export * from '@/helpers';
+
 export {
     MnemonicWallet,
     SingletonWallet,
