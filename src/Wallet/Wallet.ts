@@ -16,6 +16,7 @@ import {
 import {
     buildAvmExportTransaction,
     buildCreateNftFamilyTx,
+    buildCustomEvmTx,
     buildEvmExportTransaction,
     buildEvmTransferErc20Tx,
     buildEvmTransferNativeTx,
@@ -226,14 +227,14 @@ export abstract class WalletProvider {
     /**
      * Creates an EVM transaction from the given parameters, signs and issues it.
      * @param to Hex address of recipient
-     * @param gasPrice Gas price in WEI format
+     * @param gasPrice Hex Gas price in WEI format
      * @param gasLimit Gas limit
-     * @param value Value field of the transaction
+     * @param value Hex Value of the transaction
      * @param data Hex data field of the transaction
      */
-    async sendEvmTx(to: string, gasPrice: BN, gasLimit: number, value: BN, data: string): Promise<string> {
+    async sendEvmTx(to: string, gasPrice: string, gasLimit: number, value: string, data: string): Promise<string> {
         let from = this.getAddressC();
-        let tx = await buildEvmTx(from, to, gasPrice, gasLimit, value, data);
+        let tx = await buildCustomEvmTx(data, from, to, gasPrice, gasLimit, value);
         let signedTx = await this.signEvm(tx);
         let txHex = signedTx.serialize().toString('hex');
         let hash = await web3.eth.sendSignedTransaction('0x' + txHex);

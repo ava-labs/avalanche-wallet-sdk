@@ -339,6 +339,36 @@ export async function buildEvmTx(
     return tx;
 }
 
+export async function buildCustomEvmTx(
+    data: string,
+    from: string,
+    to?: string,
+    gasPrice?: string,
+    gasLimit?: number,
+    value?: string
+): Promise<Transaction> {
+    const nonce = await web3.eth.getTransactionCount(from);
+    const chainId = await web3.eth.getChainId();
+    const networkId = await web3.eth.net.getId();
+
+    const chainParams = {
+        common: EthereumjsCommon.forCustomChain('mainnet', { networkId, chainId }, 'istanbul'),
+    };
+
+    let tx = Transaction.fromTxData(
+        {
+            nonce,
+            gasPrice,
+            gasLimit,
+            value,
+            to,
+            data,
+        },
+        chainParams
+    );
+    return tx;
+}
+
 export async function buildEvmTransferErc20Tx(
     from: string,
     to: string,
