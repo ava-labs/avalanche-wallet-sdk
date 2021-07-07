@@ -309,6 +309,36 @@ export async function buildEvmTransferNativeTx(
     return tx;
 }
 
+export async function buildEvmTx(
+    from: string,
+    to: string,
+    gasPrice: BN,
+    gasLimit: number,
+    value: BN,
+    data: string
+): Promise<Transaction> {
+    const nonce = await web3.eth.getTransactionCount(from);
+    const chainId = await web3.eth.getChainId();
+    const networkId = await web3.eth.net.getId();
+
+    const chainParams = {
+        common: EthereumjsCommon.forCustomChain('mainnet', { networkId, chainId }, 'istanbul'),
+    };
+
+    let tx = Transaction.fromTxData(
+        {
+            nonce: nonce,
+            gasPrice: '0x' + gasPrice.toString('hex'),
+            gasLimit: gasLimit,
+            value: `0x${value.toString('hex')}`,
+            to: to,
+            data: data,
+        },
+        chainParams
+    );
+    return tx;
+}
+
 export async function buildEvmTransferErc20Tx(
     from: string,
     to: string,
@@ -317,28 +347,14 @@ export async function buildEvmTransferErc20Tx(
     gasLimit: number,
     contractAddress: string
 ) {
-    const nonce = await web3.eth.getTransactionCount(from);
-    const chainId = await web3.eth.getChainId();
-    const networkId = await web3.eth.net.getId();
-    const chainParams = {
-        common: EthereumjsCommon.forCustomChain('mainnet', { networkId, chainId }, 'istanbul'),
-    };
-
     //@ts-ignore
     const cont = new web3.eth.Contract(ERC20Abi.abi, contractAddress);
     const tokenTx = cont.methods.transfer(to, amount.toString());
 
-    let tx = Transaction.fromTxData(
-        {
-            nonce: nonce,
-            gasPrice: '0x' + gasPrice.toString('hex'),
-            gasLimit: gasLimit,
-            value: '0x0',
-            to: contractAddress,
-            data: tokenTx.encodeABI(),
-        },
-        chainParams
-    );
+    let value = new BN(0);
+    let data = tokenTx.encodeABI();
+    let tx = await buildEvmTx(from, to, gasPrice, gasLimit, value, data);
+
     return tx;
 }
 
