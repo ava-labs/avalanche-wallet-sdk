@@ -19,6 +19,7 @@ import {
     buildEvmExportTransaction,
     buildEvmTransferErc20Tx,
     buildEvmTransferNativeTx,
+    buildEvmTx,
     buildMintNftTx,
 } from '@/helpers/tx_helper';
 import { BN, Buffer } from 'avalanche';
@@ -215,6 +216,16 @@ export abstract class WalletProvider {
         let fromAddr = this.getAddressC();
         let tx = await buildEvmTransferErc20Tx(fromAddr, to, amount, gasPrice, gasLimit, contractAddress);
 
+        let signedTx = await this.signEvm(tx);
+        let txHex = signedTx.serialize().toString('hex');
+        let hash = await web3.eth.sendSignedTransaction('0x' + txHex);
+        const txHash = hash.transactionHash;
+        return await waitTxEvm(txHash);
+    }
+
+    async sendEvmTx(to: string, gasPrice: BN, gasLimit: number, value: BN, data: string): Promise<string> {
+        let from = this.getAddressC();
+        let tx = await buildEvmTx(from, to, gasPrice, gasLimit, value, data);
         let signedTx = await this.signEvm(tx);
         let txHex = signedTx.serialize().toString('hex');
         let hash = await web3.eth.sendSignedTransaction('0x' + txHex);
