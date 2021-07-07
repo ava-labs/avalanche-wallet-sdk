@@ -223,6 +223,14 @@ export abstract class WalletProvider {
         return await waitTxEvm(txHash);
     }
 
+    /**
+     * Creates an EVM transaction from the given parameters, signs and issues it.
+     * @param to Hex address of recipient
+     * @param gasPrice Gas price in WEI format
+     * @param gasLimit Gas limit
+     * @param value Value field of the transaction
+     * @param data Hex data field of the transaction
+     */
     async sendEvmTx(to: string, gasPrice: BN, gasLimit: number, value: BN, data: string): Promise<string> {
         let from = this.getAddressC();
         let tx = await buildEvmTx(from, to, gasPrice, gasLimit, value, data);
