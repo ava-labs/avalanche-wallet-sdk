@@ -20,8 +20,8 @@ import {
     buildEvmExportTransaction,
     buildEvmTransferErc20Tx,
     buildEvmTransferNativeTx,
-    buildEvmTx,
     buildMintNftTx,
+    estimateErc20Gas,
 } from '@/helpers/tx_helper';
 import { BN, Buffer } from 'avalanche';
 import { Transaction } from '@ethereumjs/tx';
@@ -194,15 +194,8 @@ export abstract class WalletProvider {
      */
     async sendAvaxC(to: string, amount: BN, gasPrice: BN, gasLimit: number): Promise<string> {
         let fromAddr = this.getAddressC();
-
         let tx = await buildEvmTransferNativeTx(fromAddr, to, amount, gasPrice, gasLimit);
-
-        let signedTx = await this.signEvm(tx);
-
-        let txHex = signedTx.serialize().toString('hex');
-        let hash = await web3.eth.sendSignedTransaction('0x' + txHex);
-        const txHash = hash.transactionHash;
-        return await waitTxEvm(txHash);
+        return await this.issueEvmTx(tx);
     }
 
     /**
@@ -216,25 +209,20 @@ export abstract class WalletProvider {
     async sendErc20(to: string, amount: BN, gasPrice: BN, gasLimit: number, contractAddress: string): Promise<string> {
         let fromAddr = this.getAddressC();
         let tx = await buildEvmTransferErc20Tx(fromAddr, to, amount, gasPrice, gasLimit, contractAddress);
+        let txHash = await this.issueEvmTx(tx);
+        return txHash;
+    }
 
-        let signedTx = await this.signEvm(tx);
-        let txHex = signedTx.serialize().toString('hex');
-        let hash = await web3.eth.sendSignedTransaction('0x' + txHex);
-        const txHash = hash.transactionHash;
-        return await waitTxEvm(txHash);
+    async estimateErc20Gas(contractAddress: string, to: string, amount: BN) {
+        let from = this.getAddressC();
+        return await estimateErc20Gas(contractAddress, from, to, amount);
     }
 
     /**
-     * Creates an EVM transaction from the given parameters, signs and issues it.
-     * @param to Hex address of recipient
-     * @param gasPrice Hex Gas price in WEI format
-     * @param gasLimit Gas limit
-     * @param value Hex Value of the transaction
-     * @param data Hex data field of the transaction
+     * Given a `Transaction`, it will sign and issue it to the network.
+     * @param tx The unsigned transaction to issue.
      */
-    async sendEvmTx(to: string, gasPrice: string, gasLimit: number, value: string, data: string): Promise<string> {
-        let from = this.getAddressC();
-        let tx = await buildCustomEvmTx(data, from, to, gasPrice, gasLimit, value);
+    async issueEvmTx(tx: Transaction): Promise<string> {
         let signedTx = await this.signEvm(tx);
         let txHex = signedTx.serialize().toString('hex');
         let hash = await web3.eth.sendSignedTransaction('0x' + txHex);

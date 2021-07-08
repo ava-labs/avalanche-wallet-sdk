@@ -8,7 +8,7 @@ export const validateAddress = (address: string): boolean | string => {
         bintools.stringToAddress(address);
         return true;
     } catch (error) {
-        return error.message;
+        return false;
     }
 };
 

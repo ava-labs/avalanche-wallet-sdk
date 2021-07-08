@@ -109,7 +109,7 @@ export function bnToAvaxP(val: BN): string {
 export function numberToBN(val: number | string, decimals: number): BN {
     let valBig = Big(val);
     let tens = Big(10).pow(decimals);
-    let valBN = new BN(valBig.times(tens).toString());
+    let valBN = new BN(valBig.times(tens).toFixed(0));
     return valBN;
 }
 
