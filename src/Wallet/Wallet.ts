@@ -233,9 +233,30 @@ export abstract class WalletProvider {
         return txHash;
     }
 
+    /**
+     * Estimate the gas needed for an ERC20 Transfer transaction
+     * @param contractAddress The ERC20 contract address
+     * @param to Address receiving the tokens
+     * @param amount Amount to send. Given in the smallest divisible unit.
+     */
     async estimateErc20Gas(contractAddress: string, to: string, amount: BN) {
         let from = this.getAddressC();
         return await estimateErc20Gas(contractAddress, from, to, amount);
+    }
+
+    /**
+     * A method to create custom EVM transactions.
+     * @param gasPrice
+     * @param gasLimit
+     * @param data `data` field of the transaction, in hex format
+     * @param to `to` field of the transaction, in hex format
+     * @param value `value` field of the transaction, in hex format
+     * @param nonce Nonce of the transaction, in number
+     */
+    async sendCustomEvmTx(gasPrice: BN, gasLimit: number, data?: string, to?: string, value?: string, nonce?: number) {
+        let from = this.getAddressC();
+        let tx = await buildCustomEvmTx(from, gasPrice, gasLimit, data, to, value, nonce);
+        return await this.issueEvmTx(tx);
     }
 
     /**
