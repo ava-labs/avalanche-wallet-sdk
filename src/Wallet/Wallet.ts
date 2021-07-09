@@ -199,6 +199,26 @@ export abstract class WalletProvider {
     }
 
     /**
+     * Send Avalanche Native Tokens on X chain
+     * @param assetID ID of the token to send
+     * @param amount How many units of the token to send. Based on smallest divisible unit.
+     * @param to X chain address to send tokens to
+     */
+    async sendANT(assetID: string, amount: BN, to: string): Promise<string> {
+        let utxoSet = this.getUtxosX();
+        let fromAddrs = this.getAllAddressesX();
+        let changeAddr = this.getChangeAddressX();
+
+        let tx = await xChain.buildBaseTx(utxoSet, amount, assetID, [to], fromAddrs, [changeAddr]);
+        let signed = await this.signX(tx);
+        let txId = await xChain.issueTx(signed);
+        await waitTxX(txId);
+
+        this.updateUtxosX();
+        return txId;
+    }
+
+    /**
      * Makes a transfer call on a ERC20 contract.
      * @param to Hex address to transfer tokens to.
      * @param amount Amount of the ERC20 token to send, donated in the token's correct denomination.
