@@ -58,7 +58,7 @@ import { PayloadBase, UnixNow } from 'avalanche/dist/utils';
 import { getAssetDescription } from '@/Asset/Assets';
 import { balanceOf, getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
-import { bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils/utils';
+import { avaxCtoX, bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
 import {
@@ -70,6 +70,16 @@ import {
 import { HistoryItemType, ITransactionData } from '@/History/types';
 import moment from 'moment';
 import { bintools } from '@/common';
+import { ChainIdType } from '@/types';
+import {
+    canHaveBalanceOnC,
+    canHaveBalanceOnP,
+    canHaveBalanceOnX,
+    getStepsForBalanceC,
+    getStepsForBalanceP,
+    getStepsForBalanceX,
+    UniversalTx,
+} from '@/helpers/universal_tx_helper';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -257,6 +267,46 @@ export abstract class WalletProvider {
         let from = this.getAddressC();
         let tx = await buildCustomEvmTx(from, gasPrice, gasLimit, data, to, value, nonce);
         return await this.issueEvmTx(tx);
+    }
+
+    /**
+     * Can this wallet have the given amount on the given chain after a series of internal transactions (if required).
+     * @param chain X/P/C
+     * @param amount The amount to check against
+     */
+    public canHaveBalanceOnChain(chain: ChainIdType, amount: BN): boolean {
+        let xBal = this.getAvaxBalanceX().unlocked;
+        let pBal = this.getAvaxBalanceP().unlocked;
+        let cBal = avaxCtoX(this.getAvaxBalanceC()); // need to use 9 decimal places
+
+        switch (chain) {
+            case 'P':
+                return canHaveBalanceOnP(xBal, pBal, cBal, amount);
+            case 'C':
+                return canHaveBalanceOnC(xBal, pBal, cBal, amount);
+            case 'X':
+                return canHaveBalanceOnX(xBal, pBal, cBal, amount);
+        }
+    }
+
+    /**
+     * Returns an array of transaction to do in order to have the target amount on the given chain
+     * @param chain The chain (X/P/C) to have the desired amount on
+     * @param amount The desired amount
+     */
+    public getTransactionsForBalance(chain: ChainIdType, amount: BN): UniversalTx[] {
+        let xBal = this.getAvaxBalanceX().unlocked;
+        let pBal = this.getAvaxBalanceP().unlocked;
+        let cBal = avaxCtoX(this.getAvaxBalanceC()); // need to use 9 decimal places
+
+        switch (chain) {
+            case 'P':
+                return getStepsForBalanceP(xBal, pBal, cBal, amount);
+            case 'C':
+                return getStepsForBalanceC(xBal, pBal, cBal, amount);
+            case 'X':
+                return getStepsForBalanceX(xBal, pBal, cBal, amount);
+        }
     }
 
     /**

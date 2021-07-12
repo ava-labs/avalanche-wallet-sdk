@@ -69,8 +69,8 @@
         "typescript": "^4.2.4"
     },
     "dependencies": {
-        "@ethereumjs/common": "2.2.0",
-        "@ethereumjs/tx": "3.1.4",
+        "@ethereumjs/common": "2.4.0",
+        "@ethereumjs/tx": "3.3.0",
         "@ledgerhq/hw-app-eth": "5.42.1",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
         "@openzeppelin/contracts": "4.1.0",

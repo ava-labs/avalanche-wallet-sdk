@@ -55,6 +55,15 @@ export function avaxCtoX(amount: BN) {
     return amount.div(tens);
 }
 
+export function avaxXtoC(amount: BN) {
+    let tens = new BN(10).pow(new BN(9));
+    return amount.mul(tens);
+}
+
+export function avaxPtoC(amount: BN) {
+    return avaxXtoC(amount);
+}
+
 export function bnToBigAvaxX(val: BN): Big {
     return bnToBig(val, 9);
 }
