@@ -58,7 +58,7 @@ import { PayloadBase, UnixNow } from 'avalanche/dist/utils';
 import { getAssetDescription } from '@/Asset/Assets';
 import { balanceOf, getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
-import { bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils/utils';
+import { avaxCtoX, bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
 import {
@@ -70,6 +70,16 @@ import {
 import { HistoryItemType, ITransactionData } from '@/History/types';
 import moment from 'moment';
 import { bintools } from '@/common';
+import { ChainIdType } from '@/types';
+import {
+    canHaveBalanceOnC,
+    canHaveBalanceOnP,
+    canHaveBalanceOnX,
+    getStepsForBalanceC,
+    getStepsForBalanceP,
+    getStepsForBalanceX,
+    UniversalTx,
+} from '@/helpers/universal_tx_helper';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -195,7 +205,9 @@ export abstract class WalletProvider {
     async sendAvaxC(to: string, amount: BN, gasPrice: BN, gasLimit: number): Promise<string> {
         let fromAddr = this.getAddressC();
         let tx = await buildEvmTransferNativeTx(fromAddr, to, amount, gasPrice, gasLimit);
-        return await this.issueEvmTx(tx);
+        let txId = await this.issueEvmTx(tx);
+        await this.updateAvaxBalanceC();
+        return txId;
     }
 
     /**
@@ -230,6 +242,7 @@ export abstract class WalletProvider {
         let fromAddr = this.getAddressC();
         let tx = await buildEvmTransferErc20Tx(fromAddr, to, amount, gasPrice, gasLimit, contractAddress);
         let txHash = await this.issueEvmTx(tx);
+        this.updateBalanceERC20();
         return txHash;
     }
 
@@ -257,6 +270,46 @@ export abstract class WalletProvider {
         let from = this.getAddressC();
         let tx = await buildCustomEvmTx(from, gasPrice, gasLimit, data, to, value, nonce);
         return await this.issueEvmTx(tx);
+    }
+
+    /**
+     * Can this wallet have the given amount on the given chain after a series of internal transactions (if required).
+     * @param chain X/P/C
+     * @param amount The amount to check against
+     */
+    public canHaveBalanceOnChain(chain: ChainIdType, amount: BN): boolean {
+        let xBal = this.getAvaxBalanceX().unlocked;
+        let pBal = this.getAvaxBalanceP().unlocked;
+        let cBal = avaxCtoX(this.getAvaxBalanceC()); // need to use 9 decimal places
+
+        switch (chain) {
+            case 'P':
+                return canHaveBalanceOnP(xBal, pBal, cBal, amount);
+            case 'C':
+                return canHaveBalanceOnC(xBal, pBal, cBal, amount);
+            case 'X':
+                return canHaveBalanceOnX(xBal, pBal, cBal, amount);
+        }
+    }
+
+    /**
+     * Returns an array of transaction to do in order to have the target amount on the given chain
+     * @param chain The chain (X/P/C) to have the desired amount on
+     * @param amount The desired amount
+     */
+    public getTransactionsForBalance(chain: ChainIdType, amount: BN): UniversalTx[] {
+        let xBal = this.getAvaxBalanceX().unlocked;
+        let pBal = this.getAvaxBalanceP().unlocked;
+        let cBal = avaxCtoX(this.getAvaxBalanceC()); // need to use 9 decimal places
+
+        switch (chain) {
+            case 'P':
+                return getStepsForBalanceP(xBal, pBal, cBal, amount);
+            case 'C':
+                return getStepsForBalanceC(xBal, pBal, cBal, amount);
+            case 'X':
+                return getStepsForBalanceX(xBal, pBal, cBal, amount);
+        }
     }
 
     /**
@@ -445,6 +498,7 @@ export abstract class WalletProvider {
 
         this.balanceX = res;
 
+        // TODO: Check previous value
         this.emitBalanceChangeX();
         return res;
     }
@@ -587,12 +641,11 @@ export abstract class WalletProvider {
 
         let tx = await this.signC(exportTx);
 
-        let addrC = this.getAddressC();
-        let nonceBefore = await web3.eth.getTransactionCount(addrC);
         let txId = await cChain.issueTx(tx);
 
-        // TODO: Return the txId from the wait function, once support is there
-        await waitTxC(addrC, nonceBefore);
+        await waitTxC(txId);
+
+        await this.updateAvaxBalanceC();
         return txId;
     }
 
@@ -635,7 +688,7 @@ export abstract class WalletProvider {
         await waitTxX(txId);
 
         // Update UTXOs
-        this.updateUtxosX();
+        await this.updateUtxosX();
 
         return txId;
     }
@@ -688,12 +741,12 @@ export abstract class WalletProvider {
         await waitTxX(txId);
 
         // Update UTXOs
-        this.updateUtxosX();
+        await this.updateUtxosX();
 
         return txId;
     }
 
-    async importP(): Promise<string> {
+    async importP(toAddress?: string): Promise<string> {
         const utxoSet = await this.getAtomicUTXOsP();
 
         if (utxoSet.getAllUTXOs().length === 0) {
@@ -701,7 +754,7 @@ export abstract class WalletProvider {
         }
 
         // Owner addresses, the addresses we exported to
-        let pToAddr = this.getAddressP();
+        let walletAddrP = this.getAddressP();
 
         let hrp = avalanche.getHRP();
         let utxoAddrs = utxoSet.getAddresses().map((addr) => bintools.addressToString(hrp, 'P', addr));
@@ -709,13 +762,17 @@ export abstract class WalletProvider {
         // let fromAddrs = utxoAddrs;
         let ownerAddrs = utxoAddrs;
 
+        if (!toAddress) {
+            toAddress = walletAddrP;
+        }
+
         const unsignedTx = await pChain.buildImportTx(
             utxoSet,
             ownerAddrs,
             xChain.getBlockchainID(),
-            [pToAddr],
-            [pToAddr],
-            [pToAddr],
+            [toAddress],
+            ownerAddrs,
+            [walletAddrP],
             undefined,
             undefined
         );
@@ -724,7 +781,7 @@ export abstract class WalletProvider {
 
         await waitTxP(txId);
 
-        this.updateUtxosP();
+        await this.updateUtxosP();
 
         return txId;
     }
@@ -747,6 +804,10 @@ export abstract class WalletProvider {
         const unsignedTx = await cChain.buildImportTx(utxoSet, toAddress, ownerAddresses, sourceChain, fromAddresses);
         let tx = await this.signC(unsignedTx);
         let id = await cChain.issueTx(tx);
+
+        await waitTxC(id);
+
+        await this.updateAvaxBalanceC();
 
         return id;
     }
