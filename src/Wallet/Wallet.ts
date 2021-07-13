@@ -205,7 +205,9 @@ export abstract class WalletProvider {
     async sendAvaxC(to: string, amount: BN, gasPrice: BN, gasLimit: number): Promise<string> {
         let fromAddr = this.getAddressC();
         let tx = await buildEvmTransferNativeTx(fromAddr, to, amount, gasPrice, gasLimit);
-        return await this.issueEvmTx(tx);
+        let txId = await this.issueEvmTx(tx);
+        await this.updateAvaxBalanceC();
+        return txId;
     }
 
     /**
@@ -495,6 +497,7 @@ export abstract class WalletProvider {
 
         this.balanceX = res;
 
+        // TODO: Check previous value
         this.emitBalanceChangeX();
         return res;
     }

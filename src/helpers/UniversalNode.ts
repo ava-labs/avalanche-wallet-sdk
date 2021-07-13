@@ -95,11 +95,11 @@ export class UniversalNode {
         let remaining = target.sub(this.balance);
 
         // Amount the parent must have
-        let parentBalanceNeeded = remaining.add(feeImportExport);
 
         if (this.parents.length === 1) {
             // Export from parent to this node
             let parent = this.parents[0];
+            let parentBalanceNeeded = remaining.add(feeImportExport);
             let txs = parent.getStepsForTargetBalance(parentBalanceNeeded);
             let tx = parent.buildExportTx(remaining);
             return [...txs, tx];
@@ -108,21 +108,21 @@ export class UniversalNode {
             for (let i = 0; i < this.parents.length; i++) {
                 let p = this.parents[i];
                 let pBal = p.reduceTotalBalanceFromParents();
-                let pBalAvailable = pBal.sub(feeImportExport);
+                let pBalMax = pBal.sub(feeImportExport);
+                let parentBalanceNeeded = remaining.add(feeImportExport);
 
-                let exportableAmt = BN.min(pBalAvailable, remaining);
-                let target = BN.min(pBalAvailable, parentBalanceNeeded);
+                let exportAmt = BN.min(pBalMax, remaining); // The amount that will cross to the target chain
+                let target = BN.min(pBalMax, parentBalanceNeeded);
 
-                if (target.lte(new BN(0))) continue;
+                if (exportAmt.lte(new BN(0))) continue;
 
                 let pTxs = p.getStepsForTargetBalance(target);
-                let pTx = p.buildExportTx(exportableAmt);
+                let pTx = p.buildExportTx(exportAmt);
 
                 transactions.push(...pTxs);
                 transactions.push(pTx);
 
-                parentBalanceNeeded = parentBalanceNeeded.sub(exportableAmt);
-                remaining = remaining.sub(exportableAmt);
+                remaining = remaining.sub(exportAmt);
             }
 
             return transactions;

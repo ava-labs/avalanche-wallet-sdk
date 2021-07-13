@@ -310,6 +310,26 @@ describe('Get transactions for balance on UniversalNode X', () => {
         compareSteps(steps, stepsExpected);
     });
 
+    it('node needs balance from P, both parent have balance', () => {
+        let balX = new BN(0);
+        let balP = new BN(5000000000); // 5 AVAX
+        let balC = new BN(5000000000); // 5 AVAX
+
+        let nodeX = createGraphForX(balX, balP, balC);
+        let target = new BN(2000000000); // 2 AVAX
+
+        let stepsExpected: UniversalTx[] = [
+            {
+                action: 'export_p_x',
+                amount: new BN(2000000000),
+            },
+        ];
+
+        let steps = nodeX.getStepsForTargetBalance(target);
+
+        compareSteps(steps, stepsExpected);
+    });
+
     it('node needs balance from C', () => {
         let balX = new BN(0);
         let balP = new BN(0);
