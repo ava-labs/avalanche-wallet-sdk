@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.8.4
+## v0.8.0
 
 #### Notes
 
