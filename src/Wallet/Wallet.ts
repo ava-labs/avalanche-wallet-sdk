@@ -404,10 +404,8 @@ export abstract class WalletProvider {
         let strBalNow = JSON.stringify(balNow);
         // Compare stringified balances
         if (strNewBal !== strBalNow) {
-            console.log('ERC20 check');
             this.emitBalanceChangeC();
         }
-        console.log('ERC20 update dict');
         this.balanceERC20 = newBal;
         return this.balanceERC20;
     }
