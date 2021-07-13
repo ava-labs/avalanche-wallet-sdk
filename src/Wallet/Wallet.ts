@@ -637,12 +637,11 @@ export abstract class WalletProvider {
 
         let tx = await this.signC(exportTx);
 
-        let addrC = this.getAddressC();
-        let nonceBefore = await web3.eth.getTransactionCount(addrC);
         let txId = await cChain.issueTx(tx);
 
-        // TODO: Return the txId from the wait function, once support is there
-        await waitTxC(addrC, nonceBefore);
+        await waitTxC(txId);
+
+        await this.updateAvaxBalanceC();
         return txId;
     }
 
@@ -797,6 +796,10 @@ export abstract class WalletProvider {
         const unsignedTx = await cChain.buildImportTx(utxoSet, toAddress, ownerAddresses, sourceChain, fromAddresses);
         let tx = await this.signC(unsignedTx);
         let id = await cChain.issueTx(tx);
+
+        await waitTxC(id);
+
+        await this.updateAvaxBalanceC();
 
         return id;
     }

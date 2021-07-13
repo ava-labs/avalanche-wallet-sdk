@@ -2139,10 +2139,10 @@ available-typed-arrays@^1.0.2:
   resolved "https://registry.yarnpkg.com/available-typed-arrays/-/available-typed-arrays-1.0.4.tgz#9e0ae84ecff20caae6a94a1c3bc39b955649b7a9"
   integrity sha512-SA5mXJWrId1TaQjfxUYghbqQ/hYioKmLJvPJyDuYRtXXenFNMjj4hSSt1Cf1xsuXSXrtxrVC5Ot4eU6cOtBDdA==
 
-avalanche@3.6.2:
-  version "3.6.2"
-  resolved "https://registry.yarnpkg.com/avalanche/-/avalanche-3.6.2.tgz#90764abc8e41d6c49b9720aa3a159e9ba16c710c"
-  integrity sha512-MahWLfs2NOZphEBTwrXq7QFfBQA4QMQqvxCAHyCVfUvqBoOSFstRLH7cBV+sxym/1c3wF9bAfB4TwneKQrGt7g==
+avalanche@3.8.1:
+  version "3.8.1"
+  resolved "https://registry.yarnpkg.com/avalanche/-/avalanche-3.8.1.tgz#56eac5487a736415536f2dcd1bfc5aaa5195bd64"
+  integrity sha512-p+bqjsbKynN+oUpi7Eoddavxfbx5wISzv3zXG/8/YUB0kbMnzScO8A5Dfv2Kz1BIQxu6sCb8u6UhJdGId9ElGw==
   dependencies:
     axios "0.21.1"
     bech32 "1.1.4"
@@ -2152,6 +2152,7 @@ avalanche@3.6.2:
     create-hash "1.2.0"
     elliptic "6.5.4"
     ethers "^5.3.0"
+    hdkey "2.0.1"
     isomorphic-ws "^4.0.1"
     store2 "2.11.0"
     ws "^7.4.6"
