@@ -242,6 +242,7 @@ export abstract class WalletProvider {
         let fromAddr = this.getAddressC();
         let tx = await buildEvmTransferErc20Tx(fromAddr, to, amount, gasPrice, gasLimit, contractAddress);
         let txHash = await this.issueEvmTx(tx);
+        this.updateBalanceERC20();
         return txHash;
     }
 
@@ -687,7 +688,7 @@ export abstract class WalletProvider {
         await waitTxX(txId);
 
         // Update UTXOs
-        this.updateUtxosX();
+        await this.updateUtxosX();
 
         return txId;
     }
@@ -740,12 +741,12 @@ export abstract class WalletProvider {
         await waitTxX(txId);
 
         // Update UTXOs
-        this.updateUtxosX();
+        await this.updateUtxosX();
 
         return txId;
     }
 
-    async importP(): Promise<string> {
+    async importP(toAddress?: string): Promise<string> {
         const utxoSet = await this.getAtomicUTXOsP();
 
         if (utxoSet.getAllUTXOs().length === 0) {
@@ -753,7 +754,7 @@ export abstract class WalletProvider {
         }
 
         // Owner addresses, the addresses we exported to
-        let pToAddr = this.getAddressP();
+        let walletAddrP = this.getAddressP();
 
         let hrp = avalanche.getHRP();
         let utxoAddrs = utxoSet.getAddresses().map((addr) => bintools.addressToString(hrp, 'P', addr));
@@ -761,13 +762,17 @@ export abstract class WalletProvider {
         // let fromAddrs = utxoAddrs;
         let ownerAddrs = utxoAddrs;
 
+        if (!toAddress) {
+            toAddress = walletAddrP;
+        }
+
         const unsignedTx = await pChain.buildImportTx(
             utxoSet,
             ownerAddrs,
             xChain.getBlockchainID(),
-            [pToAddr],
-            [pToAddr],
-            [pToAddr],
+            [toAddress],
+            ownerAddrs,
+            [walletAddrP],
             undefined,
             undefined
         );
@@ -776,7 +781,7 @@ export abstract class WalletProvider {
 
         await waitTxP(txId);
 
-        this.updateUtxosP();
+        await this.updateUtxosP();
 
         return txId;
     }
