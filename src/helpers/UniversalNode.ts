@@ -125,6 +125,11 @@ export class UniversalNode {
                 remaining = remaining.sub(exportAmt);
             }
 
+            // If we still have remaining balance, we can not complete this transfer
+            if (remaining.gt(new BN(0))) {
+                throw new Error('Insufficient AVAX balances.');
+            }
+
             return transactions;
         }
     }

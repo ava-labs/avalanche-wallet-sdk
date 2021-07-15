@@ -21,6 +21,7 @@ import {
     buildEvmTransferErc20Tx,
     buildEvmTransferNativeTx,
     buildMintNftTx,
+    estimateAvaxGas,
     estimateErc20Gas,
 } from '@/helpers/tx_helper';
 import { BN, Buffer } from 'avalanche';
@@ -75,11 +76,15 @@ import {
     canHaveBalanceOnC,
     canHaveBalanceOnP,
     canHaveBalanceOnX,
+    createGraphForC,
+    createGraphForP,
+    createGraphForX,
     getStepsForBalanceC,
     getStepsForBalanceP,
     getStepsForBalanceX,
     UniversalTx,
 } from '@/helpers/universal_tx_helper';
+import { UniversalNode } from '@/helpers/UniversalNode';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -265,9 +270,19 @@ export abstract class WalletProvider {
      * @param to Address receiving the tokens
      * @param amount Amount to send. Given in the smallest divisible unit.
      */
-    async estimateErc20Gas(contractAddress: string, to: string, amount: BN) {
+    async estimateErc20Gas(contractAddress: string, to: string, amount: BN): Promise<number> {
         let from = this.getAddressC();
         return await estimateErc20Gas(contractAddress, from, to, amount);
+    }
+
+    /**
+     * Estimate the gas needed for a AVAX send transaction on the C chain.
+     * @param to Destination address.
+     * @param amount Amount of AVAX to send, in WEI.
+     */
+    async estimateAvaxGasLimit(to: string, amount: BN, gasPrice: BN): Promise<number> {
+        let from = this.getAddressC();
+        return await estimateAvaxGas(from, to, amount, gasPrice);
     }
 
     /**
@@ -286,23 +301,43 @@ export abstract class WalletProvider {
     }
 
     /**
-     * Can this wallet have the given amount on the given chain after a series of internal transactions (if required).
-     * @param chain X/P/C
-     * @param amount The amount to check against
+     * Returns the maximum spendable AVAX balance for the given chain.
+     * Scans all chains and take cross over fees into account
+     * @param chainType X, P or C
      */
-    public canHaveBalanceOnChain(chain: ChainIdType, amount: BN): boolean {
+    public getUsableAvaxBalanceForChain(chainType: ChainIdType): BN {
+        return this.createUniversalNode(chainType).reduceTotalBalanceFromParents();
+    }
+
+    /**
+     * Create a new instance of a UniversalNode for the given chain using current balance state
+     * @param chain Chain of the universal node.
+     * @private
+     */
+    private createUniversalNode(chain: ChainIdType): UniversalNode {
         let xBal = this.getAvaxBalanceX().unlocked;
         let pBal = this.getAvaxBalanceP().unlocked;
         let cBal = avaxCtoX(this.getAvaxBalanceC()); // need to use 9 decimal places
 
         switch (chain) {
-            case 'P':
-                return canHaveBalanceOnP(xBal, pBal, cBal, amount);
-            case 'C':
-                return canHaveBalanceOnC(xBal, pBal, cBal, amount);
             case 'X':
-                return canHaveBalanceOnX(xBal, pBal, cBal, amount);
+                return createGraphForX(xBal, pBal, cBal);
+            case 'P':
+                return createGraphForP(xBal, pBal, cBal);
+            case 'C':
+                return createGraphForC(xBal, pBal, cBal);
         }
+    }
+
+    /**
+     * Can this wallet have the given amount on the given chain after a series of internal transactions (if required).
+     * @param chain X/P/C
+     * @param amount The amount to check against
+     */
+    public canHaveBalanceOnChain(chain: ChainIdType, amount: BN): boolean {
+        // The maximum amount of AVAX we can have on this chain
+        let maxAmt = this.createUniversalNode(chain).reduceTotalBalanceFromParents();
+        return amount.gte(maxAmt);
     }
 
     /**
