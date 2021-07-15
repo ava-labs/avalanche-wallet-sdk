@@ -337,7 +337,7 @@ export abstract class WalletProvider {
     public canHaveBalanceOnChain(chain: ChainIdType, amount: BN): boolean {
         // The maximum amount of AVAX we can have on this chain
         let maxAmt = this.createUniversalNode(chain).reduceTotalBalanceFromParents();
-        return amount.gte(maxAmt);
+        return maxAmt.gte(amount);
     }
 
     /**
