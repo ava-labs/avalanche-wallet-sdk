@@ -245,11 +245,16 @@ export abstract class WalletProvider {
         let tx = await buildEvmTransferErc20Tx(fromAddr, to, amount, gasPrice, gasLimit, contractAddress);
         let txHash = await this.issueEvmTx(tx);
 
+        // TODO: We should not be using setTimeout, wait until tx is confirmed on chain
+        // TODO: Can it be an issue with sticky sessions? Nodes behind a LB?
         // If new balance doesnt match old, emit balance change
-        let balNew = await token.balanceOf(fromAddr);
-        if (!balOld.eq(balNew)) {
-            this.emitBalanceChangeC();
-        }
+        setTimeout(async () => {
+            let balNew = await token.balanceOf(fromAddr);
+            console.log(balOld.toString(), balNew.toString());
+            if (!balOld.eq(balNew)) {
+                this.emitBalanceChangeC();
+            }
+        }, 2000);
 
         return txHash;
     }
