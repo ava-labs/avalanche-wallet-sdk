@@ -245,10 +245,8 @@ export abstract class WalletProvider {
         let tx = await buildEvmTransferErc20Tx(fromAddr, to, amount, gasPrice, gasLimit, contractAddress);
         let txHash = await this.issueEvmTx(tx);
 
-        let balNew = await token.balanceOf(fromAddr);
-
-        console.log(balOld.toString(), balNew.toString());
         // If new balance doesnt match old, emit balance change
+        let balNew = await token.balanceOf(fromAddr);
         if (!balOld.eq(balNew)) {
             this.emitBalanceChangeC();
         }
@@ -402,25 +400,6 @@ export abstract class WalletProvider {
     }
 
     /**
-     * Requests the balance for each ERC20 contract in the SDK.
-     * - Makes network requests.
-     * - Updates the value of `this.balanceERC20`
-     */
-    // public async updateBalanceERC20(): Promise<WalletBalanceERC20> {
-    //     let newBal = await balanceOf(this.getAddressC());
-    //     let balNow = this.balanceERC20;
-    //
-    //     let strNewBal = JSON.stringify(newBal);
-    //     let strBalNow = JSON.stringify(balNow);
-    //     // Compare stringified balances
-    //     if (strNewBal !== strBalNow) {
-    //         this.emitBalanceChangeC();
-    //     }
-    //     this.balanceERC20 = newBal;
-    //     return this.balanceERC20;
-    // }
-
-    /**
      * Returns the wallet's balance of the given ERC20 contracts
      * @param addresses ERC20 Contract addresses
      */
@@ -444,22 +423,6 @@ export abstract class WalletProvider {
             };
             return balance;
         });
-        // for (let i = 0; i < addresses.length; i++) {
-        //     let address = addresses[i];
-        //     let token = await getErc20Token(address);
-        //     let bal = await token.balanceOf(this.getAddressC());
-        //     let balance: ERC20Balance = {
-        //         address: address,
-        //         denomination: token.decimals,
-        //         balanceParsed: bnToLocaleString(bal, token.decimals),
-        //         balance: bal,
-        //         name: token.name,
-        //         symbol: token.symbol,
-        //     };
-        //     res.push(balance);
-        // }
-        //
-        // return res;
     }
 
     private async updateUnknownAssetsX() {
