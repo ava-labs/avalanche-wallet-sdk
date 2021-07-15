@@ -283,7 +283,7 @@ export async function waitTxEvm(txHash: string, tryCount = 10): Promise<string> 
     }
 
     let receipt = await web3.eth.getTransactionReceipt(txHash);
-
+    console.log(receipt);
     if (!receipt) {
         return await new Promise((resolve) => {
             setTimeout(async () => {
@@ -299,7 +299,6 @@ export async function waitTxEvm(txHash: string, tryCount = 10): Promise<string> 
     }
 }
 
-//TODO: There is no getTxStatus on C chain. Switch the current setup once that is ready
 export async function waitTxC(txId: string, tryCount = 10): Promise<string> {
     if (tryCount <= 0) {
         throw new Error('Timeout');

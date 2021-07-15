@@ -41,6 +41,12 @@ function createExplorerApi(networkConfig: NetworkConfig) {
     });
 }
 
+/**
+ * Returns the evm chain ID of the active network
+ */
+export function getEvmChainID(): number {
+    return activeNetwork.evmChainID;
+}
 export function setRpcNetwork(conf: NetworkConfig): void {
     avalanche.setAddress(conf.apiIp, conf.apiPort, conf.apiProtocol);
     avalanche.setNetworkID(conf.networkID);

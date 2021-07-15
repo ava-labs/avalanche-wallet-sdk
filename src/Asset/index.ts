@@ -1,10 +1,6 @@
-export {
-    addErc20Token,
-    addErc20TokenFromData,
-    getErc20Token,
-    balanceOf,
-    getContractData,
-    getErc20Store,
-    getErc20StoreCustom,
-} from './Erc20';
+export { getErc20Token, getContractDataErc20, getErc20Cache } from './Erc20';
 export * from './Assets';
+
+import Erc20Token from './Erc20Token';
+
+export { Erc20Token };

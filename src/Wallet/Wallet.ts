@@ -56,7 +56,7 @@ import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, UTXOSet as EVMUTXOSet } from 
 
 import { PayloadBase, UnixNow } from 'avalanche/dist/utils';
 import { getAssetDescription } from '@/Asset/Assets';
-import { balanceOf, getErc20Token } from '@/Asset/Erc20';
+import { getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
 import { avaxCtoX, bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
@@ -240,9 +240,19 @@ export abstract class WalletProvider {
      */
     async sendErc20(to: string, amount: BN, gasPrice: BN, gasLimit: number, contractAddress: string): Promise<string> {
         let fromAddr = this.getAddressC();
+        let token = await getErc20Token(contractAddress);
+        let balOld = await token.balanceOf(fromAddr);
         let tx = await buildEvmTransferErc20Tx(fromAddr, to, amount, gasPrice, gasLimit, contractAddress);
         let txHash = await this.issueEvmTx(tx);
-        this.updateBalanceERC20();
+
+        let balNew = await token.balanceOf(fromAddr);
+
+        console.log(balOld.toString(), balNew.toString());
+        // If new balance doesnt match old, emit balance change
+        if (!balOld.eq(balNew)) {
+            this.emitBalanceChangeC();
+        }
+
         return txHash;
     }
 
@@ -396,36 +406,60 @@ export abstract class WalletProvider {
      * - Makes network requests.
      * - Updates the value of `this.balanceERC20`
      */
-    public async updateBalanceERC20(): Promise<WalletBalanceERC20> {
-        let newBal = await balanceOf(this.getAddressC());
-        let balNow = this.balanceERC20;
-
-        let strNewBal = JSON.stringify(newBal);
-        let strBalNow = JSON.stringify(balNow);
-        // Compare stringified balances
-        if (strNewBal !== strBalNow) {
-            this.emitBalanceChangeC();
-        }
-        this.balanceERC20 = newBal;
-        return this.balanceERC20;
-    }
+    // public async updateBalanceERC20(): Promise<WalletBalanceERC20> {
+    //     let newBal = await balanceOf(this.getAddressC());
+    //     let balNow = this.balanceERC20;
+    //
+    //     let strNewBal = JSON.stringify(newBal);
+    //     let strBalNow = JSON.stringify(balNow);
+    //     // Compare stringified balances
+    //     if (strNewBal !== strBalNow) {
+    //         this.emitBalanceChangeC();
+    //     }
+    //     this.balanceERC20 = newBal;
+    //     return this.balanceERC20;
+    // }
 
     /**
-     * Returns the wallet's balance of the given ERC20 contract
-     * @param address ERC20 Contract address
+     * Returns the wallet's balance of the given ERC20 contracts
+     * @param addresses ERC20 Contract addresses
      */
-    public async getBalanceERC20(address: string): Promise<ERC20Balance> {
-        let token = await getErc20Token(address);
-        let bal = await token.balanceOf(this.getAddressC());
-        let res: ERC20Balance = {
-            address: address,
-            denomination: token.decimals,
-            balanceParsed: bnToLocaleString(bal, token.decimals),
-            balance: bal,
-            name: token.name,
-            symbol: token.symbol,
-        };
-        return res;
+    public async getBalanceERC20(addresses: string[]): Promise<ERC20Balance[]> {
+        let walletAddr = this.getAddressC();
+        let tokenCalls = addresses.map((addr) => getErc20Token(addr));
+        let tokens = await Promise.all(tokenCalls);
+
+        let balanceCalls = tokens.map((token) => token.balanceOf(walletAddr));
+        let balances = await Promise.all(balanceCalls);
+
+        return balances.map((bal, i) => {
+            let token = tokens[i];
+            let balance: ERC20Balance = {
+                address: token.address,
+                denomination: token.decimals,
+                balanceParsed: bnToLocaleString(bal, token.decimals),
+                balance: bal,
+                name: token.name,
+                symbol: token.symbol,
+            };
+            return balance;
+        });
+        // for (let i = 0; i < addresses.length; i++) {
+        //     let address = addresses[i];
+        //     let token = await getErc20Token(address);
+        //     let bal = await token.balanceOf(this.getAddressC());
+        //     let balance: ERC20Balance = {
+        //         address: address,
+        //         denomination: token.decimals,
+        //         balanceParsed: bnToLocaleString(bal, token.decimals),
+        //         balance: bal,
+        //         name: token.name,
+        //         symbol: token.symbol,
+        //     };
+        //     res.push(balance);
+        // }
+        //
+        // return res;
     }
 
     private async updateUnknownAssetsX() {
