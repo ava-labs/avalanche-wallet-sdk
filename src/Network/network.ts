@@ -21,8 +21,17 @@ export const cChain: EVMAPI = avalanche.CChain();
 export const pChain = avalanche.PChain();
 export const infoApi: InfoAPI = avalanche.Info();
 
+const web3RpcConfig = {
+    timeout: 20000, // ms
+    withCredentials: true,
+};
+
+function getProviderFromUrl(url: string) {
+    return new Web3.providers.HttpProvider(url, web3RpcConfig);
+}
+
 const rpcUrl = rpcUrlFromConfig(DefaultConfig);
-export const web3 = new Web3(rpcUrl);
+export const web3 = new Web3(getProviderFromUrl(rpcUrl));
 
 export let explorer_api: AxiosInstance | null = null;
 export let activeNetwork: NetworkConfig = DefaultConfig;
@@ -50,6 +59,7 @@ export function getEvmChainID(): number {
 export function setRpcNetwork(conf: NetworkConfig): void {
     avalanche.setAddress(conf.apiIp, conf.apiPort, conf.apiProtocol);
     avalanche.setNetworkID(conf.networkID);
+    avalanche.setRequestConfig('withCredentials', true);
 
     xChain.refreshBlockchainID(conf.xChainID);
     xChain.setBlockchainAlias('X');
@@ -71,7 +81,7 @@ export function setRpcNetwork(conf: NetworkConfig): void {
     }
 
     let rpcUrl = rpcUrlFromConfig(conf);
-    web3.setProvider(rpcUrl);
+    web3.setProvider(getProviderFromUrl(rpcUrl));
 
     activeNetwork = conf;
 }
