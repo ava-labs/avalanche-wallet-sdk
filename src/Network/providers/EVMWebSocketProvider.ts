@@ -86,7 +86,6 @@ export default class EVMWebSocketProvider {
         // Update wallet balances
         this.wallets.forEach((w) => {
             w.updateAvaxBalanceC();
-            w.updateBalanceERC20();
         });
     }
 }

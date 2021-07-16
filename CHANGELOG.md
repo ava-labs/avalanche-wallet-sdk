@@ -15,3 +15,8 @@
 
 -   `waitTxC` utils function uses getTx status to wait
 -   Wallet AVM, EVM/C chain function now wait for confirmation and balance refresh before returning
+-   Assets module `getContractData` renamed to `getContractDataErc20`
+
+#### Removed
+
+-   `updateBalanceERC20` from wallet instances

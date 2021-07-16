@@ -21,6 +21,7 @@ import {
     buildEvmTransferErc20Tx,
     buildEvmTransferNativeTx,
     buildMintNftTx,
+    estimateAvaxGas,
     estimateErc20Gas,
 } from '@/helpers/tx_helper';
 import { BN, Buffer } from 'avalanche';
@@ -56,7 +57,7 @@ import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, UTXOSet as EVMUTXOSet } from 
 
 import { PayloadBase, UnixNow } from 'avalanche/dist/utils';
 import { getAssetDescription } from '@/Asset/Assets';
-import { balanceOf, getErc20Token } from '@/Asset/Erc20';
+import { getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
 import { avaxCtoX, bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
@@ -75,15 +76,36 @@ import {
     canHaveBalanceOnC,
     canHaveBalanceOnP,
     canHaveBalanceOnX,
+    createGraphForC,
+    createGraphForP,
+    createGraphForX,
     getStepsForBalanceC,
     getStepsForBalanceP,
     getStepsForBalanceX,
     UniversalTx,
 } from '@/helpers/universal_tx_helper';
+import { UniversalNode } from '@/helpers/UniversalNode';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
     abstract evmWallet: EvmWallet | EvmWalletReadonly;
+
+    /**
+     * The X chain UTXOs of the wallet's current state
+     */
+    public utxosX: AVMUTXOSet = new AVMUTXOSet();
+
+    /**
+     * The P chain UTXOs of the wallet's current state
+     */
+    public utxosP: PlatformUTXOSet = new PlatformUTXOSet();
+
+    public balanceX: WalletBalanceX = {};
+
+    abstract signEvm(tx: Transaction): Promise<Transaction>;
+    abstract signX(tx: AVMUnsignedTx): Promise<AvmTx>;
+    abstract signP(tx: PlatformUnsignedTx): Promise<PlatformTx>;
+    abstract signC(tx: EVMUnsignedTx): Promise<EVMTx>;
 
     abstract getAddressX(): string;
     abstract getChangeAddressX(): string;
@@ -139,25 +161,6 @@ export abstract class WalletProvider {
     protected emitBalanceChangeC(): void {
         this.emit('balanceChangedC', this.getAvaxBalanceC());
     }
-
-    /**
-     * The X chain UTXOs of the wallet's current state
-     */
-    public utxosX: AVMUTXOSet = new AVMUTXOSet();
-
-    /**
-     * The P chain UTXOs of the wallet's current state
-     */
-    public utxosP: PlatformUTXOSet = new PlatformUTXOSet();
-
-    public balanceX: WalletBalanceX = {};
-
-    public balanceERC20: WalletBalanceERC20 = {};
-
-    abstract signEvm(tx: Transaction): Promise<Transaction>;
-    abstract signX(tx: AVMUnsignedTx): Promise<AvmTx>;
-    abstract signP(tx: PlatformUnsignedTx): Promise<PlatformTx>;
-    abstract signC(tx: EVMUnsignedTx): Promise<EVMTx>;
 
     /**
      *
@@ -240,9 +243,21 @@ export abstract class WalletProvider {
      */
     async sendErc20(to: string, amount: BN, gasPrice: BN, gasLimit: number, contractAddress: string): Promise<string> {
         let fromAddr = this.getAddressC();
+        let token = await getErc20Token(contractAddress);
+        let balOld = await token.balanceOf(fromAddr);
         let tx = await buildEvmTransferErc20Tx(fromAddr, to, amount, gasPrice, gasLimit, contractAddress);
         let txHash = await this.issueEvmTx(tx);
-        this.updateBalanceERC20();
+
+        // TODO: We should not be using setTimeout, wait until tx is confirmed on chain
+        // TODO: Can it be an issue with sticky sessions? Nodes behind a LB?
+        // If new balance doesnt match old, emit balance change
+        setTimeout(async () => {
+            let balNew = await token.balanceOf(fromAddr);
+            if (!balOld.eq(balNew)) {
+                this.emitBalanceChangeC();
+            }
+        }, 2000);
+
         return txHash;
     }
 
@@ -252,9 +267,19 @@ export abstract class WalletProvider {
      * @param to Address receiving the tokens
      * @param amount Amount to send. Given in the smallest divisible unit.
      */
-    async estimateErc20Gas(contractAddress: string, to: string, amount: BN) {
+    async estimateErc20Gas(contractAddress: string, to: string, amount: BN): Promise<number> {
         let from = this.getAddressC();
         return await estimateErc20Gas(contractAddress, from, to, amount);
+    }
+
+    /**
+     * Estimate the gas needed for a AVAX send transaction on the C chain.
+     * @param to Destination address.
+     * @param amount Amount of AVAX to send, in WEI.
+     */
+    async estimateAvaxGasLimit(to: string, amount: BN, gasPrice: BN): Promise<number> {
+        let from = this.getAddressC();
+        return await estimateAvaxGas(from, to, amount, gasPrice);
     }
 
     /**
@@ -273,23 +298,43 @@ export abstract class WalletProvider {
     }
 
     /**
-     * Can this wallet have the given amount on the given chain after a series of internal transactions (if required).
-     * @param chain X/P/C
-     * @param amount The amount to check against
+     * Returns the maximum spendable AVAX balance for the given chain.
+     * Scans all chains and take cross over fees into account
+     * @param chainType X, P or C
      */
-    public canHaveBalanceOnChain(chain: ChainIdType, amount: BN): boolean {
+    public getUsableAvaxBalanceForChain(chainType: ChainIdType): BN {
+        return this.createUniversalNode(chainType).reduceTotalBalanceFromParents();
+    }
+
+    /**
+     * Create a new instance of a UniversalNode for the given chain using current balance state
+     * @param chain Chain of the universal node.
+     * @private
+     */
+    private createUniversalNode(chain: ChainIdType): UniversalNode {
         let xBal = this.getAvaxBalanceX().unlocked;
         let pBal = this.getAvaxBalanceP().unlocked;
         let cBal = avaxCtoX(this.getAvaxBalanceC()); // need to use 9 decimal places
 
         switch (chain) {
-            case 'P':
-                return canHaveBalanceOnP(xBal, pBal, cBal, amount);
-            case 'C':
-                return canHaveBalanceOnC(xBal, pBal, cBal, amount);
             case 'X':
-                return canHaveBalanceOnX(xBal, pBal, cBal, amount);
+                return createGraphForX(xBal, pBal, cBal);
+            case 'P':
+                return createGraphForP(xBal, pBal, cBal);
+            case 'C':
+                return createGraphForC(xBal, pBal, cBal);
         }
+    }
+
+    /**
+     * Can this wallet have the given amount on the given chain after a series of internal transactions (if required).
+     * @param chain X/P/C
+     * @param amount The amount to check against
+     */
+    public canHaveBalanceOnChain(chain: ChainIdType, amount: BN): boolean {
+        // The maximum amount of AVAX we can have on this chain
+        let maxAmt = this.createUniversalNode(chain).reduceTotalBalanceFromParents();
+        return maxAmt.gte(amount);
     }
 
     /**
@@ -392,40 +437,29 @@ export abstract class WalletProvider {
     }
 
     /**
-     * Requests the balance for each ERC20 contract in the SDK.
-     * - Makes network requests.
-     * - Updates the value of `this.balanceERC20`
+     * Returns the wallet's balance of the given ERC20 contracts
+     * @param addresses ERC20 Contract addresses
      */
-    public async updateBalanceERC20(): Promise<WalletBalanceERC20> {
-        let newBal = await balanceOf(this.getAddressC());
-        let balNow = this.balanceERC20;
+    public async getBalanceERC20(addresses: string[]): Promise<ERC20Balance[]> {
+        let walletAddr = this.getAddressC();
+        let tokenCalls = addresses.map((addr) => getErc20Token(addr));
+        let tokens = await Promise.all(tokenCalls);
 
-        let strNewBal = JSON.stringify(newBal);
-        let strBalNow = JSON.stringify(balNow);
-        // Compare stringified balances
-        if (strNewBal !== strBalNow) {
-            this.emitBalanceChangeC();
-        }
-        this.balanceERC20 = newBal;
-        return this.balanceERC20;
-    }
+        let balanceCalls = tokens.map((token) => token.balanceOf(walletAddr));
+        let balances = await Promise.all(balanceCalls);
 
-    /**
-     * Returns the wallet's balance of the given ERC20 contract
-     * @param address ERC20 Contract address
-     */
-    public async getBalanceERC20(address: string): Promise<ERC20Balance> {
-        let token = await getErc20Token(address);
-        let bal = await token.balanceOf(this.getAddressC());
-        let res: ERC20Balance = {
-            address: address,
-            denomination: token.decimals,
-            balanceParsed: bnToLocaleString(bal, token.decimals),
-            balance: bal,
-            name: token.name,
-            symbol: token.symbol,
-        };
-        return res;
+        return balances.map((bal, i) => {
+            let token = tokens[i];
+            let balance: ERC20Balance = {
+                address: token.address,
+                denomination: token.decimals,
+                balanceParsed: bnToLocaleString(bal, token.decimals),
+                balance: bal,
+                name: token.name,
+                symbol: token.symbol,
+            };
+            return balance;
+        });
     }
 
     private async updateUnknownAssetsX() {
@@ -614,7 +648,7 @@ export abstract class WalletProvider {
         let txId = await pChain.issueTx(tx);
         await waitTxP(txId);
 
-        this.updateUtxosP();
+        await this.updateUtxosP();
 
         return txId;
     }

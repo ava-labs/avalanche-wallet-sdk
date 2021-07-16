@@ -405,6 +405,21 @@ export async function estimateErc20Gas(tokenContract: string, from: string, to: 
     });
 }
 
+/**
+ * Estimates the gas needed to send AVAX
+ * @param to Destination address
+ * @param amount Amount of AVAX to send, given in WEI
+ * @param gasPrice Given in WEI
+ */
+export async function estimateAvaxGas(from: string, to: string, amount: BN, gasPrice: BN): Promise<number> {
+    return await web3.eth.estimateGas({
+        from,
+        to,
+        gasPrice: `0x${gasPrice.toString('hex')}`,
+        value: `0x${amount.toString('hex')}`,
+    });
+}
+
 export enum AvmTxNameEnum {
     'Transaction' = AVMConstants.BASETX,
     'Mint' = AVMConstants.CREATEASSETTX,
