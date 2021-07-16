@@ -90,6 +90,23 @@ export abstract class WalletProvider {
     abstract type: WalletNameType;
     abstract evmWallet: EvmWallet | EvmWalletReadonly;
 
+    /**
+     * The X chain UTXOs of the wallet's current state
+     */
+    public utxosX: AVMUTXOSet = new AVMUTXOSet();
+
+    /**
+     * The P chain UTXOs of the wallet's current state
+     */
+    public utxosP: PlatformUTXOSet = new PlatformUTXOSet();
+
+    public balanceX: WalletBalanceX = {};
+
+    abstract signEvm(tx: Transaction): Promise<Transaction>;
+    abstract signX(tx: AVMUnsignedTx): Promise<AvmTx>;
+    abstract signP(tx: PlatformUnsignedTx): Promise<PlatformTx>;
+    abstract signC(tx: EVMUnsignedTx): Promise<EVMTx>;
+
     abstract getAddressX(): string;
     abstract getChangeAddressX(): string;
     abstract getAddressP(): string;
@@ -144,25 +161,6 @@ export abstract class WalletProvider {
     protected emitBalanceChangeC(): void {
         this.emit('balanceChangedC', this.getAvaxBalanceC());
     }
-
-    /**
-     * The X chain UTXOs of the wallet's current state
-     */
-    public utxosX: AVMUTXOSet = new AVMUTXOSet();
-
-    /**
-     * The P chain UTXOs of the wallet's current state
-     */
-    public utxosP: PlatformUTXOSet = new PlatformUTXOSet();
-
-    public balanceX: WalletBalanceX = {};
-
-    public balanceERC20: WalletBalanceERC20 = {};
-
-    abstract signEvm(tx: Transaction): Promise<Transaction>;
-    abstract signX(tx: AVMUnsignedTx): Promise<AvmTx>;
-    abstract signP(tx: PlatformUnsignedTx): Promise<PlatformTx>;
-    abstract signC(tx: EVMUnsignedTx): Promise<EVMTx>;
 
     /**
      *
