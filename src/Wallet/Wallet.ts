@@ -255,7 +255,6 @@ export abstract class WalletProvider {
         // If new balance doesnt match old, emit balance change
         setTimeout(async () => {
             let balNew = await token.balanceOf(fromAddr);
-            console.log(balOld.toString(), balNew.toString());
             if (!balOld.eq(balNew)) {
                 this.emitBalanceChangeC();
             }
@@ -651,7 +650,7 @@ export abstract class WalletProvider {
         let txId = await pChain.issueTx(tx);
         await waitTxP(txId);
 
-        this.updateUtxosP();
+        await this.updateUtxosP();
 
         return txId;
     }

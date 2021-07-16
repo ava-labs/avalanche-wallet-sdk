@@ -283,7 +283,6 @@ export async function waitTxEvm(txHash: string, tryCount = 10): Promise<string> 
     }
 
     let receipt = await web3.eth.getTransactionReceipt(txHash);
-    console.log(receipt);
     if (!receipt) {
         return await new Promise((resolve) => {
             setTimeout(async () => {
