@@ -34,7 +34,7 @@
         "url": "https://github.com/ava-labs/avalanche-wallet-sdk"
     },
     "publishConfig": {
-        "access": "restricted"
+        "access": "public"
     },
     "devDependencies": {
         "@babel/core": "^7.14.0",
