@@ -2,9 +2,9 @@ import { NetworkConfig } from './types';
 // import { AVMConstants } from 'avalanche/dist/apis/avm';
 // import Avalanche, { AvalancheCore } from 'avalanche';
 import { Defaults } from 'avalanche/dist/utils';
+import { getRpcC, getRpcP, getRpcX } from './helpers/rpcFromConfig';
 
 export const MainnetConfig: NetworkConfig = {
-    name: 'Avalanche Mainnet C-Chain',
     apiProtocol: 'https',
     apiIp: 'api.avax.network',
     apiPort: 443,
@@ -21,12 +21,16 @@ export const MainnetConfig: NetworkConfig = {
     evmChainID: Defaults.network[1]['C']['chainID'],
     // @ts-ignore
     avaxID: Defaults.network[1]['X']['avaxAssetID'],
-    rpcUrl: ' https://api.avax.network/ext/bc/C/rpc',
-    symbol: 'AVAX',
+    get rpcUrl() {
+        return {
+            c: getRpcC(this),
+            p: getRpcP(this),
+            x: getRpcX(this),
+        };
+    },
 };
 
 export const TestnetConfig: NetworkConfig = {
-    name: 'Avalanche FUJI C-Chain',
     apiProtocol: 'https',
     apiIp: 'api.avax-test.network',
     apiPort: 443,
@@ -43,12 +47,16 @@ export const TestnetConfig: NetworkConfig = {
     evmChainID: Defaults.network[5]['C']['chainID'],
     // @ts-ignore
     avaxID: Defaults.network[5]['X']['avaxAssetID'],
-    rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
-    symbol: 'AVAX',
+    get rpcUrl() {
+        return {
+            c: getRpcC(this),
+            p: getRpcP(this),
+            x: getRpcX(this),
+        };
+    },
 };
 
 export const LocalnetConfig: NetworkConfig = {
-    name: 'Avalanche Local',
     apiProtocol: 'http',
     apiIp: 'localhost',
     apiPort: 9650,
@@ -63,8 +71,13 @@ export const LocalnetConfig: NetworkConfig = {
     evmChainID: Defaults.network[12345]['C']['chainID'],
     // @ts-ignore
     avaxID: Defaults.network[12345]['X']['avaxAssetID'],
-    rpcUrl: 'http://localhost:9650/ext/bc/C/rpc',
-    symbol: 'AVAX',
+    get rpcUrl() {
+        return {
+            c: getRpcC(this),
+            p: getRpcP(this),
+            x: getRpcX(this),
+        };
+    },
 };
 
 // Default network connection
