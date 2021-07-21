@@ -6,6 +6,7 @@ import MnemonicWallet from '@/Wallet/MnemonicWallet';
 import SingletonWallet from '@/Wallet/SingletonWallet';
 import LedgerWallet from '@/Wallet/LedgerWallet';
 import PublicMnemonicWallet from '@/Wallet/PublicMnemonicWallet';
+export * from '@/Wallet/types';
 
 import * as NetworkConstants from '@/Network/constants';
 import * as Utils from '@/utils';
