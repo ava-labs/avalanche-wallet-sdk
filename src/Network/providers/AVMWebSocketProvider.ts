@@ -33,7 +33,7 @@ export default class AVMWebSocketProvider {
      * Starts watching for transactions on this wallet.
      * @param wallet The wallet instance to track
      */
-    trackWallet(wallet: WalletType) {
+    trackWallet(wallet: WalletType): void {
         if (this.wallets.includes(wallet)) {
             return;
         }
@@ -43,11 +43,11 @@ export default class AVMWebSocketProvider {
         this.updateFilterAddresses();
     }
 
-    onWalletAddressChange() {
+    onWalletAddressChange(): void {
         this.updateFilterAddresses();
     }
 
-    removeWallet(w: WalletType) {
+    removeWallet(w: WalletType): void {
         if (!this.wallets.includes(w)) {
             return;
         }
@@ -57,7 +57,7 @@ export default class AVMWebSocketProvider {
         w.off('addressChanged', this.boundHandler);
     }
 
-    setEndpoint(wsUrl: string) {
+    setEndpoint(wsUrl: string): void {
         this.socket.close();
 
         this.socket = new Sockette(wsUrl, {
@@ -77,7 +77,7 @@ export default class AVMWebSocketProvider {
     }
 
     // Clears the filter listening to X chain transactions
-    clearFilter() {
+    clearFilter(): void {
         let pubsub = new PubSub();
         let bloom = pubsub.newBloom(FILTER_ADDRESS_SIZE);
         this.socket.send(bloom);

@@ -4,8 +4,15 @@ import { BN, Buffer as BufferAvalanche } from 'avalanche';
 import { validateAddress } from '@/helpers/address_helper';
 import createHash from 'create-hash';
 import axios from 'axios';
-import { pChain, web3, xChain } from '@/Network/network';
-import { AvmStatusResponseType, AvmStatusType, PlatformStatusResponseType, PlatformStatusType } from '@/utils/types';
+import { cChain, pChain, web3, xChain } from '@/Network/network';
+import {
+    AvmStatusResponseType,
+    AvmStatusType,
+    ChainStatusResponseTypeC,
+    ChainStatusTypeC,
+    PlatformStatusResponseType,
+    PlatformStatusType,
+} from '@/utils/types';
 import { PayloadBase, PayloadTypes } from 'avalanche/dist/utils';
 
 declare module 'big.js' {
@@ -53,6 +60,15 @@ export function bnToBig(val: BN, denomination = 0): Big {
 export function avaxCtoX(amount: BN) {
     let tens = new BN(10).pow(new BN(9));
     return amount.div(tens);
+}
+
+export function avaxXtoC(amount: BN) {
+    let tens = new BN(10).pow(new BN(9));
+    return amount.mul(tens);
+}
+
+export function avaxPtoC(amount: BN) {
+    return avaxXtoC(amount);
 }
 
 export function bnToBigAvaxX(val: BN): Big {
@@ -109,7 +125,7 @@ export function bnToAvaxP(val: BN): string {
 export function numberToBN(val: number | string, decimals: number): BN {
     let valBig = Big(val);
     let tens = Big(10).pow(decimals);
-    let valBN = new BN(valBig.times(tens).toString());
+    let valBN = new BN(valBig.times(tens).toFixed(0));
     return valBN;
 }
 
@@ -267,7 +283,6 @@ export async function waitTxEvm(txHash: string, tryCount = 10): Promise<string> 
     }
 
     let receipt = await web3.eth.getTransactionReceipt(txHash);
-
     if (!receipt) {
         return await new Promise((resolve) => {
             setTimeout(async () => {
@@ -283,26 +298,34 @@ export async function waitTxEvm(txHash: string, tryCount = 10): Promise<string> 
     }
 }
 
-//TODO: There is no getTxStatus on C chain. Switch the current setup once that is ready
-export async function waitTxC(cAddress: string, nonce?: number, tryCount = 10): Promise<string> {
+export async function waitTxC(txId: string, tryCount = 10): Promise<string> {
     if (tryCount <= 0) {
         throw new Error('Timeout');
     }
+    let resp: ChainStatusResponseTypeC = (await cChain.getAtomicTxStatus(txId)) as ChainStatusResponseTypeC;
 
-    let nonceNow = await web3.eth.getTransactionCount(cAddress);
-
-    if (typeof nonce === 'undefined') {
-        nonce = nonceNow;
+    let status: ChainStatusTypeC;
+    let reason;
+    if (typeof resp === 'string') {
+        status = resp as ChainStatusTypeC;
+    } else {
+        status = resp.status as ChainStatusTypeC;
+        reason = resp.reason;
     }
 
-    if (nonce === nonceNow) {
+    if (status === 'Unknown' || status === 'Processing') {
         return await new Promise((resolve) => {
             setTimeout(async () => {
-                resolve(await waitTxC(cAddress, nonce, tryCount - 1));
+                resolve(await waitTxC(txId, tryCount - 1));
             }, 1000);
         });
+        // return await waitTxX(txId, tryCount - 1);
+    } else if (status === 'Dropped') {
+        throw new Error(reason);
+    } else if (status === 'Accepted') {
+        return txId;
     } else {
-        return 'success';
+        throw new Error('Unknown status type.');
     }
 }
 
@@ -317,4 +340,18 @@ export function parseNftPayload(rawPayload: string): PayloadBase {
     let payloadbase: PayloadBase = payloadtypes.select(typeId, pl);
 
     return payloadbase;
+}
+
+/**
+ * Returns the transaction fee for X chain.
+ */
+export function getTxFeeX() {
+    return xChain.getTxFee();
+}
+
+/**
+ * Returns the transaction fee for P chain.
+ */
+export function getTxFeeP() {
+    return pChain.getTxFee();
 }

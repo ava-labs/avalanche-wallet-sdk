@@ -10,17 +10,9 @@ import PublicMnemonicWallet from '@/Wallet/PublicMnemonicWallet';
 import * as NetworkConstants from '@/Network/constants';
 import * as Utils from '@/utils';
 import Keystore from '@/Keystore/keystore';
-import { BN } from 'avalanche';
-import Big from 'big.js';
+export { BN } from 'avalanche';
+export { Big } from 'big.js';
 
-export {
-    MnemonicWallet,
-    SingletonWallet,
-    NetworkConstants,
-    Utils,
-    BN,
-    Keystore,
-    LedgerWallet,
-    Big,
-    PublicMnemonicWallet,
-};
+export * from '@/helpers';
+
+export { MnemonicWallet, SingletonWallet, NetworkConstants, Utils, Keystore, LedgerWallet, PublicMnemonicWallet };
