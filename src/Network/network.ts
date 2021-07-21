@@ -7,7 +7,7 @@ import Web3 from 'web3';
 import { DefaultConfig } from './constants';
 import { NetworkConfig } from './types';
 import axios, { AxiosInstance } from 'axios';
-import { rpcUrlFromConfig } from '@/helpers/network_helper';
+import { getRpcC } from './helpers/rpcFromConfig';
 
 export const avalanche: Avalanche = new Avalanche(
     DefaultConfig.apiIp,
@@ -30,7 +30,7 @@ function getProviderFromUrl(url: string) {
     return new Web3.providers.HttpProvider(url, web3RpcConfig);
 }
 
-const rpcUrl = rpcUrlFromConfig(DefaultConfig);
+const rpcUrl = getRpcC(DefaultConfig);
 export const web3 = new Web3(getProviderFromUrl(rpcUrl));
 
 export let explorer_api: AxiosInstance | null = null;
@@ -80,7 +80,7 @@ export function setRpcNetwork(conf: NetworkConfig): void {
         explorer_api = null;
     }
 
-    let rpcUrl = rpcUrlFromConfig(conf);
+    let rpcUrl = getRpcC(conf);
     web3.setProvider(getProviderFromUrl(rpcUrl));
 
     activeNetwork = conf;
