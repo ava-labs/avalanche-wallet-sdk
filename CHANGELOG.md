@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.8.1
+
+#### Added
+
+`getAddressAtIndexExternalX`, `getAddressAtIndexInternalX`, `getAddressAtIndexExternalP` for HD Wallet types.
+
 ## v0.8.0
 
 #### Notes
