@@ -13,17 +13,17 @@ export function setNetwork(conf: NetworkConfig) {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function isFujiNetwork(activeNetwork: NetworkConfig) {
-    return activeNetwork === NetworkConstants.TestnetConfig;
+    return activeNetwork.networkID === NetworkConstants.TestnetConfig.networkID;
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function isMainnetNetwork(activeNetwork: NetworkConfig) {
-    return activeNetwork === NetworkConstants.MainnetConfig;
+    return activeNetwork.networkID === NetworkConstants.MainnetConfig.networkID;
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function isLocalNetwork(activeNetwork: NetworkConfig) {
-    return activeNetwork === NetworkConstants.LocalnetConfig;
+    return activeNetwork.networkID === NetworkConstants.LocalnetConfig.networkID;
 }
 
 // Default connection is Mainnet
