@@ -12,17 +12,17 @@ export function setNetwork(conf: NetworkConfig) {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function isFujiNetwork() {
+export function isFujiNetwork(activeNetwork: NetworkConfig) {
     return activeNetwork === NetworkConstants.TestnetConfig;
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function isMainnetNetwork() {
+export function isMainnetNetwork(activeNetwork: NetworkConfig) {
     return activeNetwork === NetworkConstants.MainnetConfig;
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function isLocalNetwork() {
+export function isLocalNetwork(activeNetwork: NetworkConfig) {
     return activeNetwork === NetworkConstants.LocalnetConfig;
 }
 
