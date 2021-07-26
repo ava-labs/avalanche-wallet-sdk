@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.8.2
+
+#### Changed
+
+-   Minimum required node version is `>=15`. `crypto.subtle` support got added on this version.
+
 ## v0.8.1
 
 #### Added
