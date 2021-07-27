@@ -1,15 +1,11 @@
 import { NetworkConfig } from '../types';
 
-function rpcUrlFromConfig(conf: NetworkConfig, chain: string): string {
-    return `${conf.apiProtocol}://${conf.apiIp}:${conf.apiPort}/ext/${chain}/rpc`;
-}
-
 export function getRpcC(conf: NetworkConfig) {
-    return rpcUrlFromConfig(conf, 'bc/C');
+    return `${conf.apiProtocol}://${conf.apiIp}:${conf.apiPort}/ext/bc/C/rpc`;
 }
 export function getRpcX(conf: NetworkConfig) {
-    return rpcUrlFromConfig(conf, 'X');
+    return `${conf.apiProtocol}://${conf.apiIp}:${conf.apiPort}/ext/bc/X`;
 }
 export function getRpcP(conf: NetworkConfig) {
-    return rpcUrlFromConfig(conf, 'P');
+    return `${conf.apiProtocol}://${conf.apiIp}:${conf.apiPort}/ext/bc/P`;
 }
