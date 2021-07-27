@@ -138,7 +138,7 @@ export abstract class WalletProvider {
         this.emitter.off(event, listener);
     }
 
-    protected emit(event: WalletEventType, args: WalletEventArgsType): void {
+    protected emit(event: WalletEventType, args?: WalletEventArgsType): void {
         this.emitter.emit(event, args);
     }
 

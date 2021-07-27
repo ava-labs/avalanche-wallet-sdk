@@ -80,8 +80,8 @@ export interface ILedgerAppConfig {
     name: 'Avalanche';
 }
 
-export type WalletEventType = 'addressChanged' | 'balanceChangedX' | 'balanceChangedP' | 'balanceChangedC';
-export type WalletEventArgsType = iWalletAddressChanged | WalletBalanceX | AssetBalanceP | BN;
+export type WalletEventType = 'addressChanged' | 'balanceChangedX' | 'balanceChangedP' | 'balanceChangedC' | 'hd_ready';
+export type WalletEventArgsType = iWalletAddressChanged | WalletBalanceX | AssetBalanceP | BN | iHDWalletIndex;
 
 export interface iWalletAddressChanged {
     X: string;
