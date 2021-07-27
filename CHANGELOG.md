@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## v0.9.0
+
+#### Added
+
+-   `hd_ready` event fired for HD wallets.
+
+## v0.8.2
+
+#### Changed
+
+-   Minimum required node version is `>=15`. `crypto.subtle` support got added on this version.
+
+## v0.8.1
+
+#### Added
+
+`getAddressAtIndexExternalX`, `getAddressAtIndexInternalX`, `getAddressAtIndexExternalP` for HD Wallet types.
+
 ## v0.8.0
 
 #### Notes
