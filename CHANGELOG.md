@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.9.0
+
+#### Added
+
+-   `hd_ready` event fired for HD wallets.
+
 ## v0.8.2
 
 #### Changed

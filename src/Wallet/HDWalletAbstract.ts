@@ -98,12 +98,24 @@ export abstract class HDWalletAbstract extends WalletProvider {
     public async resetHdIndices(externalStart = 0, internalStart = 0): Promise<iHDWalletIndex> {
         let indexExt = await this.externalScan.resetIndex(externalStart);
         let indexInt = await this.internalScan.resetIndex(internalStart);
-        this.emitAddressChange();
 
-        return {
+        let indices = {
             internal: indexInt,
             external: indexExt,
         };
+
+        this.emitAddressChange();
+        this.emitHdReady(indices);
+
+        return indices;
+    }
+
+    /**
+     * Emits an event to indicate the wallet has finishing calculating its last use address
+     * @protected
+     */
+    protected emitHdReady(indices: iHDWalletIndex): void {
+        this.emit('hd_ready', indices);
     }
 
     public async updateUtxosX(): Promise<AVMUTXOSet> {
