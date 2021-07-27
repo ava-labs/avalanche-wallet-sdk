@@ -1,35 +1,29 @@
 import { NetworkConfig } from './types';
-import { MainnetConfig } from '@/Network/constants';
+import { MainnetConfig, TestnetConfig, LocalnetConfig } from '@/Network/constants';
 import { activeNetwork, setRpcNetwork, getEvmChainID } from '@/Network/network';
 import WebsocketProvider from '@/Network/providers/WebsocketProvider';
 import { bustErc20Cache } from '@/Asset/Erc20';
-import { NetworkConstants } from '..';
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function setNetwork(conf: NetworkConfig) {
     setRpcNetwork(conf);
     bustErc20Cache();
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function isFujiNetwork(activeNetwork: NetworkConfig) {
-    return activeNetwork.networkID === NetworkConstants.TestnetConfig.networkID;
+    return activeNetwork.networkID === TestnetConfig.networkID;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function isMainnetNetwork(activeNetwork: NetworkConfig) {
-    return activeNetwork.networkID === NetworkConstants.MainnetConfig.networkID;
+    return activeNetwork.networkID === MainnetConfig.networkID;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function isLocalNetwork(activeNetwork: NetworkConfig) {
-    return activeNetwork.networkID === NetworkConstants.LocalnetConfig.networkID;
+    return activeNetwork.networkID === LocalnetConfig.networkID;
 }
 
 // Default connection is Mainnet
 setNetwork(MainnetConfig);
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function getAvaxAssetID() {
     return activeNetwork.avaxID;
 }
