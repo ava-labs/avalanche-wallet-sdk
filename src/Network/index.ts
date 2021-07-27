@@ -28,7 +28,10 @@ export function getAvaxAssetID() {
     return activeNetwork.avaxID;
 }
 
+export function getActiveNetworkConfig() {
+    return activeNetwork;
+}
+
 export { WebsocketProvider, getEvmChainID };
 
 export { NetworkConfig } from './types';
-export { activeNetwork } from '@/Network/network';
