@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.8.4
+
+#### Fixed
+
+-   `validateAddress`
+
 ## v0.8.3
 
 #### Added
