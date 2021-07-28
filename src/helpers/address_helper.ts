@@ -46,8 +46,3 @@ export function getAddressChain(address: string): ChainIdType {
         return address[0] as ChainIdType;
     }
 }
-
-export default {
-    validateAddress,
-    getAddressChain,
-};
