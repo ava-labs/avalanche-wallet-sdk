@@ -1,10 +1,13 @@
 import {
     getAddressChain,
+    getAddressHRP,
     validateAddress,
     validateAddressEVM,
     validateAddressP,
     validateAddressX,
 } from '@/helpers/address_helper';
+
+import { avalanche } from '@/Network/network';
 import Web3 from 'web3';
 const addrC = '0x6a23c16777a3A194b2773df90FEB8753A8e619Ee';
 const addrP = 'P-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh';
@@ -14,6 +17,13 @@ jest.mock('web3', () => {
     return {
         utils: {
             isAddress: jest.fn(),
+        },
+    };
+});
+jest.mock('@/Network/network', () => {
+    return {
+        avalanche: {
+            getHRP: jest.fn(),
         },
     };
 });
@@ -114,5 +124,19 @@ describe('get chain', () => {
         Web3.utils.isAddress.mockReturnValue(true);
         let chain = getAddressChain(addrC);
         expect(chain).toBe('C');
+    });
+});
+
+describe('get HRP', () => {
+    it('Return avax HRP', () => {
+        let res = getAddressHRP(addrX);
+        let res2 = getAddressHRP(addrP);
+        expect(res).toBe('avax');
+        expect(res2).toBe('avax');
+    });
+
+    it('Return fuji HRP', () => {
+        let res = getAddressHRP('X-fuji1ed2ru7fkes4vvflljlr8lt25ew634y7rjgu9vn');
+        expect(res).toBe('fuji');
     });
 });

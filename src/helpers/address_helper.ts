@@ -1,7 +1,6 @@
-import { BinTools } from 'avalanche';
 import { ChainIdType } from '@/types';
 import Web3 from 'web3';
-export const bintools: BinTools = BinTools.getInstance();
+import { bintools } from '@/common';
 
 export const validateAddress = (address: string): boolean | string => {
     return validateAddressX(address) || validateAddressP(address) || validateAddressEVM(address);
@@ -29,6 +28,17 @@ export function validateAddressP(address: string) {
 
 export function validateAddressEVM(address: string) {
     return Web3.utils.isAddress(address);
+}
+
+/**
+ * Returns the human readable part of a X or P bech32 address.
+ * @param address
+ */
+export function getAddressHRP(address: string): string {
+    if (!validateAddress(address)) {
+        throw new Error('Invalid X or P address.');
+    }
+    return address.split('-')[1].split('1')[0];
 }
 
 /**
