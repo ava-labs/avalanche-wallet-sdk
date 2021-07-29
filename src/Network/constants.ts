@@ -58,5 +58,22 @@ export const LocalnetConfig: NetworkConfig = {
     avaxID: Defaults.network[12345]['X']['avaxAssetID'],
 };
 
+export const MainnetLocalConfig: NetworkConfig = {
+    apiProtocol: 'http',
+    apiIp: 'localhost',
+    apiPort: 9650,
+    networkID: 1,
+    // @ts-ignore
+    xChainID: Defaults.network[1]['X']['blockchainID'],
+    // @ts-ignore
+    pChainID: Defaults.network[1]['P']['blockchainID'],
+    // @ts-ignore
+    cChainID: Defaults.network[1]['C']['blockchainID'],
+    // @ts-ignore
+    evmChainID: Defaults.network[1]['C']['chainID'],
+    // @ts-ignore
+    avaxID: Defaults.network[1]['X']['avaxAssetID'],
+};
+
 // Default network connection
 export const DefaultConfig = MainnetConfig;
