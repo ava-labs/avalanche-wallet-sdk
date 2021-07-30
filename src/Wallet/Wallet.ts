@@ -52,6 +52,7 @@ import {
     Tx as PlatformTx,
     PlatformVMConstants,
     StakeableLockOut,
+    TransferableOutput,
 } from 'avalanche/dist/apis/platformvm';
 import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, UTXOSet as EVMUTXOSet } from 'avalanche/dist/apis/evm';
 
@@ -85,6 +86,7 @@ import {
     UniversalTx,
 } from '@/helpers/universal_tx_helper';
 import { UniversalNode } from '@/helpers/UniversalNode';
+import { GetStakeResponse } from 'avalanche/dist/common';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -431,7 +433,7 @@ export abstract class WalletProvider {
     /**
      * Returns the number AVAX staked by this wallet.
      */
-    public async getStake(): Promise<BN> {
+    public async getStake(): Promise<GetStakeResponse> {
         let addrs = this.getAllAddressesP();
         return await getStakeForAddresses(addrs);
     }
