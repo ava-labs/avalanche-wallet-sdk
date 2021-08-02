@@ -4,6 +4,7 @@ import { UTXOSet as EVMUTXOSet } from 'avalanche/dist/apis/evm/utxos';
 import { xChain, cChain, pChain } from '@/Network/network';
 import { BN } from 'avalanche';
 import { AvmImportChainType } from '@/Wallet/types';
+import { GetStakeResponse } from 'avalanche/dist/common';
 
 /**
  *
@@ -56,10 +57,10 @@ async function evmGetAtomicUTXOs(addrs: string[]): Promise<EVMUTXOSet> {
     return result;
 }
 
-export async function getStakeForAddresses(addrs: string[]): Promise<BN> {
+export async function getStakeForAddresses(addrs: string[]): Promise<GetStakeResponse> {
     if (addrs.length <= 256) {
         let data = await pChain.getStake(addrs);
-        return data.staked;
+        return data;
     } else {
         //Break the list in to 1024 chunks
         let chunk = addrs.slice(0, 256);
@@ -67,8 +68,13 @@ export async function getStakeForAddresses(addrs: string[]): Promise<BN> {
 
         let chunkData = await pChain.getStake(chunk);
         let chunkStake = chunkData.staked;
+        let chunkUtxos = chunkData.stakedOutputs;
 
-        return chunkStake.add(await getStakeForAddresses(remainingChunk));
+        let next = await getStakeForAddresses(remainingChunk);
+        return {
+            staked: chunkStake.add(next.staked),
+            stakedOutputs: [...chunkUtxos, ...next.stakedOutputs],
+        };
     }
 }
 
