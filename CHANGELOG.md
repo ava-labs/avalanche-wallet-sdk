@@ -1,10 +1,18 @@
 # CHANGELOG
 
-## v0.8.4
+## v0.9.0
+
+#### Added
+
+-   Network configs now have the raw rpc endpoints
 
 #### Fixed
 
 -   `validateAddress`
+
+#### Changed
+
+-   Wallet `getStake` now returns the total amount staked, and the related outputs
 
 ## v0.8.3
 

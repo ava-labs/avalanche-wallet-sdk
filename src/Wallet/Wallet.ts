@@ -291,7 +291,7 @@ export abstract class WalletProvider {
      * @param data `data` field of the transaction, in hex format
      * @param to `to` field of the transaction, in hex format
      * @param value `value` field of the transaction, in hex format
-     * @param nonce Nonce of the transaction, in number
+     * @param nonce Nonce of the transaction, in number. If not provided, SDK will get the latest nonce from the network
      */
     async sendCustomEvmTx(gasPrice: BN, gasLimit: number, data?: string, to?: string, value?: string, nonce?: number) {
         let from = this.getAddressC();
