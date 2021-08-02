@@ -10,4 +10,9 @@ export interface NetworkConfig {
     pChainID: string;
     cChainID: string;
     avaxID: string;
+    rpcUrl: {
+        c: string;
+        x: string;
+        p: string;
+    };
 }

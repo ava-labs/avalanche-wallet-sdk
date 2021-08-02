@@ -2,6 +2,7 @@ import { NetworkConfig } from './types';
 // import { AVMConstants } from 'avalanche/dist/apis/avm';
 // import Avalanche, { AvalancheCore } from 'avalanche';
 import { Defaults } from 'avalanche/dist/utils';
+import { getRpcC, getRpcP, getRpcX } from './helpers/rpcFromConfig';
 
 export const MainnetConfig: NetworkConfig = {
     apiProtocol: 'https',
@@ -20,6 +21,13 @@ export const MainnetConfig: NetworkConfig = {
     evmChainID: Defaults.network[1]['C']['chainID'],
     // @ts-ignore
     avaxID: Defaults.network[1]['X']['avaxAssetID'],
+    get rpcUrl() {
+        return {
+            c: getRpcC(this),
+            p: getRpcP(this),
+            x: getRpcX(this),
+        };
+    },
 };
 
 export const TestnetConfig: NetworkConfig = {
@@ -39,6 +47,13 @@ export const TestnetConfig: NetworkConfig = {
     evmChainID: Defaults.network[5]['C']['chainID'],
     // @ts-ignore
     avaxID: Defaults.network[5]['X']['avaxAssetID'],
+    get rpcUrl() {
+        return {
+            c: getRpcC(this),
+            p: getRpcP(this),
+            x: getRpcX(this),
+        };
+    },
 };
 
 export const LocalnetConfig: NetworkConfig = {
@@ -56,6 +71,13 @@ export const LocalnetConfig: NetworkConfig = {
     evmChainID: Defaults.network[12345]['C']['chainID'],
     // @ts-ignore
     avaxID: Defaults.network[12345]['X']['avaxAssetID'],
+    get rpcUrl() {
+        return {
+            c: getRpcC(this),
+            p: getRpcP(this),
+            x: getRpcX(this),
+        };
+    },
 };
 
 // Default network connection
