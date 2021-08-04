@@ -50,7 +50,6 @@ export function getEvmChainID(): number {
  */
 export async function setRpcNetworkAsync(config: NetworkConfig): Promise<void> {
     let credentials = await canUseCredentials(config);
-    console.log(credentials);
     setRpcNetwork(config, credentials);
 }
 
