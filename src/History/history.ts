@@ -102,6 +102,7 @@ export async function getAddressHistory(
     }
 
     // If there are addresses left, fetch them too
+    // TODO: Do this in parallel, not recursive
     if (remaining.length > 0) {
         let nextRes = await getAddressHistory(remaining, limit, chainID);
         txs.push(...nextRes);

@@ -60,6 +60,7 @@ export async function canUseCredentials(config: NetworkConfig): Promise<boolean>
     try {
         await infoApi.getNetworkID();
         return true;
+        // eslint-disable-next-line
     } catch (e) {}
 
     provider.setRequestConfig('withCredentials', false);
