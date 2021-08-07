@@ -5,6 +5,7 @@ import { Defaults } from 'avalanche/dist/utils';
 import { getRpcC, getRpcP, getRpcX } from './helpers/rpcFromConfig';
 
 export const MainnetConfig: NetworkConfig = {
+    rawUrl: 'https://api.avax.network',
     apiProtocol: 'https',
     apiIp: 'api.avax.network',
     apiPort: 443,
@@ -31,6 +32,7 @@ export const MainnetConfig: NetworkConfig = {
 };
 
 export const TestnetConfig: NetworkConfig = {
+    rawUrl: 'https://api.avax-test.network',
     apiProtocol: 'https',
     apiIp: 'api.avax-test.network',
     apiPort: 443,
@@ -57,6 +59,7 @@ export const TestnetConfig: NetworkConfig = {
 };
 
 export const LocalnetConfig: NetworkConfig = {
+    rawUrl: 'http://localhost:9650',
     apiProtocol: 'http',
     apiIp: 'localhost',
     apiPort: 9650,
