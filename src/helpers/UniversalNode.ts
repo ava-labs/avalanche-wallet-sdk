@@ -59,10 +59,35 @@ export class UniversalNode {
         }
     }
 
+    /**
+     * Returns the import action type from this node to its child
+     * @param from Which chain are we importing from
+     */
+    getImportMethod(from?: ChainIdType): UniversalTxActionType {
+        switch (this.chain) {
+            case 'X':
+                if (from === 'P') {
+                    return 'import_p_x';
+                } else {
+                    return 'import_c_x';
+                }
+            case 'C':
+                return 'import_x_c';
+            case 'P':
+                return 'import_x_p';
+        }
+    }
+
     buildExportTx(amount: BN): UniversalTx {
         return {
             action: this.getExportMethod(this.child?.chain),
             amount: amount,
+        };
+    }
+
+    buildImportTx(from?: ChainIdType): UniversalTx {
+        return {
+            action: this.getImportMethod(from),
         };
     }
 
@@ -102,7 +127,8 @@ export class UniversalNode {
             let parentBalanceNeeded = remaining.add(feeImportExport);
             let txs = parent.getStepsForTargetBalance(parentBalanceNeeded);
             let tx = parent.buildExportTx(remaining);
-            return [...txs, tx];
+            let importTx = this.buildImportTx(parent.chain);
+            return [...txs, tx, importTx];
         } else {
             let transactions = [];
             for (let i = 0; i < this.parents.length; i++) {
@@ -118,9 +144,10 @@ export class UniversalNode {
 
                 let pTxs = p.getStepsForTargetBalance(target);
                 let pTx = p.buildExportTx(exportAmt);
-
+                let importTx = this.buildImportTx(p.chain);
                 transactions.push(...pTxs);
                 transactions.push(pTx);
+                transactions.push(importTx);
 
                 remaining = remaining.sub(exportAmt);
             }

@@ -1016,6 +1016,33 @@ export abstract class WalletProvider {
         return txId;
     }
 
+    /**
+     * Issues the given transaction.
+     * @param tx A universal transaction json object.
+     */
+    public async issueUniversalTx(tx: UniversalTx): Promise<string> {
+        switch (tx.action) {
+            case 'export_x_c':
+                return await this.exportXChain(tx.amount!, 'C');
+            case 'import_x_c':
+                return await this.importC();
+            case 'export_x_p':
+                return await this.exportXChain(tx.amount!, 'P');
+            case 'import_x_p':
+                return await this.importP();
+            case 'export_c_x':
+                return await this.exportCChain(tx.amount!);
+            case 'import_c_x':
+                return await this.importX('C');
+            case 'export_p_x':
+                return await this.exportPChain(tx.amount!);
+            case 'import_p_x':
+                return await this.importX('P');
+            default:
+                throw new Error('Method not supported.');
+        }
+    }
+
     async getHistoryX(limit = 0): Promise<ITransactionData[]> {
         let addrs = this.getAllAddressesX();
         return await getAddressHistory(addrs, limit, xChain.getBlockchainID());

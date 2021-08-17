@@ -1,15 +1,15 @@
 import { BN } from 'avalanche';
 import { UniversalNode } from '@/helpers/UniversalNode';
 
-type UniversalTxActionTypesX = 'send_x' | 'export_x_c' | 'export_x_p';
-type UniversalTxActionTypesC = 'send_c' | 'export_c_x';
-type UniversalTxActionTypesP = 'export_p_x';
+type UniversalTxActionTypesX = 'send_x' | 'export_x_c' | 'export_x_p' | 'import_p_x' | 'import_c_x';
+type UniversalTxActionTypesC = 'send_c' | 'export_c_x' | 'import_x_c';
+type UniversalTxActionTypesP = 'export_p_x' | 'import_x_p';
 
 export type UniversalTxActionType = UniversalTxActionTypesX | UniversalTxActionTypesC | UniversalTxActionTypesP;
 
 export interface UniversalTx {
     action: UniversalTxActionType;
-    amount: BN;
+    amount?: BN;
 }
 
 export function createGraphForP(balX: BN, balP: BN, balC: BN): UniversalNode {

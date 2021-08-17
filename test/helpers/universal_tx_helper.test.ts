@@ -191,6 +191,9 @@ describe('Get transactions for balance on UniversalNode P', () => {
                 action: 'export_x_p',
                 amount: new BN(1000000000),
             },
+            {
+                action: 'import_x_p',
+            },
         ];
 
         let steps = nodeP.getStepsForTargetBalance(target);
@@ -212,8 +215,14 @@ describe('Get transactions for balance on UniversalNode P', () => {
                 amount: new BN(1002000000),
             },
             {
+                action: 'import_c_x',
+            },
+            {
                 action: 'export_x_p',
                 amount: new BN(1000000000),
+            },
+            {
+                action: 'import_x_p',
             },
         ];
 
@@ -236,8 +245,14 @@ describe('Get transactions for balance on UniversalNode P', () => {
                 amount: new BN(502000000),
             },
             {
+                action: 'import_c_x',
+            },
+            {
                 action: 'export_x_p',
                 amount: new BN(1000000000),
+            },
+            {
+                action: 'import_x_p',
             },
         ];
 
@@ -260,8 +275,14 @@ describe('Get transactions for balance on UniversalNode P', () => {
                 amount: new BN(1002000000),
             },
             {
+                action: 'import_c_x',
+            },
+            {
                 action: 'export_x_p',
                 amount: new BN(2000000000),
+            },
+            {
+                action: 'import_x_p',
             },
         ];
 
@@ -303,6 +324,9 @@ describe('Get transactions for balance on UniversalNode X', () => {
                 action: 'export_p_x',
                 amount: new BN(2000000000),
             },
+            {
+                action: 'import_p_x',
+            },
         ];
 
         let steps = nodeX.getStepsForTargetBalance(target);
@@ -323,6 +347,9 @@ describe('Get transactions for balance on UniversalNode X', () => {
                 action: 'export_p_x',
                 amount: new BN(2000000000),
             },
+            {
+                action: 'import_p_x',
+            },
         ];
 
         let steps = nodeX.getStepsForTargetBalance(target);
@@ -342,6 +369,9 @@ describe('Get transactions for balance on UniversalNode X', () => {
             {
                 action: 'export_c_x',
                 amount: new BN(2000000000),
+            },
+            {
+                action: 'import_c_x',
             },
         ];
 
@@ -364,8 +394,14 @@ describe('Get transactions for balance on UniversalNode X', () => {
                 amount: new BN(698000000),
             },
             {
+                action: 'import_p_x',
+            },
+            {
                 action: 'export_c_x',
                 amount: new BN(302000000),
+            },
+            {
+                action: 'import_c_x',
             },
         ];
 
