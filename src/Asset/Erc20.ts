@@ -26,11 +26,15 @@ async function addErc20Token(address: string): Promise<Erc20Token> {
         return existing;
     }
 
-    let data: Erc20TokenData = await Erc20Token.getData(address);
-    let token = new Erc20Token(data);
+    try {
+        let data: Erc20TokenData = await Erc20Token.getData(address);
+        let token = new Erc20Token(data);
 
-    erc20Cache[address] = token;
-    return token;
+        erc20Cache[address] = token;
+        return token;
+    } catch (e) {
+        throw new Error('Unable to add ERC20 contract.');
+    }
 }
 
 function addErc20TokenFromData(data: Erc20TokenData): Erc20Token {
@@ -46,8 +50,12 @@ function addErc20TokenFromData(data: Erc20TokenData): Erc20Token {
 }
 
 export async function getContractDataErc20(address: string): Promise<Erc20TokenData> {
-    let data: Erc20TokenData = await Erc20Token.getData(address);
-    return data;
+    try {
+        let data: Erc20TokenData = await Erc20Token.getData(address);
+        return data;
+    } catch (e) {
+        throw new Error(`ERC20 contract ${address} does not exist.`);
+    }
 }
 
 export async function getErc20Token(address: string): Promise<Erc20Token> {
