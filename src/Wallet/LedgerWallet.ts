@@ -23,7 +23,6 @@ import {
     OperationTx,
     AVMConstants,
     ImportTx as AVMImportTx,
-    ExportTx as AVMExportTx,
     SelectCredentialClass as AVMSelectCredentialClass,
 } from 'avalanche/dist/apis/avm';
 import { Credential, SigIdx, Signature } from 'avalanche/dist/common';
@@ -41,7 +40,6 @@ import {
     Tx as PlatformTx,
     PlatformVMConstants,
     ImportTx as PlatformImportTx,
-    ExportTx as PlatformExportTx,
     SelectCredentialClass as PlatformSelectCredentialClass,
 } from 'avalanche/dist/apis/platformvm';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
@@ -52,7 +50,6 @@ import { Buffer, BN } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/tx_helper';
 import createHash from 'create-hash';
-// const bippath = require('bip32-path');
 //@ts-ignore
 import bippath from 'bip32-path';
 import { bintools } from '@/common';

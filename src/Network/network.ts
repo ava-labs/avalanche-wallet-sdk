@@ -1,12 +1,11 @@
 import { Avalanche } from 'avalanche/dist';
 import { AVMAPI } from 'avalanche/dist/apis/avm';
 import { InfoAPI } from 'avalanche/dist/apis/info';
-// import { BinTools } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import Web3 from 'web3';
 import { DefaultConfig } from './constants';
 import { NetworkConfig, NetworkConfigRpc, NetworkProtocolType } from './types';
-import axios, { AxiosInstance } from 'axios';
+import { AxiosInstance } from 'axios';
 import { getRpcC, getRpcP, getRpcX } from './helpers/rpcFromConfig';
 import URL from 'url';
 import { bintools } from '@/common';

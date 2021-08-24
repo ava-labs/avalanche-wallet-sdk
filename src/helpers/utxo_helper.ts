@@ -2,7 +2,6 @@ import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm/utxos';
 import { UTXOSet as EVMUTXOSet } from 'avalanche/dist/apis/evm/utxos';
 import { xChain, cChain, pChain } from '@/Network/network';
-import { BN } from 'avalanche';
 import { AvmImportChainType } from '@/Wallet/types';
 import { GetStakeResponse } from 'avalanche/dist/common';
 
@@ -31,9 +30,6 @@ export async function avmGetAtomicUTXOs(addrs: string[], chainID: AvmImportChain
 
 // todo: Use end index to get ALL utxos
 export async function platformGetAtomicUTXOs(addrs: string[]): Promise<PlatformUTXOSet> {
-    // if (addrs.length > 1024) {
-    //     throw new Error('Number of addresses can not be greater than 1024.');
-    // }
     let selection = addrs.slice(0, 1024);
     let remaining = addrs.slice(1024);
 

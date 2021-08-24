@@ -58,8 +58,14 @@ export interface ITransactionData {
 }
 
 interface TransactionInput {
-    credentials: any[];
+    credentials: TransactionCredential[];
     output: UTXO;
+}
+
+interface TransactionCredential {
+    address: string;
+    public_key: string;
+    signature: string;
 }
 
 export interface UTXO {

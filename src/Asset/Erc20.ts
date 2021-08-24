@@ -37,7 +37,11 @@ async function addErc20Token(address: string): Promise<Erc20Token> {
     }
 }
 
-function addErc20TokenFromData(data: Erc20TokenData): Erc20Token {
+/**
+ * Initates and caches an erc20 token from the given data.
+ * @param data Information such as name, symbol, and address about the ERC20 token.
+ */
+export function addErc20TokenFromData(data: Erc20TokenData): Erc20Token {
     let address = data.address;
     let existing = erc20Cache[address];
     if (existing) {

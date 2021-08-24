@@ -3,12 +3,8 @@ import { xChain, cChain, pChain, web3 } from '@/Network/network';
 // import { ITransaction } from '@/components/wallet/transfer/types';
 import { BN, Buffer } from 'avalanche';
 import {
-    AssetAmountDestination,
-    BaseTx,
     MinterSet,
     NFTMintOutput,
-    TransferableInput,
-    TransferableOutput,
     UnsignedTx as AVMUnsignedTx,
     UTXO as AVMUTXO,
     UTXOSet,
@@ -18,13 +14,9 @@ import {
 
 import { PayloadBase } from 'avalanche/dist/utils';
 import { OutputOwners } from 'avalanche/dist/common';
-import {
-    UTXOSet as PlatformUTXOSet,
-    UnsignedTx as PlatformUnsignedTx,
-    PlatformVMConstants,
-} from 'avalanche/dist/apis/platformvm';
+import { UTXOSet as PlatformUTXOSet, PlatformVMConstants } from 'avalanche/dist/apis/platformvm';
 
-import { UnsignedTx as EVMUnsignedTx, EVMConstants } from 'avalanche/dist/apis/evm';
+import { EVMConstants } from 'avalanche/dist/apis/evm';
 
 import { AvmExportChainType } from '../Wallet/types';
 import { Transaction } from '@ethereumjs/tx';
@@ -33,126 +25,6 @@ import EthereumjsCommon from '@ethereumjs/common';
 import ERC20Abi from '@openzeppelin/contracts/build/contracts/ERC20.json';
 import ERC721Abi from '@openzeppelin/contracts/build/contracts/ERC721.json';
 import { bintools } from '@/common';
-
-// export async function buildUnsignedTransaction(
-//     orders: (ITransaction | AVMUTXO)[],
-//     addr: string,
-//     derivedAddresses: string[],
-//     utxoset: AVMUTXOSet,
-//     changeAddress?: string,
-//     memo?: Buffer
-// ) {
-//     // TODO: Get new change index.
-//     if (!changeAddress) {
-//         throw new Error('Unable to issue transaction. Ran out of change index.');
-//     }
-//
-//     let fromAddrsStr: string[] = derivedAddresses;
-//     let fromAddrs: Buffer[] = fromAddrsStr.map((val) => bintools.parseAddress(val, 'X'));
-//     let changeAddr: Buffer = bintools.stringToAddress(changeAddress);
-//
-//     // TODO: use internal asset ID
-//     // This does not update on network change, causing issues
-//     const AVAX_ID_BUF = await xChain.getAVAXAssetID();
-//     const AVAX_ID_STR = AVAX_ID_BUF.toString('hex');
-//     const TO_BUF = bintools.stringToAddress(addr);
-//
-//     const aad: AssetAmountDestination = new AssetAmountDestination([TO_BUF], fromAddrs, [changeAddr]);
-//     const ZERO = new BN(0);
-//     let isFeeAdded = false;
-//
-//     // Aggregate Fungible ins & outs
-//     for (let i: number = 0; i < orders.length; i++) {
-//         let order: ITransaction | AVMUTXO = orders[i];
-//
-//         if ((order as ITransaction).asset) {
-//             // if fungible
-//             let tx: ITransaction = order as ITransaction;
-//
-//             let assetId = bintools.cb58Decode(tx.asset.id);
-//             let amt: BN = tx.amount;
-//
-//             if (assetId.toString('hex') === AVAX_ID_STR) {
-//                 aad.addAssetAmount(assetId, amt, xChain.getTxFee());
-//                 isFeeAdded = true;
-//             } else {
-//                 aad.addAssetAmount(assetId, amt, ZERO);
-//             }
-//         }
-//     }
-//
-//     // If fee isn't added, add it
-//     if (!isFeeAdded) {
-//         if (xChain.getTxFee().gt(ZERO)) {
-//             aad.addAssetAmount(AVAX_ID_BUF, ZERO, xChain.getTxFee());
-//         }
-//     }
-//
-//     const success: Error = utxoset.getMinimumSpendable(aad);
-//
-//     let ins: TransferableInput[] = [];
-//     let outs: TransferableOutput[] = [];
-//     if (typeof success === 'undefined') {
-//         ins = aad.getInputs();
-//         outs = aad.getAllOutputs();
-//     } else {
-//         throw success;
-//     }
-//
-//     //@ts-ignore
-//     let nftUtxos: UTXO[] = orders.filter((val) => {
-//         if ((val as ITransaction).asset) return false;
-//         return true;
-//     });
-//
-//     // If transferring an NFT, build the transaction on top of an NFT tx
-//     let unsignedTx: AVMUnsignedTx;
-//     let networkId: number = avalanche.getNetworkID();
-//     let chainId: Buffer = bintools.cb58Decode(xChain.getBlockchainID());
-//
-//     if (nftUtxos.length > 0) {
-//         let nftSet = new AVMUTXOSet();
-//         nftSet.addArray(nftUtxos);
-//
-//         let utxoIds: string[] = nftSet.getUTXOIDs();
-//
-//         // Sort nft utxos
-//         utxoIds.sort((a, b) => {
-//             if (a < b) {
-//                 return -1;
-//             } else if (a > b) {
-//                 return 1;
-//             }
-//             return 0;
-//         });
-//
-//         unsignedTx = nftSet.buildNFTTransferTx(
-//             networkId,
-//             chainId,
-//             [TO_BUF],
-//             fromAddrs,
-//             fromAddrs, // change address should be something else?
-//             utxoIds,
-//             undefined,
-//             undefined,
-//             memo
-//         );
-//
-//         let rawTx = unsignedTx.getTransaction();
-//         let outsNft = rawTx.getOuts();
-//         let insNft = rawTx.getIns();
-//
-//         // TODO: This is a hackish way of doing this, need methods in avalanche.js
-//         //@ts-ignore
-//         rawTx.outs = outsNft.concat(outs);
-//         //@ts-ignore
-//         rawTx.ins = insNft.concat(ins);
-//     } else {
-//         let baseTx: BaseTx = new BaseTx(networkId, chainId, outs, ins, memo);
-//         unsignedTx = new AVMUnsignedTx(baseTx);
-//     }
-//     return unsignedTx;
-// }
 
 export async function buildCreateNftFamilyTx(
     name: string,

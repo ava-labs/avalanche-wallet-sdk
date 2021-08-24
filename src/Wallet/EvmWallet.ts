@@ -1,5 +1,5 @@
-import { BN, Buffer as BufferAvalanche } from 'avalanche';
-import { privateToAddress, privateToPublic, importPublic } from 'ethereumjs-util';
+import { Buffer as BufferAvalanche } from 'avalanche';
+import { privateToPublic } from 'ethereumjs-util';
 import { Transaction } from '@ethereumjs/tx';
 import { avalanche } from '@/Network/network';
 import {
