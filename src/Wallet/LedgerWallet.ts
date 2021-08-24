@@ -79,8 +79,14 @@ export default class LedgerWallet extends HDWalletAbstract {
      */
     static async fromTransport(transport: any) {
         transport.setExchangeTimeout(LEDGER_EXCHANGE_TIMEOUT);
-        let app = new AppAvax(transport, 'w0w');
-        let eth = new Eth(transport, 'w0w');
+        let app, eth;
+
+        try {
+            app = new AppAvax(transport, 'w0w');
+            eth = new Eth(transport, 'w0w');
+        } catch (e) {
+            throw new Error('Failed to create ledger instance from the given transport.');
+        }
 
         let config = await app.getAppConfiguration();
 
@@ -116,10 +122,14 @@ export default class LedgerWallet extends HDWalletAbstract {
     }
 
     static async fromApp(app: AppAvax, eth: Eth): Promise<LedgerWallet> {
-        let avaxAccount = await LedgerWallet.getAvaxAccount(app);
-        let evmAccount = await LedgerWallet.getEvmAccount(eth);
-        let config = await app.getAppConfiguration();
-        return new LedgerWallet(avaxAccount, evmAccount, app, eth, config);
+        try {
+            let avaxAccount = await LedgerWallet.getAvaxAccount(app);
+            let evmAccount = await LedgerWallet.getEvmAccount(eth);
+            let config = await app.getAppConfiguration();
+            return new LedgerWallet(avaxAccount, evmAccount, app, eth, config);
+        } catch (e) {
+            throw new Error('Unable to create ledger wallet instance from the given apps.');
+        }
     }
 
     getAddressC(): string {
