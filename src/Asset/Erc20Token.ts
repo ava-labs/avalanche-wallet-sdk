@@ -4,6 +4,7 @@ import { Erc20TokenData } from '@/Asset/types';
 import { NO_NETWORK } from '@/errors';
 import { BN } from 'avalanche';
 import { Contract } from 'web3-eth-contract';
+import DOMPurify from 'dompurify';
 
 export default class Erc20Token {
     contract: Contract;
@@ -15,8 +16,8 @@ export default class Erc20Token {
     data: Erc20TokenData;
 
     constructor(data: Erc20TokenData) {
-        this.name = data.name;
-        this.symbol = data.symbol;
+        this.name = DOMPurify.sanitize(data.name);
+        this.symbol = DOMPurify.sanitize(data.symbol);
         this.address = data.address;
         this.decimals = data.decimals;
         this.chainId = data.chainId;
@@ -34,8 +35,9 @@ export default class Erc20Token {
         //@ts-ignore
         let contract = new web3.eth.Contract(ERC20Abi.abi, address);
 
-        let name = await contract.methods.name().call();
-        let symbol = await contract.methods.symbol().call();
+        // Purify the values for XSS protection
+        let name = DOMPurify.sanitize(await contract.methods.name().call());
+        let symbol = DOMPurify.sanitize(await contract.methods.symbol().call());
         let decimals = parseInt(await contract.methods.decimals().call());
 
         if (!activeNetwork) {
