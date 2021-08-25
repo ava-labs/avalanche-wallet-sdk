@@ -7,7 +7,6 @@ import {
     validateAddressX,
 } from '@/helpers/address_helper';
 
-import { avalanche } from '@/Network/network';
 import Web3 from 'web3';
 const addrC = '0x6a23c16777a3A194b2773df90FEB8753A8e619Ee';
 const addrP = 'P-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh';

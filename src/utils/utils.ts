@@ -219,7 +219,13 @@ export async function waitTxX(txId: string, tryCount = 10): Promise<string> {
     if (tryCount <= 0) {
         throw new Error('Timeout');
     }
-    let resp: AvmStatusResponseType = (await xChain.getTxStatus(txId)) as AvmStatusResponseType;
+    let resp: AvmStatusResponseType;
+
+    try {
+        resp = (await xChain.getTxStatus(txId)) as AvmStatusResponseType;
+    } catch (e) {
+        throw new Error('Unable to get transaction status.');
+    }
 
     let status: AvmStatusType;
     let reason;
@@ -250,7 +256,13 @@ export async function waitTxP(txId: string, tryCount = 10): Promise<string> {
     if (tryCount <= 0) {
         throw new Error('Timeout');
     }
-    let resp: PlatformStatusResponseType = (await pChain.getTxStatus(txId)) as PlatformStatusResponseType;
+    let resp: PlatformStatusResponseType;
+
+    try {
+        resp = (await pChain.getTxStatus(txId)) as PlatformStatusResponseType;
+    } catch (e) {
+        throw new Error('Unable to get transaction status.');
+    }
 
     let status: PlatformStatusType;
     let reason;
@@ -282,7 +294,14 @@ export async function waitTxEvm(txHash: string, tryCount = 10): Promise<string> 
         throw new Error('Timeout');
     }
 
-    let receipt = await web3.eth.getTransactionReceipt(txHash);
+    let receipt;
+
+    try {
+        receipt = await web3.eth.getTransactionReceipt(txHash);
+    } catch (e) {
+        throw new Error('Unable to get transaction receipt.');
+    }
+
     if (!receipt) {
         return await new Promise((resolve) => {
             setTimeout(async () => {
@@ -302,7 +321,13 @@ export async function waitTxC(txId: string, tryCount = 10): Promise<string> {
     if (tryCount <= 0) {
         throw new Error('Timeout');
     }
-    let resp: ChainStatusResponseTypeC = (await cChain.getAtomicTxStatus(txId)) as ChainStatusResponseTypeC;
+
+    let resp: ChainStatusResponseTypeC;
+    try {
+        resp = (await cChain.getAtomicTxStatus(txId)) as ChainStatusResponseTypeC;
+    } catch (e) {
+        throw new Error('Unable to get transaction status.');
+    }
 
     let status: ChainStatusTypeC;
     let reason;

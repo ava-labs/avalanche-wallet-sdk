@@ -23,7 +23,6 @@ import {
     OperationTx,
     AVMConstants,
     ImportTx as AVMImportTx,
-    ExportTx as AVMExportTx,
     SelectCredentialClass as AVMSelectCredentialClass,
 } from 'avalanche/dist/apis/avm';
 import { Credential, SigIdx, Signature } from 'avalanche/dist/common';
@@ -41,7 +40,6 @@ import {
     Tx as PlatformTx,
     PlatformVMConstants,
     ImportTx as PlatformImportTx,
-    ExportTx as PlatformExportTx,
     SelectCredentialClass as PlatformSelectCredentialClass,
 } from 'avalanche/dist/apis/platformvm';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
@@ -52,7 +50,6 @@ import { Buffer, BN } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/tx_helper';
 import createHash from 'create-hash';
-// const bippath = require('bip32-path');
 //@ts-ignore
 import bippath from 'bip32-path';
 import { bintools } from '@/common';
@@ -82,8 +79,14 @@ export default class LedgerWallet extends HDWalletAbstract {
      */
     static async fromTransport(transport: any) {
         transport.setExchangeTimeout(LEDGER_EXCHANGE_TIMEOUT);
-        let app = new AppAvax(transport, 'w0w');
-        let eth = new Eth(transport, 'w0w');
+        let app, eth;
+
+        try {
+            app = new AppAvax(transport, 'w0w');
+            eth = new Eth(transport, 'w0w');
+        } catch (e) {
+            throw new Error('Failed to create ledger instance from the given transport.');
+        }
 
         let config = await app.getAppConfiguration();
 
@@ -119,10 +122,14 @@ export default class LedgerWallet extends HDWalletAbstract {
     }
 
     static async fromApp(app: AppAvax, eth: Eth): Promise<LedgerWallet> {
-        let avaxAccount = await LedgerWallet.getAvaxAccount(app);
-        let evmAccount = await LedgerWallet.getEvmAccount(eth);
-        let config = await app.getAppConfiguration();
-        return new LedgerWallet(avaxAccount, evmAccount, app, eth, config);
+        try {
+            let avaxAccount = await LedgerWallet.getAvaxAccount(app);
+            let evmAccount = await LedgerWallet.getEvmAccount(eth);
+            let config = await app.getAppConfiguration();
+            return new LedgerWallet(avaxAccount, evmAccount, app, eth, config);
+        } catch (e) {
+            throw new Error('Unable to create ledger wallet instance from the given apps.');
+        }
     }
 
     getAddressC(): string {

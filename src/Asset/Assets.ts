@@ -1,6 +1,7 @@
 import { xChain } from '@/Network/network';
 
 import { iAssetCache, iAssetDescriptionClean } from '@/Asset/types';
+import DOMPurify from 'dompurify';
 
 let assetCache: iAssetCache = {};
 
@@ -19,12 +20,18 @@ export async function getAssetDescription(assetId: string): Promise<iAssetDescri
         return cache;
     }
 
-    let res = await xChain.getAssetDescription(assetId);
-    let clean: iAssetDescriptionClean = {
-        ...res,
-        assetID: assetId,
-    };
+    try {
+        let res = await xChain.getAssetDescription(assetId);
+        let clean: iAssetDescriptionClean = {
+            ...res,
+            assetID: assetId,
+            name: DOMPurify.sanitize(res.name),
+            symbol: DOMPurify.sanitize(res.symbol),
+        };
 
-    assetCache[assetId] = clean;
-    return clean;
+        assetCache[assetId] = clean;
+        return clean;
+    } catch (e) {
+        throw new Error(`Asset ${assetId} does not exist.`);
+    }
 }

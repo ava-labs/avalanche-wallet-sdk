@@ -6,9 +6,7 @@ import {
     AvmImportChainType,
     ERC20Balance,
     iAvaxBalance,
-    WalletBalanceERC20,
     WalletBalanceX,
-    WalletCollectiblesX,
     WalletEventArgsType,
     WalletEventType,
     WalletNameType,
@@ -52,7 +50,6 @@ import {
     Tx as PlatformTx,
     PlatformVMConstants,
     StakeableLockOut,
-    TransferableOutput,
 } from 'avalanche/dist/apis/platformvm';
 import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, UTXOSet as EVMUTXOSet } from 'avalanche/dist/apis/evm';
 
@@ -74,9 +71,6 @@ import moment from 'moment';
 import { bintools } from '@/common';
 import { ChainIdType } from '@/types';
 import {
-    canHaveBalanceOnC,
-    canHaveBalanceOnP,
-    canHaveBalanceOnX,
     createGraphForC,
     createGraphForP,
     createGraphForX,
@@ -393,7 +387,7 @@ export abstract class WalletProvider {
      *  */
     public async updateUtxosX(): Promise<AVMUTXOSet> {
         const addresses = this.getAllAddressesX();
-        let oldUtxos = this.utxosX;
+        // let oldUtxos = this.utxosX;
         this.utxosX = await avmGetAllUTXOs(addresses);
 
         await this.updateUnknownAssetsX();
@@ -1023,19 +1017,23 @@ export abstract class WalletProvider {
     public async issueUniversalTx(tx: UniversalTx): Promise<string> {
         switch (tx.action) {
             case 'export_x_c':
-                return await this.exportXChain(tx.amount!, 'C');
+                if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
+                return await this.exportXChain(tx.amount, 'C');
             case 'import_x_c':
                 return await this.importC();
             case 'export_x_p':
-                return await this.exportXChain(tx.amount!, 'P');
+                if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
+                return await this.exportXChain(tx.amount, 'P');
             case 'import_x_p':
                 return await this.importP();
             case 'export_c_x':
-                return await this.exportCChain(tx.amount!);
+                if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
+                return await this.exportCChain(tx.amount);
             case 'import_c_x':
                 return await this.importX('C');
             case 'export_p_x':
-                return await this.exportPChain(tx.amount!);
+                if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
+                return await this.exportPChain(tx.amount);
             case 'import_p_x':
                 return await this.importX('P');
             default:

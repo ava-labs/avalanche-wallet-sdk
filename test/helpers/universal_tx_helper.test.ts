@@ -1,6 +1,5 @@
 import { createGraphForP, createGraphForX, UniversalTx } from '@/helpers/universal_tx_helper';
-import { BN, utils } from 'avalanche';
-import { AVMConstants } from 'avalanche/dist/apis/avm';
+import { BN } from 'avalanche';
 import { pChain, xChain } from '@/Network/network';
 
 jest.mock('@/Network/network', () => {
@@ -18,10 +17,6 @@ jest.mock('@/Network/network', () => {
         },
     };
 });
-
-const addrC = '0x6a23c16777a3A194b2773df90FEB8753A8e619Ee';
-const addrP = 'P-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh';
-const addrX = 'X-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh';
 
 const FEE = new BN(1000000);
 
