@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v0.9.1
+
+####
+
+-   SDK Audit report
+-   `UtxoHelper.evmGetAtomicUtxos` exported properly now
+
 ## v0.9.0
 
 #### Added
