@@ -5,3 +5,4 @@ node_modules
 babel.config.js
 rollup.config.js
 jest.setup.js
+audits
