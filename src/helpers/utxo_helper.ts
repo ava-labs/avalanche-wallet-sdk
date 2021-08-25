@@ -44,7 +44,7 @@ export async function platformGetAtomicUTXOs(addrs: string[]): Promise<PlatformU
 }
 
 // todo: Use end index to get ALL utxos
-async function evmGetAtomicUTXOs(addrs: string[]): Promise<EVMUTXOSet> {
+export async function evmGetAtomicUTXOs(addrs: string[]): Promise<EVMUTXOSet> {
     if (addrs.length > 1024) {
         throw new Error('Number of addresses can not be greater than 1024.');
     }
