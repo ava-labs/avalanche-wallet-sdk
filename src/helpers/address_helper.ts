@@ -1,16 +1,45 @@
-import { BinTools } from 'avalanche';
 import { ChainIdType } from '@/types';
 import Web3 from 'web3';
-export const bintools: BinTools = BinTools.getInstance();
+import { bintools } from '@/common';
 
 export const validateAddress = (address: string): boolean | string => {
+    return validateAddressX(address) || validateAddressP(address) || validateAddressEVM(address);
+};
+
+export function validateAddressX(address: string) {
     try {
-        bintools.stringToAddress(address);
+        let buff = bintools.parseAddress(address, 'X');
+        if (!buff) return false;
         return true;
     } catch (error) {
         return false;
     }
-};
+}
+
+export function validateAddressP(address: string) {
+    try {
+        let buff = bintools.parseAddress(address, 'P');
+        if (!buff) return false;
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+export function validateAddressEVM(address: string) {
+    return Web3.utils.isAddress(address);
+}
+
+/**
+ * Returns the human readable part of a X or P bech32 address.
+ * @param address
+ */
+export function getAddressHRP(address: string): string {
+    if (!validateAddress(address)) {
+        throw new Error('Invalid X or P address.');
+    }
+    return address.split('-')[1].split('1')[0];
+}
 
 /**
  * Given an address, return which Chain it belongs to
@@ -27,8 +56,3 @@ export function getAddressChain(address: string): ChainIdType {
         return address[0] as ChainIdType;
     }
 }
-
-export default {
-    validateAddress,
-    getAddressChain,
-};

@@ -1,26 +1,23 @@
 import {
     AVMHistoryItemType,
-    HistoryItemType,
     iHistoryAddDelegator,
     iHistoryBaseTx,
     iHistoryBaseTxNFTsReceived,
     iHistoryBaseTxNFTsReceivedRaw,
     iHistoryBaseTxNFTsSent,
     iHistoryBaseTxNFTsSentRaw,
-    iHistoryBaseTxTokens,
     iHistoryBaseTxTokensReceived,
     iHistoryBaseTxTokensReceivedRaw,
     iHistoryBaseTxTokensSent,
     iHistoryBaseTxTokensSentRaw,
     iHistoryEVMTx,
     iHistoryImportExport,
-    iHistoryItem,
     iHistoryNftFamilyBalance,
     ITransactionData,
     ITransactionDataEVM,
     UTXO,
 } from '@/History/types';
-import { activeNetwork, avalanche, explorer_api, xChain } from '@/Network/network';
+import { activeNetwork, explorer_api, xChain } from '@/Network/network';
 import { BN } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { AVMConstants } from 'avalanche/dist/apis/avm';
@@ -102,6 +99,7 @@ export async function getAddressHistory(
     }
 
     // If there are addresses left, fetch them too
+    // TODO: Do this in parallel, not recursive
     if (remaining.length > 0) {
         let nextRes = await getAddressHistory(remaining, limit, chainID);
         txs.push(...nextRes);
@@ -144,7 +142,6 @@ export async function getTransactionSummary(
             break;
         default:
             throw new Error(`Unsupported history transaction type. (${tx.type})`);
-            break;
     }
     return sum;
 }
@@ -578,7 +575,7 @@ function getBaseTxTokenLosses(tx: ITransactionData, ownerAddrs: string[]): iHist
     });
 
     let chainID = xChain.getBlockchainID();
-    let res: any = {};
+    let res: iHistoryBaseTxTokensSentRaw = {};
     for (let assetID in tx.inputTotals) {
         let bal = getAssetBalanceFromUTXOs(tokenUTXOs, ownerAddrs, assetID, chainID);
         if (bal.isZero()) continue;
@@ -594,7 +591,7 @@ function getBaseTxTokenGains(tx: ITransactionData, ownerAddrs: string[]): iHisto
         return utxo.outputType === AVMConstants.SECPXFEROUTPUTID;
     });
 
-    let res: any = {};
+    let res: iHistoryBaseTxTokensReceivedRaw = {};
     for (let assetID in tx.outputTotals) {
         let bal = getAssetBalanceFromUTXOs(tokenUTXOs, ownerAddrs, assetID, chainID);
         if (bal.isZero()) continue;

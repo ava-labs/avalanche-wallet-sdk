@@ -1,5 +1,14 @@
+export type NetworkProtocolType = 'http' | 'https';
+
+export interface NetworkConfigRpc {
+    c: string;
+    x: string;
+    p: string;
+}
+
 export interface NetworkConfig {
-    apiProtocol: 'http' | 'https';
+    rawUrl: string;
+    apiProtocol: NetworkProtocolType;
     apiIp: string;
     apiPort: number;
     explorerURL?: string;
@@ -10,4 +19,5 @@ export interface NetworkConfig {
     pChainID: string;
     cChainID: string;
     avaxID: string;
+    rpcUrl: NetworkConfigRpc;
 }

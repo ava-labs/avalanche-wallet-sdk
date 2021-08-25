@@ -6,9 +6,7 @@ import {
     AvmImportChainType,
     ERC20Balance,
     iAvaxBalance,
-    WalletBalanceERC20,
     WalletBalanceX,
-    WalletCollectiblesX,
     WalletEventArgsType,
     WalletEventType,
     WalletNameType,
@@ -73,9 +71,6 @@ import moment from 'moment';
 import { bintools } from '@/common';
 import { ChainIdType } from '@/types';
 import {
-    canHaveBalanceOnC,
-    canHaveBalanceOnP,
-    canHaveBalanceOnX,
     createGraphForC,
     createGraphForP,
     createGraphForX,
@@ -85,6 +80,7 @@ import {
     UniversalTx,
 } from '@/helpers/universal_tx_helper';
 import { UniversalNode } from '@/helpers/UniversalNode';
+import { GetStakeResponse } from 'avalanche/dist/common';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -289,7 +285,7 @@ export abstract class WalletProvider {
      * @param data `data` field of the transaction, in hex format
      * @param to `to` field of the transaction, in hex format
      * @param value `value` field of the transaction, in hex format
-     * @param nonce Nonce of the transaction, in number
+     * @param nonce Nonce of the transaction, in number. If not provided, SDK will get the latest nonce from the network
      */
     async sendCustomEvmTx(gasPrice: BN, gasLimit: number, data?: string, to?: string, value?: string, nonce?: number) {
         let from = this.getAddressC();
@@ -391,7 +387,7 @@ export abstract class WalletProvider {
      *  */
     public async updateUtxosX(): Promise<AVMUTXOSet> {
         const addresses = this.getAllAddressesX();
-        let oldUtxos = this.utxosX;
+        // let oldUtxos = this.utxosX;
         this.utxosX = await avmGetAllUTXOs(addresses);
 
         await this.updateUnknownAssetsX();
@@ -431,7 +427,7 @@ export abstract class WalletProvider {
     /**
      * Returns the number AVAX staked by this wallet.
      */
-    public async getStake(): Promise<BN> {
+    public async getStake(): Promise<GetStakeResponse> {
         let addrs = this.getAllAddressesP();
         return await getStakeForAddresses(addrs);
     }
@@ -1012,6 +1008,37 @@ export abstract class WalletProvider {
 
         this.updateUtxosP();
         return txId;
+    }
+
+    /**
+     * Issues the given transaction.
+     * @param tx A universal transaction json object.
+     */
+    public async issueUniversalTx(tx: UniversalTx): Promise<string> {
+        switch (tx.action) {
+            case 'export_x_c':
+                if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
+                return await this.exportXChain(tx.amount, 'C');
+            case 'import_x_c':
+                return await this.importC();
+            case 'export_x_p':
+                if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
+                return await this.exportXChain(tx.amount, 'P');
+            case 'import_x_p':
+                return await this.importP();
+            case 'export_c_x':
+                if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
+                return await this.exportCChain(tx.amount);
+            case 'import_c_x':
+                return await this.importX('C');
+            case 'export_p_x':
+                if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
+                return await this.exportPChain(tx.amount);
+            case 'import_p_x':
+                return await this.importX('P');
+            default:
+                throw new Error('Method not supported.');
+        }
     }
 
     async getHistoryX(limit = 0): Promise<ITransactionData[]> {

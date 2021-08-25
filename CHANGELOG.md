@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## v0.9.0
+
+#### Added
+
+-   Network configs now have the raw rpc endpoints
+-   Token meta data is now cleaned for XSS attacks
+-   `Network.setNetworkAsync` for connecting networks asynchronously, and checks conenction before connecting
+-   `Network.getActiveNetworkConfig` to return the active connection
+-   `getConfigFromUrl` returns a network config object from the base url
+-   Wallet `issueUniversalTx` function for issuing universal transactions
+
+#### Fixed
+
+-   `validateAddress`
+
+#### Changed
+
+-   Network configs now have the RPC endpoint
+-   Wallet `getStake` now returns the total amount staked, and the related outputs
+-   Universal transaction now separate import and export txs.
+
 ## v0.8.3
 
 #### Added
