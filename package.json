@@ -17,7 +17,7 @@
         "test": "jest",
         "test:watch": "jest --watch",
         "lint": "eslint .",
-        "prepare": "husky install",
+        "prepare": "husky install && yarn build:prod",
         "docs": "typedoc src/index.ts",
         "docs:watch": "typedoc --watch src/index.ts"
     },
