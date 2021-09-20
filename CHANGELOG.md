@@ -1,8 +1,14 @@
 # CHANGELOG
 
+## v0.9.2
+
+#### Added
+
+-   GasHelper module with `getGasPrice` and `getAdjustedGasPrice`
+
 ## v0.9.1
 
-####
+#### Added
 
 -   SDK Audit report
 -   `UtxoHelper.evmGetAtomicUtxos` exported properly now
