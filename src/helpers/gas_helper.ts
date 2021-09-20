@@ -1,19 +1,21 @@
 import { web3 } from '@/Network/network';
+import { BN } from 'avalanche';
 
-const MAX_GAS = 235000000000;
+const MAX_GAS = new BN(235000000000);
 
 /**
  * Returns the current gas price in WEI from the network
  */
-export async function getGasPrice(): Promise<number> {
-    return parseInt(await web3.eth.getGasPrice());
+export async function getGasPrice(): Promise<BN> {
+    return new BN(await web3.eth.getGasPrice());
 }
 
 /**
  * Returns the gas price + 25%, or max gas
  */
-export async function getAdjustedGasPrice(): Promise<number> {
+export async function getAdjustedGasPrice(): Promise<BN> {
     let gasPrice = await getGasPrice();
-    let adjustedGas = Math.floor(gasPrice * 1.25);
-    return Math.min(adjustedGas, MAX_GAS);
+    let additionalGas = gasPrice.div(new BN(100)).mul(new BN(25));
+    let adjustedGas = gasPrice.add(additionalGas);
+    return BN.min(adjustedGas, MAX_GAS);
 }
