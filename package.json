@@ -73,7 +73,7 @@
         "@ethereumjs/tx": "3.3.0",
         "@ledgerhq/hw-app-eth": "5.42.1",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
-        "@openzeppelin/contracts": "4.1.0",
+        "@openzeppelin/contracts": "4.3.2",
         "@types/dompurify": "^2.2.3",
         "avalanche": "3.8.1",
         "big.js": "^6.1.1",
