@@ -21,7 +21,7 @@ import { activeNetwork, explorer_api, xChain } from '@/Network/network';
 import { BN } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { AVMConstants } from 'avalanche/dist/apis/avm';
-import { bnToAvaxC, bnToAvaxP, bnToAvaxX, bnToLocaleString, parseNftPayload } from '@/utils/utils';
+import { bnToAvaxC, bnToAvaxP, bnToAvaxX, bnToLocaleString, parseNftPayload } from '@/utils';
 import * as Assets from '@/Asset/Assets';
 import { NO_EXPLORER_API } from '@/errors';
 

@@ -57,7 +57,7 @@ import { PayloadBase, UnixNow } from 'avalanche/dist/utils';
 import { getAssetDescription } from '@/Asset/Assets';
 import { getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
-import { avaxCtoX, bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils/utils';
+import { avaxCtoX, bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
 import {
