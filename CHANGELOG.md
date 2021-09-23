@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v0.9.7
+
+#### Added
+
+-   `Utils.stringToBN` convert string to BN directly
+
+#### Changed
+
+-   Max gas price increased to 1000 nAVAX
+
 ## v0.9.5
 
 #### Added
