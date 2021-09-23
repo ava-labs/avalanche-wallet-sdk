@@ -16,7 +16,7 @@ import {
     KeyPair as EVMKeyPair,
 } from 'avalanche/dist/apis/evm';
 import { avalanche } from '@/Network/network';
-import { digestMessage } from '@/utils/utils';
+import { digestMessage } from '@/utils';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
 import { bintools } from '@/common';
 

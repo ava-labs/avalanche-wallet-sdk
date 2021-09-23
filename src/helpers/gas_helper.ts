@@ -1,7 +1,7 @@
 import { web3 } from '@/Network/network';
 import { BN } from 'avalanche';
 
-const MAX_GAS = new BN(235000000000);
+const MAX_GAS = new BN(1000_000_000_000);
 
 /**
  * Returns the current gas price in WEI from the network
