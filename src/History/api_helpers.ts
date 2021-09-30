@@ -1,6 +1,7 @@
 import { ITransactionData, ITransactionDataEVM } from '@/History/raw_types';
 import { explorer_api } from '@/Network/network';
 import { NO_EXPLORER_API } from '@/errors';
+import { ChainIdType } from '@/types';
 
 /**
  * Returns transactions FROM and TO the address given
@@ -83,4 +84,33 @@ export async function getAddressHistory(
     }
 
     return txs;
+}
+
+/**
+ * Returns the ortelius data from the given tx id.
+ * @param txID
+ */
+export async function getTx(txID: string): Promise<ITransactionData> {
+    if (!explorer_api) {
+        throw NO_EXPLORER_API;
+    }
+
+    let url = `v2/transactions/${txID}`;
+    let res = await explorer_api.get(url);
+    return res.data;
+}
+
+/**
+ * Returns ortelius data for a transaction hash on C chain EVM,
+ * @param txHash
+ */
+export async function getTxEvm(txHash: string): Promise<ITransactionDataEVM> {
+    if (!explorer_api) {
+        throw NO_EXPLORER_API;
+    }
+
+    let endpoint = `v2/ctransactions?hash=${txHash}`;
+    let data: ITransactionDataEVM = (await explorer_api.get(endpoint)).data.Transactions[0];
+
+    return data;
 }
