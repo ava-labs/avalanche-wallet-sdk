@@ -65,8 +65,9 @@ import {
     getAddressHistoryEVM,
     getTransactionSummary,
     getTransactionSummaryEVM,
-} from '@/History/history';
-import { HistoryItemType, ITransactionData } from '@/History/types';
+    HistoryItemType,
+    ITransactionData,
+} from '@/History';
 import moment from 'moment';
 import { bintools } from '@/common';
 import { ChainIdType } from '@/types';

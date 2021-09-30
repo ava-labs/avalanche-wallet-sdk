@@ -1,32 +1,7 @@
 import { Buffer as BufferAvalanche } from 'avalanche';
 import { validateAddress } from '@/helpers/address_helper';
 import createHash from 'create-hash';
-import axios from 'axios';
-import { cChain, pChain, web3, xChain } from '@/Network/network';
-import {
-    AvmStatusResponseType,
-    AvmStatusType,
-    ChainStatusResponseTypeC,
-    ChainStatusTypeC,
-    PlatformStatusResponseType,
-    PlatformStatusType,
-} from '@/utils/types';
 import { PayloadBase, PayloadTypes } from 'avalanche/dist/utils';
-
-const COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=avalanche-2&vs_currencies=usd';
-
-/**
- * Fetches the current AVAX price using Coin Gecko.
- * @remarks
- * You might get rate limited if you use this function frequently.
- *
- * @return
- * Current USD price of 1 AVAX
- */
-export async function getAvaxPrice(): Promise<number> {
-    const res = await axios.get(COINGECKO_URL);
-    return res.data['avalanche-2'].usd;
-}
 
 /**
  * Checks if address is valid.
@@ -46,145 +21,6 @@ export function digestMessage(msgStr: string): Buffer {
     return createHash('sha256').update(msgBuf).digest();
 }
 
-export async function waitTxX(txId: string, tryCount = 10): Promise<string> {
-    if (tryCount <= 0) {
-        throw new Error('Timeout');
-    }
-    let resp: AvmStatusResponseType;
-
-    try {
-        resp = (await xChain.getTxStatus(txId)) as AvmStatusResponseType;
-    } catch (e) {
-        throw new Error('Unable to get transaction status.');
-    }
-
-    let status: AvmStatusType;
-    let reason;
-    if (typeof resp === 'string') {
-        status = resp as AvmStatusType;
-    } else {
-        status = resp.status as AvmStatusType;
-        reason = resp.reason;
-    }
-
-    if (status === 'Unknown' || status === 'Processing') {
-        return await new Promise((resolve) => {
-            setTimeout(async () => {
-                resolve(await waitTxX(txId, tryCount - 1));
-            }, 1000);
-        });
-        // return await waitTxX(txId, tryCount - 1);
-    } else if (status === 'Rejected') {
-        throw new Error(reason);
-    } else if (status === 'Accepted') {
-        return txId;
-    }
-
-    return txId;
-}
-
-export async function waitTxP(txId: string, tryCount = 10): Promise<string> {
-    if (tryCount <= 0) {
-        throw new Error('Timeout');
-    }
-    let resp: PlatformStatusResponseType;
-
-    try {
-        resp = (await pChain.getTxStatus(txId)) as PlatformStatusResponseType;
-    } catch (e) {
-        throw new Error('Unable to get transaction status.');
-    }
-
-    let status: PlatformStatusType;
-    let reason;
-    if (typeof resp === 'string') {
-        status = resp as PlatformStatusType;
-    } else {
-        status = resp.status as PlatformStatusType;
-        reason = resp.reason;
-    }
-
-    if (status === 'Unknown' || status === 'Processing') {
-        return await new Promise((resolve) => {
-            setTimeout(async () => {
-                resolve(await waitTxP(txId, tryCount - 1));
-            }, 1000);
-        });
-        // return await waitTxX(txId, tryCount - 1);
-    } else if (status === 'Dropped') {
-        throw new Error(reason);
-    } else if (status === 'Committed') {
-        return txId;
-    } else {
-        throw new Error('Unknown status type.');
-    }
-}
-
-export async function waitTxEvm(txHash: string, tryCount = 10): Promise<string> {
-    if (tryCount <= 0) {
-        throw new Error('Timeout');
-    }
-
-    let receipt;
-
-    try {
-        receipt = await web3.eth.getTransactionReceipt(txHash);
-    } catch (e) {
-        throw new Error('Unable to get transaction receipt.');
-    }
-
-    if (!receipt) {
-        return await new Promise((resolve) => {
-            setTimeout(async () => {
-                resolve(await waitTxEvm(txHash, tryCount - 1));
-            }, 1000);
-        });
-    } else {
-        if (receipt.status) {
-            return txHash;
-        } else {
-            throw new Error('Transaction reverted.');
-        }
-    }
-}
-
-export async function waitTxC(txId: string, tryCount = 10): Promise<string> {
-    if (tryCount <= 0) {
-        throw new Error('Timeout');
-    }
-
-    let resp: ChainStatusResponseTypeC;
-    try {
-        resp = (await cChain.getAtomicTxStatus(txId)) as ChainStatusResponseTypeC;
-    } catch (e) {
-        throw new Error('Unable to get transaction status.');
-    }
-
-    let status: ChainStatusTypeC;
-    let reason;
-    if (typeof resp === 'string') {
-        status = resp as ChainStatusTypeC;
-    } else {
-        status = resp.status as ChainStatusTypeC;
-        reason = resp.reason;
-    }
-
-    if (status === 'Unknown' || status === 'Processing') {
-        return await new Promise((resolve) => {
-            setTimeout(async () => {
-                resolve(await waitTxC(txId, tryCount - 1));
-            }, 1000);
-        });
-        // return await waitTxX(txId, tryCount - 1);
-    } else if (status === 'Dropped') {
-        throw new Error(reason);
-    } else if (status === 'Accepted') {
-        return txId;
-    } else {
-        throw new Error('Unknown status type.');
-    }
-}
-
 let payloadtypes = PayloadTypes.getInstance();
 
 export function parseNftPayload(rawPayload: string): PayloadBase {
@@ -196,18 +32,4 @@ export function parseNftPayload(rawPayload: string): PayloadBase {
     let payloadbase: PayloadBase = payloadtypes.select(typeId, pl);
 
     return payloadbase;
-}
-
-/**
- * Returns the transaction fee for X chain.
- */
-export function getTxFeeX() {
-    return xChain.getTxFee();
-}
-
-/**
- * Returns the transaction fee for P chain.
- */
-export function getTxFeeP() {
-    return pChain.getTxFee();
 }
