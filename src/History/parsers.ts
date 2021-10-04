@@ -1,31 +1,26 @@
 import {
-    AVMHistoryItemType,
-    iHistoryAddDelegator,
+    HistoryItemType,
+    HistoryItemTypeName,
     iHistoryEVMTx,
     iHistoryImportExport,
+    iHistoryStaking,
     ITransactionData,
     ITransactionDataEVM,
 } from '@/History';
-import {
-    findSourceChain,
-    getAssetBalanceFromUTXOs,
-    getEvmAssetBalanceFromUTXOs,
-    parseMemo,
-} from '@/History/history_helpers';
+import { findSourceChain, getEvmAssetBalanceFromUTXOs, parseMemo } from '@/History/history_helpers';
 import { activeNetwork, xChain } from '@/Network/network';
 import { bnToAvaxC, bnToAvaxP, bnToAvaxX } from '@/utils';
 import { BN } from 'avalanche';
 import { getBaseTxSummary } from '@/History/base_tx_parser';
 import { idToChainAlias } from '@/Network/helpers/aliasFromNetworkID';
 import { getExportSummary, getImportSummary } from '@/History/importExportParser';
+import { getOutputTotals, getOwnedOutputs, getRewardOuts, getStakeAmount } from '@/History/utxo_helpers';
 
 export async function getTransactionSummary(
     tx: ITransactionData,
     walletAddrs: string[],
     evmAddress: string
-): Promise<AVMHistoryItemType> {
-    let sum;
-
+): Promise<HistoryItemType> {
     let cleanAddressesXP = walletAddrs.map((addr) => addr.split('-')[1]);
 
     switch (tx.type) {
@@ -37,32 +32,47 @@ export async function getTransactionSummary(
         case 'atomic_export_tx':
             return getExportSummary(tx, cleanAddressesXP);
         case 'add_validator':
-            sum = getValidatorSummary(tx, cleanAddressesXP);
-            break;
         case 'add_delegator':
-            sum = getValidatorSummary(tx, cleanAddressesXP);
-            break;
+            return getStakingSummary(tx, cleanAddressesXP);
         case 'atomic_import_tx':
-            sum = getImportSummaryC(tx, evmAddress);
-            break;
+            return getImportSummaryC(tx, evmAddress);
         case 'operation':
         case 'base':
-            sum = await getBaseTxSummary(tx, cleanAddressesXP);
-            break;
+            return await getBaseTxSummary(tx, cleanAddressesXP);
         default:
             throw new Error(`Unsupported history transaction type. (${tx.type})`);
     }
-    return sum;
 }
 
-function getValidatorSummary(tx: ITransactionData, ownerAddrs: string[]): iHistoryAddDelegator {
+function getStakingSummary(tx: ITransactionData, ownerAddrs: string[]): iHistoryStaking {
     let time = new Date(tx.timestamp);
 
-    let pChainID = activeNetwork.pChainID;
-    let avaxID = activeNetwork.avaxID;
+    // let pChainID = activeNetwork.pChainID;
+    // let avaxID = activeNetwork.avaxID;
+    let ins = tx.inputs?.map((tx) => tx.output) || [];
+    let myIns = getOwnedOutputs(ins, ownerAddrs);
 
     let outs = tx.outputs || [];
-    let stakeAmt = getAssetBalanceFromUTXOs(outs, ownerAddrs, avaxID, pChainID, true);
+    let myOuts = getOwnedOutputs(outs, ownerAddrs);
+
+    let stakeAmount = getStakeAmount(tx);
+
+    // Assign the type
+    let type: HistoryItemTypeName = tx.type === 'add_validator' ? 'add_validator' : 'add_delegator';
+    // If this wallet only received the fee
+    if (myIns.length === 0 && type === 'add_delegator') {
+        type = 'delegation_fee';
+    } else if (myIns.length === 0 && type === 'add_validator') {
+        type = 'validation_fee';
+    }
+
+    let rewardAmount;
+    let rewardAmountClean;
+    if (tx.rewarded) {
+        let rewardOuts = getRewardOuts(myOuts);
+        rewardAmount = getOutputTotals(rewardOuts);
+        rewardAmountClean = bnToAvaxP(rewardAmount);
+    }
 
     return {
         id: tx.id,
@@ -70,12 +80,14 @@ function getValidatorSummary(tx: ITransactionData, ownerAddrs: string[]): iHisto
         stakeStart: new Date(tx.validatorStart * 1000),
         stakeEnd: new Date(tx.validatorEnd * 1000),
         timestamp: time,
-        type: 'add_validator',
+        type: type,
         fee: new BN(0),
-        amount: stakeAmt,
-        amountClean: bnToAvaxP(stakeAmt),
+        amount: stakeAmount,
+        amountClean: bnToAvaxP(stakeAmount),
         memo: parseMemo(tx.memo),
         isRewarded: tx.rewarded,
+        rewardAmount: rewardAmount,
+        rewardAmountClean: rewardAmountClean,
     };
 }
 

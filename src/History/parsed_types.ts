@@ -2,9 +2,10 @@ import { BN } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { iAssetDescriptionClean } from '@/Asset/types';
 
-export type HistoryItemType = AVMHistoryItemType | EVMHistoryITemType;
+export type HistoryItemType = AVMHistoryItemType | PVMHistoryItemType | EVMHistoryITemType;
 
-export type AVMHistoryItemType = iHistoryBaseTx | iHistoryImportExport | iHistoryAddDelegator;
+export type AVMHistoryItemType = iHistoryBaseTx | iHistoryImportExport;
+export type PVMHistoryItemType = iHistoryStaking;
 export type EVMHistoryITemType = iHistoryEVMTx;
 
 export type HistoryImportExportTypeName = 'import' | 'export';
@@ -13,7 +14,9 @@ export type HistoryItemTypeName =
     | 'transaction'
     | 'transaction_evm'
     | 'add_delegator'
-    | 'add_validator';
+    | 'add_validator'
+    | 'delegation_fee'
+    | 'validation_fee';
 
 export interface iHistoryItem {
     id: string;
@@ -31,13 +34,15 @@ export interface iHistoryImportExport extends iHistoryItem {
     source: ChainIdType;
 }
 
-export interface iHistoryAddDelegator extends iHistoryItem {
+export interface iHistoryStaking extends iHistoryItem {
     nodeID: string;
     stakeStart: Date;
     stakeEnd: Date;
     amount: BN;
     amountClean: string;
     isRewarded: boolean;
+    rewardAmount?: BN;
+    rewardAmountClean?: string;
 }
 
 /**

@@ -1,7 +1,14 @@
-import { ITransactionData, getTransactionSummary, iHistoryImportExport, iHistoryBaseTx } from '@/History';
+import {
+    ITransactionData,
+    getTransactionSummary,
+    iHistoryImportExport,
+    iHistoryBaseTx,
+    iHistoryStaking,
+} from '@/History';
 import { ImportTransaction, ImportTx1 } from './import_dumps';
 import { ExportTx, ExportTx1 } from './export_dumps';
 import { BaseTx, BaseTx1, BaseTx2, BaseTxSend0, BaseTxSend1, BaseTxSend2 } from './base_tx_dumps';
+import { StakeTx0, StakeTx1, StakeTx2, StakeTx3 } from './staking_dumps';
 
 jest.mock('@/Network', () => {
     return {
@@ -254,6 +261,73 @@ describe('Base Transaction Send', () => {
         expect(summary.tokens[1].amount.toString()).toEqual('-1000000');
         expect(summary.tokens[1].amountClean).toEqual('-0.001');
         expect(summary.tokens[1].addresses).toEqual(['fuji1x2qdqnkq5tt2j23c3569zffula30h5e0qxklu6']);
+    });
+});
+
+describe('Staking TX', () => {
+    it('Add validator 100 AVAX, staking finished, not rewarded', async () => {
+        let data: ITransactionData = JSON.parse(StakeTx0);
+        const myAddresses = [
+            'P-fuji1ur873jhz9qnaqv5qthk5sn3e8nj3e0kmafyxut',
+            'P-fuji1lzrmf3crp62ayj2kqwh9mzc5es9xv7q6cm00vl',
+            'P-fuji1spfpak2gtw87jaex2hqgz842s4xfp2xrjxyrt2',
+        ];
+        const cAddr = '0x5f658A6d1928c39B286b48192FEA8d46D87AD077';
+        let summary = (await getTransactionSummary(data, myAddresses, cAddr)) as iHistoryStaking;
+
+        expect(summary.type).toEqual('add_validator');
+        expect(summary.isRewarded).toEqual(false);
+        expect(summary.amount.toString()).toEqual('100000000000');
+        expect(summary.amountClean).toEqual('100');
+        expect(summary.rewardAmount?.toString()).toEqual(undefined);
+        expect(summary.rewardAmountClean).toEqual(undefined);
+    });
+
+    it('Add delegator 100 AVAX, uses lockedstakeable UTXOs, stake finished, rewarded', async () => {
+        let data: ITransactionData = JSON.parse(StakeTx1);
+        const myAddresses = [
+            'P-fuji1ur873jhz9qnaqv5qthk5sn3e8nj3e0kmafyxut',
+            'P-fuji1qhu9lz4aqtp0xzywxz8z42curluwm4y9yj2wgf',
+            'P-fuji1w4fjr3ds5rne4d3jm9uhgjn75z2z42fk0k2p74',
+            'P-fuji1afe8kypsetchzcz6fwlx2kdgaykevtru694ev8',
+        ];
+        const cAddr = '0x5f658A6d1928c39B286b48192FEA8d46D87AD077';
+        let summary = (await getTransactionSummary(data, myAddresses, cAddr)) as iHistoryStaking;
+
+        expect(summary.type).toEqual('add_delegator');
+        expect(summary.isRewarded).toEqual(true);
+        expect(summary.amount.toString()).toEqual('100000000000');
+        expect(summary.amountClean).toEqual('100');
+        expect(summary.rewardAmount?.toString()).toEqual('555946308');
+        expect(summary.rewardAmountClean).toEqual('0.555946308');
+    });
+
+    it('Fee received from delegator 0.000225438 AVAX', async () => {
+        let data: ITransactionData = JSON.parse(StakeTx2);
+        const myAddresses = ['P-fuji1wvtapgjhf90p6hhsnvran54u9wy7gadkvy5j3p'];
+        const cAddr = '0x5f658A6d1928c39B286b48192FEA8d46D87AD077';
+        let summary = (await getTransactionSummary(data, myAddresses, cAddr)) as iHistoryStaking;
+
+        expect(summary.type).toEqual('delegation_fee');
+        expect(summary.rewardAmount?.toString()).toEqual('225438');
+        expect(summary.rewardAmountClean).toEqual('0.000225438');
+    });
+
+    it('Add validator, stake finished, rewarded', async () => {
+        let data: ITransactionData = JSON.parse(StakeTx3);
+        const myAddresses = [
+            'P-fuji1lzrmf3crp62ayj2kqwh9mzc5es9xv7q6cm00vl',
+            'P-fuji1ur873jhz9qnaqv5qthk5sn3e8nj3e0kmafyxut',
+            'P-fuji16vhgs3grfegzt23uzp9sxy9r0jy4s8uts5zz5s',
+        ];
+        const cAddr = '0x5f658A6d1928c39B286b48192FEA8d46D87AD077';
+        let summary = (await getTransactionSummary(data, myAddresses, cAddr)) as iHistoryStaking;
+
+        expect(summary.type).toEqual('add_validator');
+        expect(summary.amountClean).toEqual('250');
+        expect(summary.isRewarded).toEqual(true);
+        expect(summary.rewardAmount?.toString()).toEqual('4995764528');
+        expect(summary.rewardAmountClean).toEqual('4.995764528');
     });
 });
 

@@ -1107,7 +1107,7 @@ export abstract class WalletProvider {
      * Fetches information about the given txId and parses it from the wallet's perspective
      * @param txId
      */
-    async getHistoricTx(txId: string): Promise<HistoryItemType> {
+    async getHistoryTx(txId: string): Promise<HistoryItemType> {
         let addrs = this.getAllAddressesX();
         let addrC = this.getAddressC();
 
@@ -1119,7 +1119,7 @@ export abstract class WalletProvider {
      * Fetches information about the given txId and parses it from the wallet's perspective
      * @param txHash
      */
-    async getHistoricTxEvm(txHash: string): Promise<HistoryItemType> {
+    async getHistoryTxEvm(txHash: string): Promise<HistoryItemType> {
         let addrC = this.getAddressC();
 
         let rawData = await getTxEvm(txHash);
