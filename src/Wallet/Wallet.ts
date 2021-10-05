@@ -1073,7 +1073,10 @@ export abstract class WalletProvider {
 
         let txsEVM = await this.getHistoryEVM();
 
-        let addrs = this.getAllAddressesX();
+        let addrsX = this.getAllAddressesX();
+        let addrBechC = this.getEvmAddressBech();
+        let addrs = [...addrsX, addrBechC];
+
         let addrC = this.getAddressC();
 
         // Parse X,P,C transactions

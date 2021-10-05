@@ -741,3 +741,99 @@ export const ExportTx1 = `{
     "validatorEnd": 0,
     "txBlockId": "nJwpDEHyuYZuyRmR1ne2cWo6PzVrjJqXb4eEGns8cVPaQfGy5"
 }`;
+
+export const ExportTx2 = `{
+    "id": "2Ruvbqg9F4T5yv4gC4Y4FU6zecETbmHHqfNUFDv1JU5cqCzDqh",
+    "chainID": "2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm",
+    "type": "export",
+    "inputs": [
+        {
+            "output": {
+                "id": "nSDtdH49PAnrtnhxEcLDJUMuFtGA7CqHGcy1qZDPTgrCiDLoK",
+                "transactionID": "v9CbENRBqzmSCEMtU9exC6puZ7wEeqSfSd8JXePMVVsRf9nmL",
+                "outputIndex": 0,
+                "assetID": "U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK",
+                "stake": false,
+                "frozen": false,
+                "stakeableout": false,
+                "genesisutxo": false,
+                "outputType": 7,
+                "amount": "1001000000",
+                "locktime": 0,
+                "stakeLocktime": 0,
+                "threshold": 1,
+                "addresses": [
+                    "fuji1zenmzsrswjd6fd2f5a76c5gkzhnrwfxezemkgz"
+                ],
+                "caddresses": null,
+                "timestamp": "2021-10-04T14:57:04.345033Z",
+                "redeemingTransactionID": "2Ruvbqg9F4T5yv4gC4Y4FU6zecETbmHHqfNUFDv1JU5cqCzDqh",
+                "chainID": "2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm",
+                "inChainID": "2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm",
+                "outChainID": "2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm",
+                "groupID": 0,
+                "payload": "",
+                "block": "",
+                "nonce": 0,
+                "rewardUtxo": false
+            },
+            "credentials": [
+                {
+                    "address": "fuji1zenmzsrswjd6fd2f5a76c5gkzhnrwfxezemkgz",
+                    "public_key": "A+SLtFLS0crVvgwZZBd1r+DrhDIGlV4PXZIqDhflKDU0",
+                    "signature": "TQB6M2I+seX4kkySGyoUyc84IMimr+N2WkB1pfK1baJGnpqKNN4dQMmS9glulB0BhD/CLOQBvB1KcvojjQ3M/AE="
+                }
+            ]
+        }
+    ],
+    "outputs": [
+        {
+            "id": "i8HskcN7TvX1aFmrMQaZwpSjsqFAzZTeFsM1ApHYGp2BpkE3r",
+            "transactionID": "2Ruvbqg9F4T5yv4gC4Y4FU6zecETbmHHqfNUFDv1JU5cqCzDqh",
+            "outputIndex": 0,
+            "assetID": "U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK",
+            "stake": false,
+            "frozen": false,
+            "stakeableout": false,
+            "genesisutxo": false,
+            "outputType": 7,
+            "amount": "1000000000",
+            "locktime": 0,
+            "stakeLocktime": 0,
+            "threshold": 1,
+            "addresses": [
+                "fuji138lyu5lw7uln54lnjec25e9wacm8q6xw752zyr"
+            ],
+            "caddresses": null,
+            "timestamp": "2021-10-04T14:57:32.547869Z",
+            "redeemingTransactionID": "FR6A2NqGq6ACkM2NyCv4yhXqfAJwn3imJQQ4CNYvnnsQYNHuk",
+            "chainID": "yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp",
+            "inChainID": "2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm",
+            "outChainID": "yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp",
+            "groupID": 0,
+            "payload": "",
+            "block": "",
+            "nonce": 0,
+            "rewardUtxo": false
+        }
+    ],
+    "memo": "",
+    "inputTotals": {
+        "U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK": "1001000000"
+    },
+    "outputTotals": {
+        "U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK": "1000000000"
+    },
+    "reusedAddressTotals": null,
+    "timestamp": "2021-10-04T14:57:32.547869Z",
+    "txFee": 1000000,
+    "genesis": false,
+    "rewarded": false,
+    "rewardedTime": null,
+    "epoch": 0,
+    "vertexId": "2HYF1P2h5dK4a3RaD6xnAbXys1GMwWhZ7wQqP9qWTVe7JbNC2q",
+    "validatorNodeID": "",
+    "validatorStart": 0,
+    "validatorEnd": 0,
+    "txBlockId": ""
+}`;
