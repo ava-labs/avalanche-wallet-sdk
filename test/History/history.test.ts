@@ -4,6 +4,7 @@ import {
     iHistoryImportExport,
     iHistoryBaseTx,
     iHistoryStaking,
+    isHistoryImportExportTx,
 } from '@/History';
 import { ImportTransaction, ImportTx1 } from './import_dumps';
 import { ExportTx, ExportTx1, ExportTx2 } from './export_dumps';
@@ -79,14 +80,18 @@ describe('Import Tx', () => {
         let data: ITransactionData = JSON.parse(ImportTransaction);
         const myAddresses = ['X-fuji1nqz4gndscpdp6yr326sz0afdlylcj0g6mf0q46'];
         const cAddr = '0x5f658A6d1928c39B286b48192FEA8d46D87AD077';
-        let summary = (await getTransactionSummary(data, myAddresses, cAddr)) as iHistoryImportExport;
+        let summary = await getTransactionSummary(data, myAddresses, cAddr);
 
-        expect(summary.id).toEqual('2KL4TfCKyHYMxGfWSZkXpurYiDzwk9sASAH47RMikk53cZNNuY');
-        expect(summary.type).toEqual('import');
-        expect(summary.source).toEqual('P');
-        expect(summary.destination).toEqual('X');
-        expect(summary.fee.toString()).toEqual('1000000');
-        expect(summary.amount.toString()).toEqual('10000000000000');
+        if (isHistoryImportExportTx(summary)) {
+            expect(summary.id).toEqual('2KL4TfCKyHYMxGfWSZkXpurYiDzwk9sASAH47RMikk53cZNNuY');
+            expect(summary.type).toEqual('import');
+            expect(summary.source).toEqual('P');
+            expect(summary.destination).toEqual('X');
+            expect(summary.fee.toString()).toEqual('1000000');
+            expect(summary.amount.toString()).toEqual('10000000000000');
+        } else {
+            throw new Error('Type guard failed.');
+        }
     });
 
     it('multiple import utxos, P to X', async () => {

@@ -26,6 +26,9 @@ export interface iHistoryItem {
     memo: string;
 }
 
+/**
+ * Parsed interface for Import and Export transactions.
+ */
 export interface iHistoryImportExport extends iHistoryItem {
     amount: BN;
     type: HistoryImportExportTypeName;
@@ -34,6 +37,17 @@ export interface iHistoryImportExport extends iHistoryItem {
     source: ChainIdType;
 }
 
+/**
+ * Typeguard for `iHistoryImportExport` interface
+ * @param tx The parsed history object
+ */
+export function isHistoryImportExportTx(tx: HistoryItemType): tx is iHistoryImportExport {
+    return tx.type === 'export' || tx.type === 'import';
+}
+
+/**
+ * Parsed interface for Validation, Validation Fee, Delegation and Delegation Fee transactions.
+ */
 export interface iHistoryStaking extends iHistoryItem {
     nodeID: string;
     stakeStart: Date;
@@ -46,11 +60,28 @@ export interface iHistoryStaking extends iHistoryItem {
 }
 
 /**
- * Interface for parsed X chain base/operation transactions.
+ * Typeguard for `iHistoryStaking` interface
+ * @param tx The parsed history object
+ */
+export function isHistoryStakingTx(tx: HistoryItemType): tx is iHistoryStaking {
+    let types: HistoryItemTypeName[] = ['add_validator', 'add_delegator', 'validation_fee', 'delegation_fee'];
+    return types.includes(tx.type);
+}
+
+/**
+ * Interface for parsed X chain base transactions.
  */
 export interface iHistoryBaseTx extends iHistoryItem {
     tokens: iHistoryBaseTxToken[];
     // nfts: iHistoryBaseTxNFTs;
+}
+
+/**
+ * Typeguard for `iHistoryBaseTx` interface
+ * @param tx The parsed history object
+ */
+export function isHistoryBaseTx(tx: HistoryItemType): tx is iHistoryBaseTx {
+    return tx.type === 'transaction';
 }
 
 /**
@@ -68,10 +99,9 @@ export interface iHistoryEVMTx extends iHistoryItem {
     isSender: boolean;
 }
 
-// export interface iHistoryBaseTxTokens {
-//     sent: iHistoryBaseTxTokensSent;
-//     received: iHistoryBaseTxTokensReceived;
-// }
+export function isHistoryEVMTx(tx: HistoryItemType): tx is iHistoryEVMTx {
+    return tx.type === 'transaction_evm';
+}
 
 export interface iHistoryBaseTxToken {
     // isSent: boolean
@@ -93,31 +123,6 @@ export interface iHistoryBaseTxTokenLossGain {
 export interface iHistoryBaseTxTokenOwners {
     [assetId: string]: string[];
 }
-
-// export interface iHistoryBaseTxTokensReceived {
-//     [assetId: string]: {
-//         amount: BN;
-//         amountClean: string;
-//         from: string[];
-//         asset: iAssetDescriptionClean;
-//     };
-// }
-
-// export interface iHistoryBaseTxTokensReceivedRaw {
-//     [assetId: string]: BN;
-// }
-// export interface iHistoryBaseTxTokensSentRaw {
-//     [assetId: string]: BN;
-// }
-
-// export interface iHistoryBaseTxTokensSent {
-//     [assetId: string]: {
-//         amount: BN;
-//         amountClean: string;
-//         to: string[];
-//         asset: iAssetDescriptionClean;
-//     };
-// }
 
 export interface iHistoryNftFamilyBalance {
     [groupNum: number]: {
