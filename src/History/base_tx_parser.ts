@@ -156,14 +156,14 @@ async function getBaseTxTokensSummary(
         if (diff.isNeg()) {
             res.push({
                 amount: diff,
-                amountClean: diffClean,
+                amountDisplayValue: diffClean,
                 addresses: tos[id],
                 asset: tokenDesc,
             });
         } else {
             res.push({
                 amount: diff,
-                amountClean: diffClean,
+                amountDisplayValue: diffClean,
                 addresses: froms[id],
                 asset: tokenDesc,
             });

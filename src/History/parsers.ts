@@ -83,11 +83,11 @@ function getStakingSummary(tx: ITransactionData, ownerAddrs: string[]): iHistory
         type: type,
         fee: new BN(0),
         amount: stakeAmount,
-        amountClean: bnToAvaxP(stakeAmount),
+        amountDisplayValue: bnToAvaxP(stakeAmount),
         memo: parseMemo(tx.memo),
         isRewarded: tx.rewarded,
         rewardAmount: rewardAmount,
-        rewardAmountClean: rewardAmountClean,
+        rewardAmountDisplayValue: rewardAmountClean,
     };
 }
 
@@ -110,7 +110,7 @@ function getImportSummaryC(tx: ITransactionData, ownerAddr: string) {
         source: chainAliasFrom,
         destination: chainAliasTo,
         amount: amtOut,
-        amountClean: bnToAvaxX(amtOut),
+        amountDisplayValue: bnToAvaxX(amtOut),
         timestamp: time,
         type: 'import',
         fee: fee,
@@ -140,7 +140,7 @@ export function getTransactionSummaryEVM(tx: ITransactionDataEVM, walletAddress:
         isSender,
         type: 'transaction_evm',
         amount: amt,
-        amountClean: amtClean,
+        amountDisplayValue: amtClean,
         gasLimit: tx.gasLimit,
         gasPrice: tx.gasPrice,
         from: tx.fromAddr,

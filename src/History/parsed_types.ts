@@ -32,7 +32,7 @@ export interface iHistoryItem {
 export interface iHistoryImportExport extends iHistoryItem {
     amount: BN;
     type: HistoryImportExportTypeName;
-    amountClean: string;
+    amountDisplayValue: string;
     destination: ChainIdType;
     source: ChainIdType;
 }
@@ -53,10 +53,10 @@ export interface iHistoryStaking extends iHistoryItem {
     stakeStart: Date;
     stakeEnd: Date;
     amount: BN;
-    amountClean: string;
+    amountDisplayValue: string;
     isRewarded: boolean;
     rewardAmount?: BN;
-    rewardAmountClean?: string;
+    rewardAmountDisplayValue?: string;
 }
 
 /**
@@ -95,7 +95,7 @@ export interface iHistoryEVMTx extends iHistoryItem {
     from: string;
     to: string;
     amount: BN;
-    amountClean: string;
+    amountDisplayValue: string;
     isSender: boolean;
 }
 
@@ -104,9 +104,8 @@ export function isHistoryEVMTx(tx: HistoryItemType): tx is iHistoryEVMTx {
 }
 
 export interface iHistoryBaseTxToken {
-    // isSent: boolean
     amount: BN;
-    amountClean: string;
+    amountDisplayValue: string;
     addresses: string[];
     asset: iAssetDescriptionClean;
 }

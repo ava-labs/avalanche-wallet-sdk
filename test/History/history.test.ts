@@ -182,7 +182,7 @@ describe('Base Transaction Receive', () => {
         expect(summary.tokens.length).toEqual(1);
         // expect(summary.tokens[0].isSent).toEqual(false)
         expect(summary.tokens[0].amount.toString()).toEqual('2000000000');
-        expect(summary.tokens[0].amountClean).toEqual('2');
+        expect(summary.tokens[0].amountDisplayValue).toEqual('2');
         expect(summary.tokens[0].addresses).toEqual(['fuji1xpmx0ljrpvqexrvrj26fnggvr0ax9wm32gaxmx']);
     });
 
@@ -198,7 +198,7 @@ describe('Base Transaction Receive', () => {
         expect(summary.tokens.length).toEqual(1);
         // expect(summary.tokens[0].isSent).toEqual(false)
         expect(summary.tokens[0].amount.toString()).toEqual('10000000');
-        expect(summary.tokens[0].amountClean).toEqual('0.01');
+        expect(summary.tokens[0].amountDisplayValue).toEqual('0.01');
         expect(summary.tokens[0].addresses).toEqual(['fuji1jq7trjflynjghlc8fv4hktn0f3y4u23shy4cwg']);
     });
 
@@ -215,12 +215,12 @@ describe('Base Transaction Receive', () => {
         // For asset 1
         // expect(summary.tokens[0].isSent).toEqual(false)
         expect(summary.tokens[0].amount.toString()).toEqual('1');
-        expect(summary.tokens[0].amountClean).toEqual('0.00000001');
+        expect(summary.tokens[0].amountDisplayValue).toEqual('0.00000001');
         expect(summary.tokens[0].addresses).toEqual(['fuji1gzyk29gqdq95muwlfkllg5ncdwjafrg9att3gp']);
         // For asset 2
         // expect(summary.tokens[1].isSent).toEqual(false)
         expect(summary.tokens[1].amount.toString()).toEqual('10100000');
-        expect(summary.tokens[1].amountClean).toEqual('0.0101');
+        expect(summary.tokens[1].amountDisplayValue).toEqual('0.0101');
         expect(summary.tokens[1].addresses).toEqual(['fuji1gzyk29gqdq95muwlfkllg5ncdwjafrg9att3gp']);
     });
 });
@@ -237,7 +237,7 @@ describe('Base Transaction Send', () => {
         expect(summary.type).toEqual('transaction');
         expect(summary.tokens.length).toEqual(1);
         expect(summary.tokens[0].amount.toString()).toEqual('-1000000000');
-        expect(summary.tokens[0].amountClean).toEqual('-1');
+        expect(summary.tokens[0].amountDisplayValue).toEqual('-1');
         expect(summary.tokens[0].addresses).toEqual(['fuji1n8vmuvxudfkr7u6vy307jlyuk84nke0nr769zd']);
     });
 
@@ -256,7 +256,7 @@ describe('Base Transaction Send', () => {
         expect(summary.memo).toEqual('here you go!');
         expect(summary.tokens.length).toEqual(1);
         expect(summary.tokens[0].amount.toString()).toEqual('-1000000000000');
-        expect(summary.tokens[0].amountClean).toEqual('-1,000');
+        expect(summary.tokens[0].amountDisplayValue).toEqual('-1,000');
         expect(summary.tokens[0].addresses).toEqual(['fuji17mqelzf3w2l64pmqpxr84na9wmkknn3p3yf0kk']);
     });
 
@@ -277,11 +277,11 @@ describe('Base Transaction Send', () => {
         expect(summary.tokens.length).toEqual(2);
         // Asset 1
         expect(summary.tokens[0].amount.toString()).toEqual('-1000');
-        expect(summary.tokens[0].amountClean).toEqual('-0.00001');
+        expect(summary.tokens[0].amountDisplayValue).toEqual('-0.00001');
         expect(summary.tokens[0].addresses).toEqual(['fuji1x2qdqnkq5tt2j23c3569zffula30h5e0qxklu6']);
         // Asset 2
         expect(summary.tokens[1].amount.toString()).toEqual('-1000000');
-        expect(summary.tokens[1].amountClean).toEqual('-0.001');
+        expect(summary.tokens[1].amountDisplayValue).toEqual('-0.001');
         expect(summary.tokens[1].addresses).toEqual(['fuji1x2qdqnkq5tt2j23c3569zffula30h5e0qxklu6']);
     });
 });
@@ -300,9 +300,9 @@ describe('Staking TX', () => {
         expect(summary.type).toEqual('add_validator');
         expect(summary.isRewarded).toEqual(false);
         expect(summary.amount.toString()).toEqual('100000000000');
-        expect(summary.amountClean).toEqual('100');
+        expect(summary.amountDisplayValue).toEqual('100');
         expect(summary.rewardAmount?.toString()).toEqual(undefined);
-        expect(summary.rewardAmountClean).toEqual(undefined);
+        expect(summary.rewardAmountDisplayValue).toEqual(undefined);
     });
 
     it('Add delegator 100 AVAX, uses lockedstakeable UTXOs, stake finished, rewarded', async () => {
@@ -319,9 +319,9 @@ describe('Staking TX', () => {
         expect(summary.type).toEqual('add_delegator');
         expect(summary.isRewarded).toEqual(true);
         expect(summary.amount.toString()).toEqual('100000000000');
-        expect(summary.amountClean).toEqual('100');
+        expect(summary.amountDisplayValue).toEqual('100');
         expect(summary.rewardAmount?.toString()).toEqual('555946308');
-        expect(summary.rewardAmountClean).toEqual('0.555946308');
+        expect(summary.rewardAmountDisplayValue).toEqual('0.555946308');
     });
 
     it('Fee received from delegator 0.000225438 AVAX', async () => {
@@ -332,7 +332,7 @@ describe('Staking TX', () => {
 
         expect(summary.type).toEqual('delegation_fee');
         expect(summary.rewardAmount?.toString()).toEqual('225438');
-        expect(summary.rewardAmountClean).toEqual('0.000225438');
+        expect(summary.rewardAmountDisplayValue).toEqual('0.000225438');
     });
 
     it('Add validator, stake finished, rewarded', async () => {
@@ -346,10 +346,10 @@ describe('Staking TX', () => {
         let summary = (await getTransactionSummary(data, myAddresses, cAddr)) as iHistoryStaking;
 
         expect(summary.type).toEqual('add_validator');
-        expect(summary.amountClean).toEqual('250');
+        expect(summary.amountDisplayValue).toEqual('250');
         expect(summary.isRewarded).toEqual(true);
         expect(summary.rewardAmount?.toString()).toEqual('4995764528');
-        expect(summary.rewardAmountClean).toEqual('4.995764528');
+        expect(summary.rewardAmountDisplayValue).toEqual('4.995764528');
     });
 });
 
