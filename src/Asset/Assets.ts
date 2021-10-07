@@ -1,7 +1,7 @@
 import { xChain } from '@/Network/network';
 
 import { iAssetCache, iAssetDescriptionClean } from '@/Asset/types';
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 let assetCache: iAssetCache = {};
 
