@@ -16,6 +16,7 @@ export interface ITransactionDataEVM {
     value: string;
     toAddr: string;
     fromAddr: string;
+    input?: string;
     v: string;
     r: string;
     s: string;

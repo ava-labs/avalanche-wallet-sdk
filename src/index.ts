@@ -1,6 +1,7 @@
-export * as Network from '@/Network/index';
-export * as Assets from '@/Asset/index';
+export * as Network from '@/Network';
+export * as Assets from '@/Asset';
 export * as Common from './common';
+export * as History from '@/History';
 
 import MnemonicWallet from '@/Wallet/MnemonicWallet';
 import SingletonWallet from '@/Wallet/SingletonWallet';

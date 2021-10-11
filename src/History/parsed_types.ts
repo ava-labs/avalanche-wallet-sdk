@@ -23,7 +23,7 @@ export interface iHistoryItem {
     type: HistoryItemTypeName;
     timestamp: Date;
     fee: BN;
-    memo: string;
+    memo?: string;
 }
 
 /**
@@ -88,7 +88,6 @@ export function isHistoryBaseTx(tx: HistoryItemType): tx is iHistoryBaseTx {
  * Interface for parsed EVM transactions.
  */
 export interface iHistoryEVMTx extends iHistoryItem {
-    hash: string;
     block: string;
     gasLimit: number;
     gasPrice: string;
@@ -97,6 +96,7 @@ export interface iHistoryEVMTx extends iHistoryItem {
     amount: BN;
     amountDisplayValue: string;
     isSender: boolean;
+    input?: string;
 }
 
 export function isHistoryEVMTx(tx: HistoryItemType): tx is iHistoryEVMTx {

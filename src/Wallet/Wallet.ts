@@ -61,6 +61,7 @@ import { avaxCtoX, bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
 import {
+    filterDuplicateTransactions,
     getAddressHistory,
     getAddressHistoryEVM,
     getTransactionSummary,
@@ -1065,11 +1066,13 @@ export abstract class WalletProvider {
     }
 
     async getHistory(limit: number = 0): Promise<HistoryItemType[]> {
-        let txsX = await this.getHistoryX(limit);
-        let txsP = await this.getHistoryP(limit);
-        let txsC = await this.getHistoryC(limit);
+        let [txsX, txsP, txsC] = await Promise.all([
+            this.getHistoryX(limit),
+            this.getHistoryP(limit),
+            this.getHistoryC(limit),
+        ]);
 
-        let txsXPC = txsX.concat(txsP, txsC);
+        let txsXPC = filterDuplicateTransactions(txsX.concat(txsP, txsC));
 
         let txsEVM = await this.getHistoryEVM();
 
