@@ -2,7 +2,7 @@ import { BN } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { iAssetDescriptionClean } from '@/Asset/types';
 
-export type HistoryItemType = AVMHistoryItemType | PVMHistoryItemType | EVMHistoryITemType;
+export type HistoryItemType = AVMHistoryItemType | PVMHistoryItemType | EVMHistoryITemType | iHistoryItem;
 
 export type AVMHistoryItemType = iHistoryBaseTx | iHistoryImportExport;
 export type PVMHistoryItemType = iHistoryStaking;
@@ -16,7 +16,8 @@ export type HistoryItemTypeName =
     | 'add_delegator'
     | 'add_validator'
     | 'delegation_fee'
-    | 'validation_fee';
+    | 'validation_fee'
+    | 'not_supported';
 
 export interface iHistoryItem {
     id: string;

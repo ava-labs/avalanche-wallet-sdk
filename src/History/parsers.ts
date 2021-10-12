@@ -3,6 +3,7 @@ import {
     HistoryItemTypeName,
     iHistoryEVMTx,
     iHistoryImportExport,
+    iHistoryItem,
     iHistoryStaking,
     ITransactionData,
     ITransactionDataEVM,
@@ -40,8 +41,17 @@ export async function getTransactionSummary(
         case 'base':
             return await getBaseTxSummary(tx, cleanAddressesXP);
         default:
-            throw new Error(`Unsupported history transaction type. (${tx.type})`);
+            return getUnsupportedSummary(tx);
     }
+}
+
+function getUnsupportedSummary(tx: ITransactionData): iHistoryItem {
+    return {
+        id: tx.id,
+        type: 'not_supported',
+        timestamp: new Date(tx.timestamp),
+        fee: new BN(0),
+    };
 }
 
 function getStakingSummary(tx: ITransactionData, ownerAddrs: string[]): iHistoryStaking {
