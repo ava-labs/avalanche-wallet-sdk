@@ -11,6 +11,7 @@ export abstract class HDWalletAbstract extends WalletProvider {
     protected internalScan: HdScanner;
     protected externalScan: HdScanner;
     protected accountKey: HDKey;
+    isHdReady = false;
 
     protected constructor(accountKey: HDKey) {
         super();
@@ -106,6 +107,7 @@ export abstract class HDWalletAbstract extends WalletProvider {
 
         this.emitAddressChange();
         this.emitHdReady(indices);
+        this.isHdReady = true;
 
         return indices;
     }
