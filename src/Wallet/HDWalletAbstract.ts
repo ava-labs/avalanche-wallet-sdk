@@ -6,11 +6,14 @@ import { avalanche } from '@/Network/network';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
 import { iHDWalletIndex } from '@/Wallet/types';
 import { bintools } from '@/common';
+import { networkEvents } from '@/Network/eventEmitter';
+import { NetworkConfig } from '@/Network';
 
 export abstract class HDWalletAbstract extends WalletProvider {
     protected internalScan: HdScanner;
     protected externalScan: HdScanner;
     protected accountKey: HDKey;
+    public isHdReady = false;
 
     protected constructor(accountKey: HDKey) {
         super();
@@ -18,6 +21,12 @@ export abstract class HDWalletAbstract extends WalletProvider {
         this.internalScan = new HdScanner(accountKey, true);
         this.externalScan = new HdScanner(accountKey, false);
         this.accountKey = accountKey;
+    }
+
+    protected onNetworkChange(config: NetworkConfig) {
+        super.onNetworkChange(config);
+
+        this.isHdReady = false;
     }
 
     /**
@@ -106,6 +115,7 @@ export abstract class HDWalletAbstract extends WalletProvider {
 
         this.emitAddressChange();
         this.emitHdReady(indices);
+        this.isHdReady = true;
 
         return indices;
     }
