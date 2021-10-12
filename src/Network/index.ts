@@ -3,9 +3,11 @@ import { MainnetConfig, TestnetConfig, LocalnetConfig } from '@/Network/constant
 import { activeNetwork, setRpcNetwork, getEvmChainID, getConfigFromUrl, setRpcNetworkAsync } from '@/Network/network';
 import WebsocketProvider from '@/Network/providers/WebsocketProvider';
 import { bustErc20Cache } from '@/Asset/Erc20';
+import { emitNetworkChange } from '@/Network/eventEmitter';
 
 export function setNetwork(conf: NetworkConfig) {
     setRpcNetwork(conf);
+    emitNetworkChange(conf);
     bustErc20Cache();
 }
 
@@ -15,6 +17,7 @@ export function setNetwork(conf: NetworkConfig) {
  */
 export async function setNetworkAsync(conf: NetworkConfig) {
     await setRpcNetworkAsync(conf);
+    emitNetworkChange(conf);
     bustErc20Cache();
 }
 

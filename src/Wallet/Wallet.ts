@@ -85,6 +85,8 @@ import {
 } from '@/helpers/universal_tx_helper';
 import { UniversalNode } from '@/helpers/UniversalNode';
 import { GetStakeResponse } from 'avalanche/dist/common';
+import { networkEvents } from '@/Network/eventEmitter';
+import { NetworkConfig } from '@/Network';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -119,6 +121,25 @@ export abstract class WalletProvider {
 
     abstract getAllAddressesX(): string[];
     abstract getAllAddressesP(): string[];
+
+    protected constructor() {
+        networkEvents.on('network_change', this.onNetworkChange);
+    }
+
+    /**
+     * Call after getting done with the wallet to avoi memory leaks and remove event listeners
+     */
+    public destroy() {
+        networkEvents.off('network_change', this.onNetworkChange);
+    }
+
+    /**
+     * Fired when the network changes
+     * @param config
+     * @protected
+     */
+    //@ts-ignore
+    protected onNetworkChange(config: NetworkConfig) {}
 
     /***
      * Used to get an identifier string that is consistent across different network connections.
