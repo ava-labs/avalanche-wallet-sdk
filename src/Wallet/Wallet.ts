@@ -1077,7 +1077,7 @@ export abstract class WalletProvider {
     }
 
     async getHistoryC(limit = 0): Promise<ITransactionData[]> {
-        let addrs = [this.getEvmAddressBech()];
+        let addrs = [this.getEvmAddressBech(), ...this.getAllAddressesX()];
         return await getAddressHistory(addrs, limit, cChain.getBlockchainID());
     }
 

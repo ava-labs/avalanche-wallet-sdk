@@ -15,7 +15,7 @@ export function findDestinationChain(tx: ITransactionData): string {
 
     for (let i = 0; i < outs.length; i++) {
         let outChainId = outs[i].outChainID;
-
+        if (!outChainId) continue;
         if (outChainId !== baseChain) return outChainId;
     }
     return baseChain;
@@ -33,6 +33,7 @@ export function findSourceChain(tx: ITransactionData): string {
 
     for (let i = 0; i < ins.length; i++) {
         let inChainId = ins[i].output.inChainID;
+        if (!inChainId) continue;
         if (inChainId !== baseChain) return inChainId;
     }
     return baseChain;

@@ -837,3 +837,91 @@ export const ExportTx2 = `{
     "validatorEnd": 0,
     "txBlockId": ""
 }`;
+
+export const ExportTx3 = `{
+    "id": "iKVmtwcNSHtJxXzMNsiDZEsJKh6eB63fzkkTBH6e4nVetYQgn",
+    "chainID": "yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp",
+    "type": "atomic_export_tx",
+    "inputs": [
+        {
+            "output": {
+                "id": "rY1je3vwnquM7aRanSjBUH8eddhB3j3pC7SsKKM3o5PWxkW12",
+                "transactionID": "iKVmtwcNSHtJxXzMNsiDZEsJKh6eB63fzkkTBH6e4nVetYQgn",
+                "outputIndex": 0,
+                "assetID": "U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK",
+                "stake": false,
+                "frozen": false,
+                "stakeableout": false,
+                "genesisutxo": false,
+                "outputType": 4294967281,
+                "amount": "2002000000",
+                "locktime": 0,
+                "stakeLocktime": 0,
+                "threshold": 0,
+                "addresses": null,
+                "caddresses": [
+                    "0x5f658A6d1928c39B286b48192FEA8d46D87AD077"
+                ],
+                "timestamp": "2021-09-02T21:41:08.039765Z",
+                "redeemingTransactionID": "",
+                "chainID": "yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp",
+                "inChainID": "",
+                "outChainID": "",
+                "groupID": 0,
+                "payload": null,
+                "block": "1051793",
+                "nonce": 322,
+                "rewardUtxo": false
+            },
+            "credentials": null
+        }
+    ],
+    "outputs": [
+        {
+            "id": "rY1je3vwnquM7aRanSjBUH8eddhB3j3pC7SsKKM3o5PWxkW12",
+            "transactionID": "iKVmtwcNSHtJxXzMNsiDZEsJKh6eB63fzkkTBH6e4nVetYQgn",
+            "outputIndex": 0,
+            "assetID": "U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK",
+            "stake": false,
+            "frozen": false,
+            "stakeableout": false,
+            "genesisutxo": false,
+            "outputType": 7,
+            "amount": "2001000000",
+            "locktime": 0,
+            "stakeLocktime": 0,
+            "threshold": 1,
+            "addresses": [
+                "fuji1mnnsf9zftcud4cky8f2ctxaapnr9hfchnw9zjv"
+            ],
+            "caddresses": null,
+            "timestamp": "2021-09-02T21:41:08.039765Z",
+            "redeemingTransactionID": "ZbbYVDcinx58Pq2fBD7P1mysZeEaoBP1az31iRyv8d6Cs3cpv",
+            "chainID": "2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm",
+            "inChainID": "yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp",
+            "outChainID": "2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm",
+            "groupID": 0,
+            "payload": "",
+            "block": "",
+            "nonce": 0,
+            "rewardUtxo": false
+        }
+    ],
+    "memo": "",
+    "inputTotals": {},
+    "outputTotals": {
+        "U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK": "2001000000"
+    },
+    "reusedAddressTotals": null,
+    "timestamp": "2021-09-02T21:41:08.039765Z",
+    "txFee": 1000000,
+    "genesis": false,
+    "rewarded": false,
+    "rewardedTime": null,
+    "epoch": 0,
+    "vertexId": "",
+    "validatorNodeID": "",
+    "validatorStart": 0,
+    "validatorEnd": 0,
+    "txBlockId": ""
+}`;
