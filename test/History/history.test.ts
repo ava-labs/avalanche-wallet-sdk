@@ -7,7 +7,7 @@ import {
     isHistoryImportExportTx,
 } from '@/History';
 import { ImportTransaction, ImportTx1 } from './import_dumps';
-import { ExportTx, ExportTx1, ExportTx2 } from './export_dumps';
+import { ExportTx, ExportTx1, ExportTx2, ExportTx3 } from './export_dumps';
 import { BaseTx, BaseTx1, BaseTx2, BaseTxSend0, BaseTxSend1, BaseTxSend2 } from './base_tx_dumps';
 import { StakeTx0, StakeTx1, StakeTx2, StakeTx3 } from './staking_dumps';
 
@@ -166,6 +166,20 @@ describe('Export Tx', () => {
         expect(summary.destination).toEqual('C');
         expect(summary.fee.toString()).toEqual('1000000');
         expect(summary.amount.toString()).toEqual('1000000000');
+    });
+
+    it('export C to X, single utxo', async () => {
+        let data: ITransactionData = JSON.parse(ExportTx3);
+        const myAddresses = ['X-fuji1mnnsf9zftcud4cky8f2ctxaapnr9hfchnw9zjv'];
+        const cAddr = '0x5f658A6d1928c39B286b48192FEA8d46D87AD077';
+        let summary = (await getTransactionSummary(data, myAddresses, cAddr)) as iHistoryImportExport;
+
+        expect(summary.id).toEqual('iKVmtwcNSHtJxXzMNsiDZEsJKh6eB63fzkkTBH6e4nVetYQgn');
+        expect(summary.type).toEqual('export');
+        expect(summary.source).toEqual('C');
+        expect(summary.destination).toEqual('X');
+        expect(summary.fee.toString()).toEqual('1000000');
+        expect(summary.amount.toString()).toEqual('2001000000');
     });
 });
 

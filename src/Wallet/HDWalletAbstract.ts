@@ -114,8 +114,8 @@ export abstract class HDWalletAbstract extends WalletProvider {
         };
 
         this.emitAddressChange();
-        this.emitHdReady(indices);
         this.isHdReady = true;
+        this.emitHdReady(indices);
 
         return indices;
     }
