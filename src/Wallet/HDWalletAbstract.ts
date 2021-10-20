@@ -6,11 +6,14 @@ import { avalanche } from '@/Network/network';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
 import { iHDWalletIndex } from '@/Wallet/types';
 import { bintools } from '@/common';
+import { networkEvents } from '@/Network/eventEmitter';
+import { NetworkConfig } from '@/Network';
 
 export abstract class HDWalletAbstract extends WalletProvider {
     protected internalScan: HdScanner;
     protected externalScan: HdScanner;
     protected accountKey: HDKey;
+    public isHdReady = false;
 
     protected constructor(accountKey: HDKey) {
         super();
@@ -18,6 +21,12 @@ export abstract class HDWalletAbstract extends WalletProvider {
         this.internalScan = new HdScanner(accountKey, true);
         this.externalScan = new HdScanner(accountKey, false);
         this.accountKey = accountKey;
+    }
+
+    protected onNetworkChange(config: NetworkConfig) {
+        super.onNetworkChange(config);
+
+        this.isHdReady = false;
     }
 
     /**
@@ -96,26 +105,39 @@ export abstract class HDWalletAbstract extends WalletProvider {
      * - If explorer is not available it will use the connected node. This may result in invalid balances.
      */
     public async resetHdIndices(externalStart = 0, internalStart = 0): Promise<iHDWalletIndex> {
-        let indexExt = await this.externalScan.resetIndex(externalStart);
-        let indexInt = await this.internalScan.resetIndex(internalStart);
+        let promiseExt = this.externalScan.resetIndex(externalStart);
+        let promiseInt = this.internalScan.resetIndex(internalStart);
 
-        let indices = {
+        const [indexExt, indexInt] = await Promise.all([promiseExt, promiseInt]);
+
+        this.emitAddressChange();
+        this.isHdReady = true;
+        this.emitHdReady();
+
+        return {
             internal: indexInt,
             external: indexExt,
         };
+    }
+
+    public async setHdIndices(external: number, internal: number) {
+        this.externalScan.setIndex(external);
+        this.internalScan.setIndex(internal);
 
         this.emitAddressChange();
-        this.emitHdReady(indices);
-
-        return indices;
+        this.isHdReady = true;
+        this.emitHdReady();
     }
 
     /**
      * Emits an event to indicate the wallet has finishing calculating its last use address
      * @protected
      */
-    protected emitHdReady(indices: iHDWalletIndex): void {
-        this.emit('hd_ready', indices);
+    protected emitHdReady(): void {
+        this.emit('hd_ready', {
+            external: this.getExternalIndex(),
+            internal: this.getInternalIndex(),
+        });
     }
 
     public async updateUtxosX(): Promise<AVMUTXOSet> {

@@ -85,6 +85,8 @@ import {
 } from '@/helpers/universal_tx_helper';
 import { UniversalNode } from '@/helpers/UniversalNode';
 import { GetStakeResponse } from 'avalanche/dist/common';
+import { networkEvents } from '@/Network/eventEmitter';
+import { NetworkConfig } from '@/Network';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -119,6 +121,25 @@ export abstract class WalletProvider {
 
     abstract getAllAddressesX(): string[];
     abstract getAllAddressesP(): string[];
+
+    protected constructor() {
+        networkEvents.on('network_change', this.onNetworkChange);
+    }
+
+    /**
+     * Call after getting done with the wallet to avoi memory leaks and remove event listeners
+     */
+    public destroy() {
+        networkEvents.off('network_change', this.onNetworkChange);
+    }
+
+    /**
+     * Fired when the network changes
+     * @param config
+     * @protected
+     */
+    //@ts-ignore
+    protected onNetworkChange(config: NetworkConfig) {}
 
     /***
      * Used to get an identifier string that is consistent across different network connections.
@@ -465,12 +486,16 @@ export abstract class WalletProvider {
     private async updateUnknownAssetsX() {
         let utxos = this.utxosX.getAllUTXOs();
 
-        for (let i = 0; i < utxos.length; i++) {
-            let utxo = utxos[i];
-            let assetIdBuff = utxo.getAssetID();
-            let assetId = bintools.cb58Encode(assetIdBuff);
-            await getAssetDescription(assetId);
-        }
+        let assetIds = utxos.map((utxo) => {
+            let idBuff = utxo.getAssetID();
+            return bintools.cb58Encode(idBuff);
+        });
+        let uniqueIds = assetIds.filter((id, index) => {
+            return assetIds.indexOf(id) === index;
+        });
+
+        let promises = uniqueIds.map((id) => getAssetDescription(id));
+        await Promise.all(promises);
     }
 
     /**
@@ -1056,7 +1081,7 @@ export abstract class WalletProvider {
     }
 
     async getHistoryC(limit = 0): Promise<ITransactionData[]> {
-        let addrs = [this.getEvmAddressBech()];
+        let addrs = [this.getEvmAddressBech(), ...this.getAllAddressesX()];
         return await getAddressHistory(addrs, limit, cChain.getBlockchainID());
     }
 
