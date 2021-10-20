@@ -105,27 +105,39 @@ export abstract class HDWalletAbstract extends WalletProvider {
      * - If explorer is not available it will use the connected node. This may result in invalid balances.
      */
     public async resetHdIndices(externalStart = 0, internalStart = 0): Promise<iHDWalletIndex> {
-        let indexExt = await this.externalScan.resetIndex(externalStart);
-        let indexInt = await this.internalScan.resetIndex(internalStart);
+        let promiseExt = this.externalScan.resetIndex(externalStart);
+        let promiseInt = this.internalScan.resetIndex(internalStart);
 
-        let indices = {
-            internal: indexInt,
-            external: indexExt,
-        };
+        const [indexExt, indexInt] = await Promise.all([promiseExt, promiseInt]);
 
         this.emitAddressChange();
         this.isHdReady = true;
-        this.emitHdReady(indices);
+        this.emitHdReady();
 
-        return indices;
+        return {
+            internal: indexInt,
+            external: indexExt,
+        };
+    }
+
+    public async setHdIndices(external: number, internal: number) {
+        this.externalScan.setIndex(external);
+        this.internalScan.setIndex(internal);
+
+        this.emitAddressChange();
+        this.isHdReady = true;
+        this.emitHdReady();
     }
 
     /**
      * Emits an event to indicate the wallet has finishing calculating its last use address
      * @protected
      */
-    protected emitHdReady(indices: iHDWalletIndex): void {
-        this.emit('hd_ready', indices);
+    protected emitHdReady(): void {
+        this.emit('hd_ready', {
+            external: this.getExternalIndex(),
+            internal: this.getInternalIndex(),
+        });
     }
 
     public async updateUtxosX(): Promise<AVMUTXOSet> {

@@ -40,6 +40,12 @@ export default class HdScanner {
         return this.index;
     }
 
+    setIndex(index: number) {
+        let round = Math.floor(index);
+        if (round < 0) throw new Error('A derivation index can not be less than 0.');
+        this.index = round;
+    }
+
     public increment(): number {
         return this.index++;
     }

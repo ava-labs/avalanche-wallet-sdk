@@ -486,12 +486,16 @@ export abstract class WalletProvider {
     private async updateUnknownAssetsX() {
         let utxos = this.utxosX.getAllUTXOs();
 
-        for (let i = 0; i < utxos.length; i++) {
-            let utxo = utxos[i];
-            let assetIdBuff = utxo.getAssetID();
-            let assetId = bintools.cb58Encode(assetIdBuff);
-            await getAssetDescription(assetId);
-        }
+        let assetIds = utxos.map((utxo) => {
+            let idBuff = utxo.getAssetID();
+            return bintools.cb58Encode(idBuff);
+        });
+        let uniqueIds = assetIds.filter((id, index) => {
+            return assetIds.indexOf(id) === index;
+        });
+
+        let promises = uniqueIds.map((id) => getAssetDescription(id));
+        await Promise.all(promises);
     }
 
     /**
