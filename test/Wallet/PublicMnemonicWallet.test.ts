@@ -1,6 +1,14 @@
 // Source mnemonic
 // chimney noodle canyon tunnel sample stuff scan symbol sight club net own arrive cause suffer purity manage squirrel boost diesel bring cement father slide
 
+jest.mock('@/Network', () => {
+    return {
+        getAvaxAssetID: jest.fn().mockImplementation(() => {
+            return 'U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK';
+        }),
+    };
+});
+
 import PublicMnemonicWallet from '@/Wallet/PublicMnemonicWallet';
 
 const XPUB_AVM = `xpub6CvdTKLRh3ehvVLR2f3M1GUTFesrz5zoYFbw32iZqRShmoDnxtfSaF7mdCvXwNRfTwce5RYEADGb6YAzhqEAujEkvjTod6s2WEkpUBJZwqf`;

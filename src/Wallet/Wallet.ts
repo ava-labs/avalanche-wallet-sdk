@@ -61,12 +61,16 @@ import { avaxCtoX, bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
 import {
+    filterDuplicateTransactions,
     getAddressHistory,
     getAddressHistoryEVM,
     getTransactionSummary,
     getTransactionSummaryEVM,
-} from '@/History/history';
-import { HistoryItemType, ITransactionData } from '@/History/types';
+    getTx,
+    getTxEvm,
+    HistoryItemType,
+    ITransactionData,
+} from '@/History';
 import moment from 'moment';
 import { bintools } from '@/common';
 import { ChainIdType } from '@/types';
@@ -81,6 +85,8 @@ import {
 } from '@/helpers/universal_tx_helper';
 import { UniversalNode } from '@/helpers/UniversalNode';
 import { GetStakeResponse } from 'avalanche/dist/common';
+import { networkEvents } from '@/Network/eventEmitter';
+import { NetworkConfig } from '@/Network';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -115,6 +121,25 @@ export abstract class WalletProvider {
 
     abstract getAllAddressesX(): string[];
     abstract getAllAddressesP(): string[];
+
+    protected constructor() {
+        networkEvents.on('network_change', this.onNetworkChange);
+    }
+
+    /**
+     * Call after getting done with the wallet to avoi memory leaks and remove event listeners
+     */
+    public destroy() {
+        networkEvents.off('network_change', this.onNetworkChange);
+    }
+
+    /**
+     * Fired when the network changes
+     * @param config
+     * @protected
+     */
+    //@ts-ignore
+    protected onNetworkChange(config: NetworkConfig) {}
 
     /***
      * Used to get an identifier string that is consistent across different network connections.
@@ -461,12 +486,16 @@ export abstract class WalletProvider {
     private async updateUnknownAssetsX() {
         let utxos = this.utxosX.getAllUTXOs();
 
-        for (let i = 0; i < utxos.length; i++) {
-            let utxo = utxos[i];
-            let assetIdBuff = utxo.getAssetID();
-            let assetId = bintools.cb58Encode(assetIdBuff);
-            await getAssetDescription(assetId);
-        }
+        let assetIds = utxos.map((utxo) => {
+            let idBuff = utxo.getAssetID();
+            return bintools.cb58Encode(idBuff);
+        });
+        let uniqueIds = assetIds.filter((id, index) => {
+            return assetIds.indexOf(id) === index;
+        });
+
+        let promises = uniqueIds.map((id) => getAssetDescription(id));
+        await Promise.all(promises);
     }
 
     /**
@@ -1052,7 +1081,7 @@ export abstract class WalletProvider {
     }
 
     async getHistoryC(limit = 0): Promise<ITransactionData[]> {
-        let addrs = [this.getEvmAddressBech()];
+        let addrs = [this.getEvmAddressBech(), ...this.getAllAddressesX()];
         return await getAddressHistory(addrs, limit, cChain.getBlockchainID());
     }
 
@@ -1062,15 +1091,20 @@ export abstract class WalletProvider {
     }
 
     async getHistory(limit: number = 0): Promise<HistoryItemType[]> {
-        let txsX = await this.getHistoryX(limit);
-        let txsP = await this.getHistoryP(limit);
-        let txsC = await this.getHistoryC(limit);
+        let [txsX, txsP, txsC] = await Promise.all([
+            this.getHistoryX(limit),
+            this.getHistoryP(limit),
+            this.getHistoryC(limit),
+        ]);
 
-        let txsXPC = txsX.concat(txsP, txsC);
+        let txsXPC = filterDuplicateTransactions(txsX.concat(txsP, txsC));
 
         let txsEVM = await this.getHistoryEVM();
 
-        let addrs = this.getAllAddressesX();
+        let addrsX = this.getAllAddressesX();
+        let addrBechC = this.getEvmAddressBech();
+        let addrs = [...addrsX, addrBechC];
+
         let addrC = this.getAddressC();
 
         // Parse X,P,C transactions
@@ -1098,5 +1132,28 @@ export abstract class WalletProvider {
             return txsSorted.slice(0, limit);
         }
         return txsSorted;
+    }
+
+    /**
+     * Fetches information about the given txId and parses it from the wallet's perspective
+     * @param txId
+     */
+    async getHistoryTx(txId: string): Promise<HistoryItemType> {
+        let addrs = this.getAllAddressesX();
+        let addrC = this.getAddressC();
+
+        let rawData = await getTx(txId);
+        return await getTransactionSummary(rawData, addrs, addrC);
+    }
+
+    /**
+     * Fetches information about the given txId and parses it from the wallet's perspective
+     * @param txHash
+     */
+    async getHistoryTxEvm(txHash: string): Promise<HistoryItemType> {
+        let addrC = this.getAddressC();
+
+        let rawData = await getTxEvm(txHash);
+        return getTransactionSummaryEVM(rawData, addrC);
     }
 }

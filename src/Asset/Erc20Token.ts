@@ -4,7 +4,7 @@ import { Erc20TokenData } from '@/Asset/types';
 import { NO_NETWORK } from '@/errors';
 import { BN } from 'avalanche';
 import { Contract } from 'web3-eth-contract';
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 export default class Erc20Token {
     contract: Contract;
