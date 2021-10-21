@@ -25,6 +25,7 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
     evmWallet: EvmWallet;
     type: WalletNameType;
     mnemonic: string;
+    accountIndex: number;
 
     private ethAccountKey: HDKey;
 
@@ -45,6 +46,7 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
         let ethKey = ethAccountKey.privateKey;
         let evmWallet = new EvmWallet(ethKey);
 
+        this.accountIndex = account;
         this.mnemonic = mnemonic;
         this.evmWallet = evmWallet;
     }
