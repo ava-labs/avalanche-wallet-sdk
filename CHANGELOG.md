@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## v0.9.8
+
+#### Added
+
+-   Mnemonic Wallets can be initialized as different accounts
+-   Network changes emit an event, wallets subscribe to these events
+-   Wallet `destroy` method to clean memory
+
+#### Changed
+
+-   Switch to `isomorphic-dompurify`
+-   History module rewritten and refactored.
+
 ## v0.9.7
 
 #### Added
