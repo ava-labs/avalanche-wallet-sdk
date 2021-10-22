@@ -79,6 +79,7 @@
         "big.js": "^6.1.1",
         "bip32-path": "^0.4.2",
         "bip39": "^3.0.4",
+        "bitcoinjs-lib": "^5.2.0",
         "bn.js": "5.1.1",
         "create-hash": "1.2.0",
         "ethereumjs-util": "^7.0.7",

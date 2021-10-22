@@ -149,6 +149,10 @@ export abstract class WalletProvider {
         return this.getAddressC();
     }
 
+    public getAddressBTC(): string {
+        return this.evmWallet.getAddressBTC();
+    }
+
     protected emitter: EventEmitter = new EventEmitter();
 
     public on(event: WalletEventType, listener: (...args: any[]) => void): void {

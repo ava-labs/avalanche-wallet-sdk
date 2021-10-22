@@ -1,6 +1,5 @@
 import * as bip39 from 'bip39';
 import HDKey from 'hdkey';
-import { AVAX_ACCOUNT_PATH, ETH_ACCOUNT_PATH } from './constants';
 import EvmWallet from './EvmWallet';
 import { UnsafeWallet, WalletNameType } from './types';
 import { Buffer } from 'avalanche';
