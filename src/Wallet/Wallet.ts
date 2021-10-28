@@ -123,7 +123,7 @@ export abstract class WalletProvider {
     abstract getAllAddressesP(): string[];
 
     protected constructor() {
-        networkEvents.on('network_change', this.onNetworkChange);
+        networkEvents.on('network_change', this.onNetworkChange.bind(this));
     }
 
     /**
