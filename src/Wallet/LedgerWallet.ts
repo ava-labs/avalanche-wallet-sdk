@@ -1,6 +1,3 @@
-// @ts-ignore
-// import TransportU2F from '@ledgerhq/hw-transport-u2f';
-
 import Eth from '@ledgerhq/hw-app-eth';
 // @ts-ignore
 import AppAvax from '@obsidiansystems/hw-app-avalanche';
@@ -155,7 +152,7 @@ export default class LedgerWallet extends HDWalletAbstract {
             Buffer.from([]),
         ]);
 
-        const signature = await this.ethApp.signTransaction(LEDGER_ETH_ACCOUNT_PATH, rawUnsignedTx);
+        const signature = await this.ethApp.signTransaction(LEDGER_ETH_ACCOUNT_PATH, rawUnsignedTx.toString('hex'));
 
         const signatureBN = {
             v: new EthBN(signature.v, 16),
@@ -356,11 +353,6 @@ export default class LedgerWallet extends HDWalletAbstract {
             return null;
         }
 
-        // else if (txType === PlatformVMConstants.ADDVALIDATORTX || txType === PlatformVMConstants.ADDDELEGATORTX) {
-        // changeIdx = this.platformHelper.getFirstAvailableIndex()
-        // changeIdx = this.externalScan.getIndex();
-        // }
-
         return bippath.fromString(`${AVAX_ACCOUNT_PATH}/${chainChangePath}/${changeIdx}`);
     }
 
@@ -385,14 +377,6 @@ export default class LedgerWallet extends HDWalletAbstract {
             chainId === 'C' ? bippath.fromString(`${ETH_ACCOUNT_PATH}`) : bippath.fromString(`${AVAX_ACCOUNT_PATH}`);
         let txbuff = unsignedTx.toBuffer();
         let changePath = this.getChangeBipPath(unsignedTx, chainId);
-        // let messages = this.getTransactionMessages<UnsignedTx>(unsignedTx, chainId, changePath)
-
-        // try {
-        // store.commit('Ledger/openModal', {
-        //     title: title,
-        //     messages: messages,
-        //     info: null,
-        // })
 
         let ledgerSignedTx = await this.appAvax.signTransaction(accountPath, bip32Paths, txbuff, changePath);
 
@@ -413,11 +397,6 @@ export default class LedgerWallet extends HDWalletAbstract {
         }
 
         return signedTx as SignedTx;
-        // } catch (e) {
-        // store.commit('Ledger/closeModal')
-        // console.error(e)
-        // throw e
-        // }
     }
 
     // Used for non parsable transactions.
@@ -429,18 +408,11 @@ export default class LedgerWallet extends HDWalletAbstract {
         let txbuff = unsignedTx.toBuffer();
         const msg: Buffer = Buffer.from(createHash('sha256').update(txbuff).digest());
 
-        // store.commit('Ledger/openModal', {
-        //     title: 'Sign Hash',
-        //     messages: [],
-        //     info: msg.toString('hex').toUpperCase(),
-        // })
-
         let bip32Paths = this.pathsToUniqueBipPaths(paths);
 
         // Sign the msg with ledger
         const accountPath = bippath.fromString(`${AVAX_ACCOUNT_PATH}`);
         let sigMap = await this.appAvax.signHash(accountPath, bip32Paths, msg);
-        // store.commit('Ledger/closeModal')
 
         let creds: Credential[] = this.getCredentials<UnsignedTx>(unsignedTx, paths, sigMap, chainId);
 
