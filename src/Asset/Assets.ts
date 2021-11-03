@@ -1,8 +1,7 @@
 import { xChain } from '@/Network/network';
 
 import { iAssetCache, iAssetDescriptionClean } from '@/Asset/types';
-import DOMPurify from 'isomorphic-dompurify';
-
+import xss from 'xss';
 let assetCache: iAssetCache = {};
 
 export function getAssetDescriptionSync(assetId: string): iAssetDescriptionClean {
@@ -25,8 +24,8 @@ export async function getAssetDescription(assetId: string): Promise<iAssetDescri
         let clean: iAssetDescriptionClean = {
             ...res,
             assetID: assetId,
-            name: DOMPurify.sanitize(res.name),
-            symbol: DOMPurify.sanitize(res.symbol),
+            name: xss(res.name),
+            symbol: xss(res.symbol),
         };
 
         assetCache[assetId] = clean;
