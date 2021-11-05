@@ -33,3 +33,12 @@ export async function getBaseFee(): Promise<BN> {
 export async function getMaxPriorityFee(): Promise<BN> {
     return new BN(await cChain.getMaxPriorityFeePerGas(), 'hex');
 }
+
+/**
+ * Calculate max fee for EIP 1559 transactions given baseFee and maxPriorityFee
+ * @param baseFee in WEI
+ * @param maxPriorityFee in WEI
+ */
+export function calculateMaxFee(baseFee: BN, maxPriorityFee: BN): BN {
+    return baseFee.mul(new BN(2)).add(maxPriorityFee);
+}
