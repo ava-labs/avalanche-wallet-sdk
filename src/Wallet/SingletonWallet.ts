@@ -11,7 +11,7 @@ import { avalanche, pChain, xChain } from '@/Network/network';
 import { Buffer as BufferAvalanche } from 'avalanche';
 import EvmWallet from '@/Wallet/EvmWallet';
 import { UnsignedTx, Tx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
-import { Transaction } from '@ethereumjs/tx';
+import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import { bintools } from '@/common';
 
 export default class SingletonWallet extends WalletProvider implements UnsafeWallet {
@@ -116,7 +116,7 @@ export default class SingletonWallet extends WalletProvider implements UnsafeWal
         return this.evmWallet.signC(tx);
     }
 
-    async signEvm(tx: Transaction): Promise<Transaction> {
+    async signEvm(tx: Transaction | FeeMarketEIP1559Transaction): Promise<Transaction | FeeMarketEIP1559Transaction> {
         return this.evmWallet.signEVM(tx);
     }
 
