@@ -74,7 +74,7 @@
         "@ledgerhq/hw-app-eth": "6.12.2",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
         "@openzeppelin/contracts": "4.3.2",
-        "avalanche": "3.9.2",
+        "avalanche": "3.9.3",
         "big.js": "^6.1.1",
         "bip32-path": "^0.4.2",
         "bip39": "^3.0.4",
