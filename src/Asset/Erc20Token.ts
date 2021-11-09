@@ -34,10 +34,15 @@ export default class Erc20Token {
         //@ts-ignore
         let contract = new web3.eth.Contract(ERC20Abi.abi, address);
 
+        let contractCalls = await Promise.all([
+            contract.methods.name().call(),
+            contract.methods.symbol().call(),
+            contract.methods.decimals().call(),
+        ]);
         // Purify the values for XSS protection
-        let name = xss(await contract.methods.name().call());
-        let symbol = xss(await contract.methods.symbol().call());
-        let decimals = parseInt(await contract.methods.decimals().call());
+        let name = xss(contractCalls[0]);
+        let symbol = xss(contractCalls[1]);
+        let decimals = parseInt(contractCalls[2]);
 
         if (!activeNetwork) {
             throw NO_NETWORK;
