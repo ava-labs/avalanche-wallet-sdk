@@ -120,7 +120,7 @@ export abstract class HDWalletAbstract extends WalletProvider {
         };
     }
 
-    public async setHdIndices(external: number, internal: number) {
+    public setHdIndices(external: number, internal: number) {
         this.externalScan.setIndex(external);
         this.internalScan.setIndex(internal);
 
