@@ -1,6 +1,7 @@
 import * as bip39 from 'bip39';
 import HDKey from 'hdkey';
 import { AVAX_ACCOUNT_PATH, ETH_ACCOUNT_PATH } from './constants';
+import * as bip32 from 'bip32';
 import EvmWallet from './EvmWallet';
 import { UnsafeWallet, WalletNameType } from './types';
 import { Buffer } from 'avalanche';
@@ -27,12 +28,15 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
     mnemonic: string;
     accountIndex: number;
 
-    private ethAccountKey: HDKey;
+    private ethAccountKey: bip32.BIP32Interface;
 
     constructor(mnemonic: string, account = 0) {
         let seed: globalThis.Buffer = bip39.mnemonicToSeedSync(mnemonic);
-        let masterHdKey: HDKey = HDKey.fromMasterSeed(seed);
-        let accountKey = masterHdKey.derive(getAccountPathAvalanche(account));
+
+        // let masterHdKey: HDKey = HDKey.fromMasterSeed(seed);
+        // let accountKey = masterHdKey.derive(getAccountPathAvalanche(account));
+        let masterHdKey = bip32.fromSeed(seed);
+        let accountKey = masterHdKey.derivePath(getAccountPathAvalanche(account));
 
         super(accountKey);
 
@@ -41,10 +45,10 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
             throw new Error('Invalid mnemonic phrase.');
         }
 
-        let ethAccountKey = masterHdKey.derive(getAccountPathEVM(account));
+        let ethAccountKey = masterHdKey.derivePath(getAccountPathEVM(account));
         this.ethAccountKey = ethAccountKey;
         let ethKey = ethAccountKey.privateKey;
-        let evmWallet = new EvmWallet(ethKey);
+        let evmWallet = new EvmWallet(ethKey!);
 
         this.accountIndex = account;
         this.mnemonic = mnemonic;

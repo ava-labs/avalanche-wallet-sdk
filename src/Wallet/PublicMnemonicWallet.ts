@@ -6,7 +6,8 @@ import { Transaction } from '@ethereumjs/tx';
 import { WalletNameType } from '@/Wallet/types';
 import EvmWallet from '@/Wallet/EvmWallet';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
-import HDKey from 'hdkey';
+// import HDKey from 'hdkey';
+import * as bip32 from 'bip32';
 import { importPublic } from 'ethereumjs-util';
 
 export default class PublicMnemonicWallet extends HDWalletAbstract {
@@ -16,8 +17,11 @@ export default class PublicMnemonicWallet extends HDWalletAbstract {
      * @param xpubEVM of derivation path m/44'/60'/0'
      */
     constructor(xpubAVM: string, xpubEVM: string) {
-        let avmAcct = HDKey.fromExtendedKey(xpubAVM);
-        let evmAcct = HDKey.fromExtendedKey(xpubEVM).derive('m/0/0');
+        // console.log(xpubAVM, xpubEVM);
+        let avmAcct = bip32.fromBase58(xpubAVM);
+        let evmAcct = bip32.fromBase58(xpubEVM).derivePath('0/0');
+        // let avmAcct = HDKey.fromExtendedKey(xpubAVM);
+        // let evmAcct = HDKey.fromExtendedKey(xpubEVM).derive('m/0/0');
         super(avmAcct);
 
         this.type = 'xpub';

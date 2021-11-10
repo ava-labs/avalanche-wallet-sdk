@@ -76,6 +76,7 @@
         "@openzeppelin/contracts": "4.3.2",
         "avalanche": "3.8.1",
         "big.js": "^6.1.1",
+        "bip32": "^2.0.6",
         "bip32-path": "^0.4.2",
         "bip39": "^3.0.4",
         "bn.js": "5.1.1",

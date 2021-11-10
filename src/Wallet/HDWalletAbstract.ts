@@ -1,21 +1,22 @@
 import { WalletProvider } from '@/Wallet/Wallet';
 import HdScanner from '@/Wallet/HdScanner';
-import HDKey from 'hdkey';
+// import HDKey from 'hdkey';
 import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
 import { avalanche } from '@/Network/network';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
 import { iHDWalletIndex } from '@/Wallet/types';
 import { bintools } from '@/common';
+import * as bip32 from 'bip32';
 import { networkEvents } from '@/Network/eventEmitter';
 import { NetworkConfig } from '@/Network';
 
 export abstract class HDWalletAbstract extends WalletProvider {
     protected internalScan: HdScanner;
     protected externalScan: HdScanner;
-    protected accountKey: HDKey;
+    protected accountKey: bip32.BIP32Interface;
     public isHdReady = false;
 
-    protected constructor(accountKey: HDKey) {
+    protected constructor(accountKey: bip32.BIP32Interface) {
         super();
 
         this.internalScan = new HdScanner(accountKey, true);

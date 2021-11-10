@@ -50,6 +50,7 @@ import createHash from 'create-hash';
 //@ts-ignore
 import bippath from 'bip32-path';
 import { bintools } from '@/common';
+import * as bip32 from 'bip32';
 
 export default class LedgerWallet extends HDWalletAbstract {
     evmWallet: EvmWalletReadonly;
@@ -60,7 +61,13 @@ export default class LedgerWallet extends HDWalletAbstract {
     appAvax: AppAvax;
     ethApp: Eth;
 
-    constructor(avaxAcct: HDKey, evmAcct: HDKey, avaxApp: AppAvax, ethApp: Eth, config: ILedgerAppConfig) {
+    constructor(
+        avaxAcct: bip32.BIP32Interface,
+        evmAcct: HDKey,
+        avaxApp: AppAvax,
+        ethApp: Eth,
+        config: ILedgerAppConfig
+    ) {
         super(avaxAcct);
         this.evmAccount = evmAcct;
         this.config = config;
@@ -98,11 +105,13 @@ export default class LedgerWallet extends HDWalletAbstract {
         return await LedgerWallet.fromApp(app, eth);
     }
 
-    static async getAvaxAccount(app: AppAvax): Promise<HDKey> {
+    static async getAvaxAccount(app: AppAvax): Promise<bip32.BIP32Interface> {
         let res = await app.getWalletExtendedPublicKey(AVAX_ACCOUNT_PATH);
-        let hd = new HDKey();
-        hd.publicKey = res.public_key;
-        hd.chainCode = res.chain_code;
+
+        let pubKey = res.public_key;
+        let chainCode = res.chain_code;
+
+        let hd = bip32.fromPublicKey(pubKey, chainCode);
 
         return hd;
     }
