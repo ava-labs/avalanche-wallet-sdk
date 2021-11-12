@@ -1,6 +1,4 @@
 import { NetworkConfig } from './types';
-// import { AVMConstants } from 'avalanche/dist/apis/avm';
-// import Avalanche, { AvalancheCore } from 'avalanche';
 import { Defaults } from 'avalanche/dist/utils';
 import { getRpcC, getRpcP, getRpcX } from './helpers/rpcFromConfig';
 
