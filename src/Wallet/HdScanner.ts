@@ -1,4 +1,5 @@
-import HDKey from 'hdkey';
+// import HDKey from 'hdkey';
+import * as bip32 from 'bip32';
 import { getPreferredHRP } from 'avalanche/dist/utils';
 import { activeNetwork, avalanche, pChain, xChain } from '@/Network/network';
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
@@ -11,7 +12,7 @@ import { NO_NETWORK } from '@/errors';
 import { bintools } from '@/common';
 
 type AddressCache = {
-    [index: string]: HDKey;
+    [index: string]: bip32.BIP32Interface;
 };
 
 type KeyCacheX = {
@@ -29,10 +30,10 @@ export default class HdScanner {
     protected keyCacheX: KeyCacheX = {};
     protected keyCacheP: KeyCacheP = {};
     readonly changePath: string;
-    readonly accountKey: HDKey;
     private avmAddrFactory: AVMKeyPair;
+    readonly accountKey: bip32.BIP32Interface;
 
-    constructor(accountKey: HDKey, isInternal = true) {
+    constructor(accountKey: bip32.BIP32Interface, isInternal = true) {
         this.changePath = isInternal ? '1' : '0';
         this.accountKey = accountKey;
         // We need an instance of an AVM key to generate adddresses from public keys
@@ -102,7 +103,7 @@ export default class HdScanner {
         if (cache) return cache;
 
         let hdKey = this.getHdKeyForIndex(index);
-        let pkHex = hdKey.privateKey.toString('hex');
+        let pkHex = hdKey.privateKey!.toString('hex');
 
         let pkBuf: Buffer = new Buffer(pkHex, 'hex');
 
@@ -118,7 +119,7 @@ export default class HdScanner {
         if (cache) return cache;
 
         let hdKey = this.getHdKeyForIndex(index);
-        let pkHex = hdKey.privateKey.toString('hex');
+        let pkHex = hdKey.privateKey!.toString('hex');
 
         let pkBuf: Buffer = new Buffer(pkHex, 'hex');
 
@@ -130,12 +131,12 @@ export default class HdScanner {
         return keypair;
     }
 
-    private getHdKeyForIndex(index: number): HDKey {
-        let key: HDKey;
+    private getHdKeyForIndex(index: number): bip32.BIP32Interface {
+        let key: bip32.BIP32Interface;
         if (this.addressCache[index]) {
             key = this.addressCache[index];
         } else {
-            key = this.accountKey.derive(`m/${this.changePath}/${index}`) as HDKey;
+            key = this.accountKey.derivePath(`${this.changePath}/${index}`);
             this.addressCache[index] = key;
         }
         return key;
