@@ -30,10 +30,14 @@ export default class HdScanner {
     protected keyCacheP: KeyCacheP = {};
     readonly changePath: string;
     readonly accountKey: HDKey;
+    private avmAddrFactory: AVMKeyPair;
 
     constructor(accountKey: HDKey, isInternal = true) {
         this.changePath = isInternal ? '1' : '0';
         this.accountKey = accountKey;
+        // We need an instance of an AVM key to generate adddresses from public keys
+        let hrp = getPreferredHRP(avalanche.getNetworkID());
+        this.avmAddrFactory = new AVMKeyPair(hrp, 'X');
     }
 
     getIndex() {
@@ -145,8 +149,8 @@ export default class HdScanner {
 
         let hrp = getPreferredHRP(avalanche.getNetworkID());
 
-        let keypair = new AVMKeyPair(hrp, chainId);
-        let addrBuf = keypair.addressFromPublicKey(publicKeyBuff);
+        // let keypair = new KeyPair(hrp, chainId);
+        let addrBuf = this.avmAddrFactory.addressFromPublicKey(publicKeyBuff);
         let addr = bintools.addressToString(hrp, chainId, addrBuf);
 
         return addr;
