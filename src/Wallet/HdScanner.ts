@@ -36,6 +36,10 @@ export default class HdScanner {
         this.accountKey = accountKey;
     }
 
+    sleep(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
     getIndex() {
         return this.index;
     }
@@ -67,10 +71,11 @@ export default class HdScanner {
         return addrs;
     }
 
-    getAddressesInRange(start: number, end: number): string[] {
+    async getAddressesInRange(start: number, end: number): Promise<string[]> {
         let res = [];
         for (let i = start; i < end; i++) {
             res.push(this.getAddressForIndex(i));
+            await this.sleep(1);
         }
         return res;
     }
@@ -171,7 +176,7 @@ export default class HdScanner {
     private async findAvailableIndexExplorer(startIndex = 0): Promise<number> {
         let upTo = 512;
 
-        let addrs = this.getAddressesInRange(startIndex, startIndex + upTo);
+        let addrs = await this.getAddressesInRange(startIndex, startIndex + upTo);
         let addrChains = await getAddressChains(addrs);
 
         for (let i = 0; i < addrs.length - INDEX_RANGE; i++) {
