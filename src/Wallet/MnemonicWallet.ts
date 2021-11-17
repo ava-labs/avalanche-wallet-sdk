@@ -33,8 +33,6 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
     constructor(mnemonic: string, account = 0) {
         let seed: globalThis.Buffer = bip39.mnemonicToSeedSync(mnemonic);
 
-        // let masterHdKey: HDKey = HDKey.fromMasterSeed(seed);
-        // let accountKey = masterHdKey.derive(getAccountPathAvalanche(account));
         let masterHdKey = bip32.fromSeed(seed);
         let accountKey = masterHdKey.derivePath(getAccountPathAvalanche(account));
 

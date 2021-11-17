@@ -10,6 +10,7 @@ import { INDEX_RANGE, SCAN_RANGE, SCAN_SIZE } from './constants';
 import { getAddressChains } from '../Explorer/Explorer';
 import { NO_NETWORK } from '@/errors';
 import { bintools } from '@/common';
+import { sleep } from '@/utils';
 
 type AddressCache = {
     [index: string]: bip32.BIP32Interface;
@@ -72,10 +73,11 @@ export default class HdScanner {
         return addrs;
     }
 
-    getAddressesInRange(start: number, end: number): string[] {
+    async getAddressesInRange(start: number, end: number): Promise<string[]> {
         let res = [];
         for (let i = start; i < end; i++) {
             res.push(this.getAddressForIndex(i));
+            await sleep(1);
         }
         return res;
     }
@@ -176,7 +178,7 @@ export default class HdScanner {
     private async findAvailableIndexExplorer(startIndex = 0): Promise<number> {
         let upTo = 512;
 
-        let addrs = this.getAddressesInRange(startIndex, startIndex + upTo);
+        let addrs = await this.getAddressesInRange(startIndex, startIndex + upTo);
         let addrChains = await getAddressChains(addrs);
 
         for (let i = 0; i < addrs.length - INDEX_RANGE; i++) {
