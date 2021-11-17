@@ -115,12 +115,12 @@ export abstract class WalletProvider {
     abstract getAddressC(): string;
     abstract getEvmAddressBech(): string;
 
-    abstract getExternalAddressesX(): string[];
-    abstract getInternalAddressesX(): string[];
-    abstract getExternalAddressesP(): string[];
+    abstract getExternalAddressesX(): Promise<string[]>;
+    abstract getInternalAddressesX(): Promise<string[]>;
+    abstract getExternalAddressesP(): Promise<string[]>;
 
-    abstract getAllAddressesX(): string[];
-    abstract getAllAddressesP(): string[];
+    abstract getAllAddressesX(): Promise<string[]>;
+    abstract getAllAddressesP(): Promise<string[]>;
 
     protected constructor() {
         networkEvents.on('network_change', this.onNetworkChange.bind(this));
@@ -194,7 +194,7 @@ export abstract class WalletProvider {
 
         let memoBuff = memo ? Buffer.from(memo) : undefined;
 
-        let froms = this.getAllAddressesX();
+        let froms = await this.getAllAddressesX();
         let changeAddress = this.getChangeAddressX();
         let utxoSet = this.utxosX;
 
@@ -242,7 +242,7 @@ export abstract class WalletProvider {
      */
     async sendANT(assetID: string, amount: BN, to: string): Promise<string> {
         let utxoSet = this.getUtxosX();
-        let fromAddrs = this.getAllAddressesX();
+        let fromAddrs = await this.getAllAddressesX();
         let changeAddr = this.getChangeAddressX();
 
         let tx = await xChain.buildBaseTx(utxoSet, amount, assetID, [to], fromAddrs, [changeAddr]);
@@ -411,8 +411,7 @@ export abstract class WalletProvider {
      *  - Calls `this.updateBalanceX()` after success.
      *  */
     public async updateUtxosX(): Promise<AVMUTXOSet> {
-        const addresses = this.getAllAddressesX();
-        // let oldUtxos = this.utxosX;
+        const addresses = await this.getAllAddressesX();
         this.utxosX = await avmGetAllUTXOs(addresses);
 
         await this.updateUnknownAssetsX();
@@ -434,7 +433,7 @@ export abstract class WalletProvider {
      *  - Updates `this.utxosP` with the new UTXOs
      */
     public async updateUtxosP(): Promise<PlatformUTXOSet> {
-        let addresses = this.getAllAddressesP();
+        let addresses = await this.getAllAddressesP();
         this.utxosP = await platformGetAllUTXOs(addresses);
 
         this.emitBalanceChangeP();
@@ -453,7 +452,7 @@ export abstract class WalletProvider {
      * Returns the number AVAX staked by this wallet.
      */
     public async getStake(): Promise<GetStakeResponse> {
-        let addrs = this.getAllAddressesP();
+        let addrs = await this.getAllAddressesP();
         return await getStakeForAddresses(addrs);
     }
 
@@ -663,7 +662,7 @@ export abstract class WalletProvider {
         let destinationAddr = this.getAddressX();
 
         let pChangeAddr = this.getAddressP();
-        let fromAddrs = this.getAllAddressesP();
+        let fromAddrs = await this.getAllAddressesP();
 
         let xId = xChain.getBlockchainID();
 
@@ -729,7 +728,7 @@ export abstract class WalletProvider {
             destinationAddr = this.getEvmAddressBech();
         }
 
-        let fromAddresses = this.getAllAddressesX();
+        let fromAddresses = await this.getAllAddressesX();
         let changeAddress = this.getChangeAddressX();
         let utxos = this.utxosX;
         let exportTx = (await buildAvmExportTransaction(
@@ -753,13 +752,13 @@ export abstract class WalletProvider {
     }
 
     async getAtomicUTXOsX(chainID: AvmImportChainType) {
-        let addrs = this.getAllAddressesX();
+        let addrs = await this.getAllAddressesX();
         let result = await avmGetAtomicUTXOs(addrs, chainID);
         return result;
     }
 
     async getAtomicUTXOsP(): Promise<PlatformUTXOSet> {
-        let addrs = this.getAllAddressesP();
+        let addrs = await this.getAllAddressesP();
         return await platformGetAtomicUTXOs(addrs);
     }
 
@@ -872,7 +871,7 @@ export abstract class WalletProvider {
     }
 
     async createNftFamily(name: string, symbol: string, groupNum: number) {
-        let fromAddresses = this.getAllAddressesX();
+        let fromAddresses = await this.getAllAddressesX();
         let changeAddress = this.getChangeAddressX();
 
         let minterAddress = this.getAddressX();
@@ -898,7 +897,7 @@ export abstract class WalletProvider {
         let ownerAddress = this.getAddressX();
         let changeAddress = this.getChangeAddressX();
 
-        let sourceAddresses = this.getAllAddressesX();
+        let sourceAddresses = await this.getAllAddressesX();
 
         let utxoSet = this.utxosX;
         let tx = await buildMintNftTx(
@@ -945,7 +944,7 @@ export abstract class WalletProvider {
             utxoSet.addArray(utxos);
         }
 
-        let pAddressStrings = this.getAllAddressesP();
+        let pAddressStrings = await this.getAllAddressesP();
         // let pAddressStrings = this.platformHelper.getAllDerivedAddresses()
 
         let stakeAmount = amt;
@@ -995,7 +994,7 @@ export abstract class WalletProvider {
         utxos?: PlatformUTXO[]
     ): Promise<string> {
         let utxoSet = this.utxosP;
-        let pAddressStrings = this.getAllAddressesP();
+        let pAddressStrings = await this.getAllAddressesP();
 
         let stakeAmount = amt;
 
@@ -1071,17 +1070,17 @@ export abstract class WalletProvider {
     }
 
     async getHistoryX(limit = 0): Promise<ITransactionData[]> {
-        let addrs = this.getAllAddressesX();
+        let addrs = await this.getAllAddressesX();
         return await getAddressHistory(addrs, limit, xChain.getBlockchainID());
     }
 
     async getHistoryP(limit = 0): Promise<ITransactionData[]> {
-        let addrs = this.getAllAddressesP();
+        let addrs = await this.getAllAddressesP();
         return await getAddressHistory(addrs, limit, pChain.getBlockchainID());
     }
 
     async getHistoryC(limit = 0): Promise<ITransactionData[]> {
-        let addrs = [this.getEvmAddressBech(), ...this.getAllAddressesX()];
+        let addrs = [this.getEvmAddressBech(), ...(await this.getAllAddressesX())];
         return await getAddressHistory(addrs, limit, cChain.getBlockchainID());
     }
 
@@ -1101,7 +1100,7 @@ export abstract class WalletProvider {
 
         let txsEVM = await this.getHistoryEVM();
 
-        let addrsX = this.getAllAddressesX();
+        let addrsX = await this.getAllAddressesX();
         let addrBechC = this.getEvmAddressBech();
         let addrs = [...addrsX, addrBechC];
 
@@ -1139,7 +1138,7 @@ export abstract class WalletProvider {
      * @param txId
      */
     async getHistoryTx(txId: string): Promise<HistoryItemType> {
-        let addrs = this.getAllAddressesX();
+        let addrs = await this.getAllAddressesX();
         let addrC = this.getAddressC();
 
         let rawData = await getTx(txId);

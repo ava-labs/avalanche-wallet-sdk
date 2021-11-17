@@ -6,7 +6,7 @@ import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/a
 import { KeyChain as PlatformKeyChain, KeyPair as PlatformKeyPair } from 'avalanche/dist/apis/platformvm';
 import { HdChainType } from './types';
 import { Buffer } from 'avalanche';
-import { INDEX_RANGE, SCAN_RANGE, SCAN_SIZE } from './constants';
+import { DERIVATION_SLEEP_INTERVAL, INDEX_RANGE, SCAN_RANGE, SCAN_SIZE } from './constants';
 import { getAddressChains } from '../Explorer/Explorer';
 import { NO_NETWORK } from '@/errors';
 import { bintools } from '@/common';
@@ -64,20 +64,32 @@ export default class HdScanner {
         return this.getAddressForIndex(this.index, 'P');
     }
 
-    public getAllAddresses(chainId: HdChainType = 'X'): string[] {
+    public async getAllAddresses(chainId: HdChainType = 'X'): Promise<string[]> {
         let upTo = this.index;
-        let addrs = [];
-        for (let i = 0; i <= upTo; i++) {
-            addrs.push(this.getAddressForIndex(i, chainId));
-        }
-        return addrs;
+        return await this.getAddressesInRange(0, upTo + 1, chainId);
+        // let addrs = [];
+        // for (let i = 0; i <= upTo; i++) {
+        //     addrs.push(this.getAddressForIndex(i, chainId));
+        //     await sleep(0);
+        // }
+        // return addrs;
     }
 
-    async getAddressesInRange(start: number, end: number): Promise<string[]> {
+    /**
+     * Returns addresses in the given range
+     * @param start Start index
+     * @param end End index, exclusive
+     * @param chainId  `X` or `P` optional, returns X by default
+     */
+    async getAddressesInRange(start: number, end: number, chainId: HdChainType = 'X'): Promise<string[]> {
         let res = [];
         for (let i = start; i < end; i++) {
-            res.push(this.getAddressForIndex(i));
-            await sleep(1);
+            res.push(this.getAddressForIndex(i, chainId));
+
+            // Sleep every Nth address to open up the thread
+            if ((i - start) % DERIVATION_SLEEP_INTERVAL === 0) {
+                await sleep(0);
+            }
         }
         return res;
     }

@@ -14,3 +14,7 @@ export const SCAN_RANGE: number = SCAN_SIZE - INDEX_RANGE; // How many items are
 
 export const LEDGER_EXCHANGE_TIMEOUT = 90_000;
 export const MIN_EVM_SUPPORT_V = '0.5.3';
+/**
+ * In order to free the thread when deriving addresses, the execution will sleep every N address derived
+ */
+export const DERIVATION_SLEEP_INTERVAL = 200;

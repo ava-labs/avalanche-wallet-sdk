@@ -82,11 +82,11 @@ export default class SingletonWallet extends WalletProvider implements UnsafeWal
         return keyChain.getAddressStrings()[0];
     }
 
-    getAllAddressesP(): string[] {
+    async getAllAddressesP(): Promise<string[]> {
         return [this.getAddressP()];
     }
 
-    getAllAddressesX(): string[] {
+    async getAllAddressesX(): Promise<string[]> {
         return [this.getAddressX()];
     }
 
@@ -100,15 +100,15 @@ export default class SingletonWallet extends WalletProvider implements UnsafeWal
         return keypair.getAddressString();
     }
 
-    getExternalAddressesP(): string[] {
+    async getExternalAddressesP(): Promise<string[]> {
         return [this.getAddressP()];
     }
 
-    getExternalAddressesX(): string[] {
+    async getExternalAddressesX(): Promise<string[]> {
         return [this.getAddressX()];
     }
 
-    getInternalAddressesX(): string[] {
+    async getInternalAddressesX(): Promise<string[]> {
         return [this.getAddressX()];
     }
 

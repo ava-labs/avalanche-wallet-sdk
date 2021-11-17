@@ -70,32 +70,32 @@ export abstract class HDWalletAbstract extends WalletProvider {
     /**
      * Returns every external X chain address used by the wallet up to now.
      */
-    public getExternalAddressesX(): string[] {
-        return this.externalScan.getAllAddresses('X');
+    public async getExternalAddressesX(): Promise<string[]> {
+        return await this.externalScan.getAllAddresses('X');
     }
 
     /**
      * Returns every internal X chain address used by the wallet up to now.
      */
-    public getInternalAddressesX(): string[] {
-        return this.internalScan.getAllAddresses('X');
+    public async getInternalAddressesX(): Promise<string[]> {
+        return await this.internalScan.getAllAddresses('X');
     }
 
     /**
      * Returns every X chain address used by the wallet up to now (internal + external).
      */
-    public getAllAddressesX(): string[] {
-        return [...this.getExternalAddressesX(), ...this.getInternalAddressesX()];
+    public async getAllAddressesX(): Promise<string[]> {
+        return [...(await this.getExternalAddressesX()), ...(await this.getInternalAddressesX())];
     }
 
-    public getExternalAddressesP(): string[] {
+    public async getExternalAddressesP(): Promise<string[]> {
         return this.externalScan.getAllAddresses('P');
     }
 
     /**
      * Returns every P chain address used by the wallet up to now.
      */
-    public getAllAddressesP(): string[] {
+    public getAllAddressesP(): Promise<string[]> {
         return this.getExternalAddressesP();
     }
 
