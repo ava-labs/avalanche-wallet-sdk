@@ -64,9 +64,22 @@ export default class HdScanner {
         return this.getAddressForIndex(this.index, 'P');
     }
 
+    /**
+     * Returns every address up to and including the current index.
+     * @param chainId Either X or P
+     */
     public async getAllAddresses(chainId: HdChainType = 'X'): Promise<string[]> {
         let upTo = this.index;
         return await this.getAddressesInRange(0, upTo + 1, chainId);
+    }
+
+    /**
+     * Returns every address up to and including the current index synchronously.
+     * @param chainId Either X or P
+     */
+    public async getAllAddressesSync(chainId: HdChainType = 'X'): Promise<string[]> {
+        let upTo = this.index;
+        return this.getAddressesInRangeSync(0, upTo + 1, chainId);
     }
 
     /**
@@ -75,7 +88,7 @@ export default class HdScanner {
      * @param end End index, exclusive
      * @param chainId  `X` or `P` optional, returns X by default
      */
-    async getAddressesInRange(start: number, end: number, chainId: HdChainType = 'X'): Promise<string[]> {
+    public async getAddressesInRange(start: number, end: number, chainId: HdChainType = 'X'): Promise<string[]> {
         let res = [];
         for (let i = start; i < end; i++) {
             res.push(this.getAddressForIndex(i, chainId));
@@ -84,6 +97,20 @@ export default class HdScanner {
             if ((i - start) % DERIVATION_SLEEP_INTERVAL === 0) {
                 await sleep(0);
             }
+        }
+        return res;
+    }
+
+    /**
+     * Returns addresses in the given range
+     * @param start Start index
+     * @param end End index, exclusive
+     * @param chainId  `X` or `P` optional, returns X by default
+     */
+    public async getAddressesInRangeSync(start: number, end: number, chainId: HdChainType = 'X'): string[] {
+        let res = [];
+        for (let i = start; i < end; i++) {
+            res.push(this.getAddressForIndex(i, chainId));
         }
         return res;
     }
