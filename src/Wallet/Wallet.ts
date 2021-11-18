@@ -116,11 +116,16 @@ export abstract class WalletProvider {
     abstract getEvmAddressBech(): string;
 
     abstract getExternalAddressesX(): Promise<string[]>;
+    abstract getExternalAddressesXSync(): string[];
     abstract getInternalAddressesX(): Promise<string[]>;
+    abstract getInternalAddressesXSync(): string[];
     abstract getExternalAddressesP(): Promise<string[]>;
+    abstract getExternalAddressesPSync(): string[];
 
     abstract getAllAddressesX(): Promise<string[]>;
+    abstract getAllAddressesXSync(): string[];
     abstract getAllAddressesP(): Promise<string[]>;
+    abstract getAllAddressesPSync(): string[];
 
     protected constructor() {
         networkEvents.on('network_change', this.onNetworkChange.bind(this));
