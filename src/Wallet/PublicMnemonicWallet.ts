@@ -6,7 +6,6 @@ import { Transaction } from '@ethereumjs/tx';
 import { WalletNameType } from '@/Wallet/types';
 import EvmWallet from '@/Wallet/EvmWallet';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
-// import HDKey from 'hdkey';
 import * as bip32 from 'bip32';
 import { importPublic } from 'ethereumjs-util';
 
