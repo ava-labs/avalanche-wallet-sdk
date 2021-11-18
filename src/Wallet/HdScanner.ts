@@ -1,4 +1,3 @@
-// import HDKey from 'hdkey';
 import * as bip32 from 'bip32';
 import { getPreferredHRP } from 'avalanche/dist/utils';
 import { activeNetwork, avalanche, pChain, xChain } from '@/Network/network';
