@@ -73,10 +73,24 @@ export abstract class HDWalletAbstract extends WalletProvider {
     }
 
     /**
+     * Returns every external X chain address used by the wallet up to now.
+     */
+    public getExternalAddressesXSync(): string[] {
+        return this.externalScan.getAllAddressesSync('X');
+    }
+
+    /**
      * Returns every internal X chain address used by the wallet up to now.
      */
     public async getInternalAddressesX(): Promise<string[]> {
         return await this.internalScan.getAllAddresses('X');
+    }
+
+    /**
+     * Returns every internal X chain address used by the wallet up to now.
+     */
+    public getInternalAddressesXSync(): string[] {
+        return this.internalScan.getAllAddressesSync('X');
     }
 
     /**
@@ -86,8 +100,19 @@ export abstract class HDWalletAbstract extends WalletProvider {
         return [...(await this.getExternalAddressesX()), ...(await this.getInternalAddressesX())];
     }
 
+    /**
+     * Returns every X chain address used by the wallet up to now (internal + external).
+     */
+    public getAllAddressesXSync(): string[] {
+        return [...this.getExternalAddressesXSync(), ...this.getInternalAddressesXSync()];
+    }
+
     public async getExternalAddressesP(): Promise<string[]> {
         return this.externalScan.getAllAddresses('P');
+    }
+
+    public getExternalAddressesPSync(): string[] {
+        return this.externalScan.getAllAddressesSync('P');
     }
 
     /**
@@ -95,6 +120,13 @@ export abstract class HDWalletAbstract extends WalletProvider {
      */
     public getAllAddressesP(): Promise<string[]> {
         return this.getExternalAddressesP();
+    }
+
+    /**
+     * Returns every P chain address used by the wallet up to now.
+     */
+    public getAllAddressesPSync(): string[] {
+        return this.getExternalAddressesPSync();
     }
 
     /**

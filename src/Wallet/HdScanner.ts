@@ -77,7 +77,7 @@ export default class HdScanner {
      * Returns every address up to and including the current index synchronously.
      * @param chainId Either X or P
      */
-    public async getAllAddressesSync(chainId: HdChainType = 'X'): Promise<string[]> {
+    public getAllAddressesSync(chainId: HdChainType = 'X'): string[] {
         let upTo = this.index;
         return this.getAddressesInRangeSync(0, upTo + 1, chainId);
     }
@@ -107,7 +107,7 @@ export default class HdScanner {
      * @param end End index, exclusive
      * @param chainId  `X` or `P` optional, returns X by default
      */
-    public async getAddressesInRangeSync(start: number, end: number, chainId: HdChainType = 'X'): string[] {
+    public getAddressesInRangeSync(start: number, end: number, chainId: HdChainType = 'X'): string[] {
         let res = [];
         for (let i = start; i < end; i++) {
             res.push(this.getAddressForIndex(i, chainId));
