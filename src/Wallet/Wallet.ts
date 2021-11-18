@@ -950,7 +950,6 @@ export abstract class WalletProvider {
         }
 
         let pAddressStrings = await this.getAllAddressesP();
-        // let pAddressStrings = this.platformHelper.getAllDerivedAddresses()
 
         let stakeAmount = amt;
 
