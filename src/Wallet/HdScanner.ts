@@ -1,17 +1,24 @@
-import HDKey from 'hdkey';
+import * as bip32 from 'bip32';
 import { getPreferredHRP } from 'avalanche/dist/utils';
 import { activeNetwork, avalanche, pChain, xChain } from '@/Network/network';
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
 import { KeyChain as PlatformKeyChain, KeyPair as PlatformKeyPair } from 'avalanche/dist/apis/platformvm';
 import { HdChainType } from './types';
 import { Buffer } from 'avalanche';
-import { INDEX_RANGE, SCAN_RANGE, SCAN_SIZE } from './constants';
-import { getAddressChains } from '../Explorer/Explorer';
+import {
+    DERIVATION_SLEEP_INTERVAL,
+    HD_SCAN_GAP_SIZE,
+    HD_SCAN_LOOK_UP_WINDOW,
+    SCAN_RANGE,
+    SCAN_SIZE,
+} from './constants';
+import { getAddressChains } from '../Explorer';
 import { NO_NETWORK } from '@/errors';
 import { bintools } from '@/common';
+import { sleep } from '@/utils';
 
 type AddressCache = {
-    [index: string]: HDKey;
+    [index: string]: bip32.BIP32Interface;
 };
 
 type KeyCacheX = {
@@ -29,11 +36,15 @@ export default class HdScanner {
     protected keyCacheX: KeyCacheX = {};
     protected keyCacheP: KeyCacheP = {};
     readonly changePath: string;
-    readonly accountKey: HDKey;
+    private avmAddrFactory: AVMKeyPair;
+    readonly accountKey: bip32.BIP32Interface;
 
-    constructor(accountKey: HDKey, isInternal = true) {
+    constructor(accountKey: bip32.BIP32Interface, isInternal = true) {
         this.changePath = isInternal ? '1' : '0';
         this.accountKey = accountKey;
+        // We need an instance of an AVM key to generate adddresses from public keys
+        let hrp = getPreferredHRP(avalanche.getNetworkID());
+        this.avmAddrFactory = new AVMKeyPair(hrp, 'X');
     }
 
     getIndex() {
@@ -58,19 +69,53 @@ export default class HdScanner {
         return this.getAddressForIndex(this.index, 'P');
     }
 
-    public getAllAddresses(chainId: HdChainType = 'X'): string[] {
+    /**
+     * Returns every address up to and including the current index.
+     * @param chainId Either X or P
+     */
+    public async getAllAddresses(chainId: HdChainType = 'X'): Promise<string[]> {
         let upTo = this.index;
-        let addrs = [];
-        for (let i = 0; i <= upTo; i++) {
-            addrs.push(this.getAddressForIndex(i, chainId));
-        }
-        return addrs;
+        return await this.getAddressesInRange(0, upTo + 1, chainId);
     }
 
-    getAddressesInRange(start: number, end: number): string[] {
+    /**
+     * Returns every address up to and including the current index synchronously.
+     * @param chainId Either X or P
+     */
+    public getAllAddressesSync(chainId: HdChainType = 'X'): string[] {
+        let upTo = this.index;
+        return this.getAddressesInRangeSync(0, upTo + 1, chainId);
+    }
+
+    /**
+     * Returns addresses in the given range
+     * @param start Start index
+     * @param end End index, exclusive
+     * @param chainId  `X` or `P` optional, returns X by default
+     */
+    public async getAddressesInRange(start: number, end: number, chainId: HdChainType = 'X'): Promise<string[]> {
         let res = [];
         for (let i = start; i < end; i++) {
-            res.push(this.getAddressForIndex(i));
+            res.push(this.getAddressForIndex(i, chainId));
+
+            // Sleep every Nth address to open up the thread
+            if ((i - start) % DERIVATION_SLEEP_INTERVAL === 0) {
+                await sleep(0);
+            }
+        }
+        return res;
+    }
+
+    /**
+     * Returns addresses in the given range
+     * @param start Start index
+     * @param end End index, exclusive
+     * @param chainId  `X` or `P` optional, returns X by default
+     */
+    public getAddressesInRangeSync(start: number, end: number, chainId: HdChainType = 'X'): string[] {
+        let res = [];
+        for (let i = start; i < end; i++) {
+            res.push(this.getAddressForIndex(i, chainId));
         }
         return res;
     }
@@ -98,7 +143,7 @@ export default class HdScanner {
         if (cache) return cache;
 
         let hdKey = this.getHdKeyForIndex(index);
-        let pkHex = hdKey.privateKey.toString('hex');
+        let pkHex = hdKey.privateKey!.toString('hex');
 
         let pkBuf: Buffer = new Buffer(pkHex, 'hex');
 
@@ -114,7 +159,7 @@ export default class HdScanner {
         if (cache) return cache;
 
         let hdKey = this.getHdKeyForIndex(index);
-        let pkHex = hdKey.privateKey.toString('hex');
+        let pkHex = hdKey.privateKey!.toString('hex');
 
         let pkBuf: Buffer = new Buffer(pkHex, 'hex');
 
@@ -126,18 +171,18 @@ export default class HdScanner {
         return keypair;
     }
 
-    private getHdKeyForIndex(index: number): HDKey {
-        let key: HDKey;
+    private getHdKeyForIndex(index: number): bip32.BIP32Interface {
+        let key: bip32.BIP32Interface;
         if (this.addressCache[index]) {
             key = this.addressCache[index];
         } else {
-            key = this.accountKey.derive(`m/${this.changePath}/${index}`) as HDKey;
+            key = this.accountKey.derivePath(`${this.changePath}/${index}`);
             this.addressCache[index] = key;
         }
         return key;
     }
 
-    private getAddressForIndex(index: number, chainId: HdChainType = 'X'): string {
+    public getAddressForIndex(index: number, chainId: HdChainType = 'X'): string {
         let key = this.getHdKeyForIndex(index);
 
         let publicKey = key.publicKey.toString('hex');
@@ -145,8 +190,7 @@ export default class HdScanner {
 
         let hrp = getPreferredHRP(avalanche.getNetworkID());
 
-        let keypair = new AVMKeyPair(hrp, chainId);
-        let addrBuf = keypair.addressFromPublicKey(publicKeyBuff);
+        let addrBuf = this.avmAddrFactory.addressFromPublicKey(publicKeyBuff);
         let addr = bintools.addressToString(hrp, chainId, addrBuf);
 
         return addr;
@@ -169,15 +213,13 @@ export default class HdScanner {
     // Scans the address space of this hd path and finds the last used index using the
     // explorer API.
     private async findAvailableIndexExplorer(startIndex = 0): Promise<number> {
-        let upTo = 512;
-
-        let addrs = this.getAddressesInRange(startIndex, startIndex + upTo);
+        let addrs = await this.getAddressesInRange(startIndex, startIndex + HD_SCAN_LOOK_UP_WINDOW);
         let addrChains = await getAddressChains(addrs);
 
-        for (let i = 0; i < addrs.length - INDEX_RANGE; i++) {
+        for (let i = 0; i < addrs.length - HD_SCAN_GAP_SIZE; i++) {
             let gapSize: number = 0;
 
-            for (let n = 0; n < INDEX_RANGE; n++) {
+            for (let n = 0; n < HD_SCAN_GAP_SIZE; n++) {
                 let scanIndex = i + n;
                 let scanAddr = addrs[scanIndex];
 
@@ -194,12 +236,12 @@ export default class HdScanner {
             }
 
             // If the gap is reached return the index
-            if (gapSize === INDEX_RANGE) {
+            if (gapSize === HD_SCAN_GAP_SIZE) {
                 return startIndex + i;
             }
         }
 
-        return await this.findAvailableIndexExplorer(startIndex + (upTo - INDEX_RANGE));
+        return await this.findAvailableIndexExplorer(startIndex + (HD_SCAN_LOOK_UP_WINDOW - HD_SCAN_GAP_SIZE));
     }
 
     // Uses the node to find last used HD index
@@ -219,10 +261,10 @@ export default class HdScanner {
         let utxoSetX = (await xChain.getUTXOs(addrsX)).utxos;
         let utxoSetP = (await pChain.getUTXOs(addrsP)).utxos;
 
-        // Scan UTXOs of these indexes and try to find a gap of INDEX_RANGE
-        for (let i: number = 0; i < addrsX.length - INDEX_RANGE; i++) {
+        // Scan UTXOs of these indexes and try to find a gap of HD_SCAN_GAP_SIZE
+        for (let i: number = 0; i < addrsX.length - HD_SCAN_GAP_SIZE; i++) {
             let gapSize: number = 0;
-            for (let n: number = 0; n < INDEX_RANGE; n++) {
+            for (let n: number = 0; n < HD_SCAN_GAP_SIZE; n++) {
                 let scanIndex: number = i + n;
                 let addr: string = addrsX[scanIndex];
                 let addrBuf = bintools.parseAddress(addr, 'X');
@@ -238,7 +280,7 @@ export default class HdScanner {
             }
 
             // If we found a gap of 20, we can return the last fullIndex+1
-            if (gapSize === INDEX_RANGE) {
+            if (gapSize === HD_SCAN_GAP_SIZE) {
                 let targetIndex = start + i;
                 return targetIndex;
             }

@@ -1,4 +1,5 @@
 import MnemonicWallet from '@/Wallet/MnemonicWallet';
+import { TEST_MNEMONIC } from './constants';
 
 jest.mock('web3', () => {
     let web3Mock: any = jest.fn().mockImplementation(() => {});
@@ -39,11 +40,8 @@ jest.mock('@/Network/index', () => {
     };
 });
 
-const MNEMONIC =
-    'chimney noodle canyon tunnel sample stuff scan symbol sight club net own arrive cause suffer purity manage squirrel boost diesel bring cement father slide';
-
 describe('Mnemonic Wallet', () => {
-    const wallet = MnemonicWallet.fromMnemonic(MNEMONIC);
+    const wallet = MnemonicWallet.fromMnemonic(TEST_MNEMONIC);
 
     it('can return initial X address', () => {
         expect(wallet.getAddressX()).toEqual('X-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh');

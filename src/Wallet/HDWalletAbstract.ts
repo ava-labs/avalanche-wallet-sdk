@@ -1,21 +1,20 @@
 import { WalletProvider } from '@/Wallet/Wallet';
 import HdScanner from '@/Wallet/HdScanner';
-import HDKey from 'hdkey';
 import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
 import { avalanche } from '@/Network/network';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
 import { iHDWalletIndex } from '@/Wallet/types';
 import { bintools } from '@/common';
-import { networkEvents } from '@/Network/eventEmitter';
+import * as bip32 from 'bip32';
 import { NetworkConfig } from '@/Network';
 
 export abstract class HDWalletAbstract extends WalletProvider {
     protected internalScan: HdScanner;
     protected externalScan: HdScanner;
-    protected accountKey: HDKey;
+    protected accountKey: bip32.BIP32Interface;
     public isHdReady = false;
 
-    protected constructor(accountKey: HDKey) {
+    protected constructor(accountKey: bip32.BIP32Interface) {
         super();
 
         this.internalScan = new HdScanner(accountKey, true);
@@ -69,33 +68,65 @@ export abstract class HDWalletAbstract extends WalletProvider {
     /**
      * Returns every external X chain address used by the wallet up to now.
      */
-    public getExternalAddressesX(): string[] {
-        return this.externalScan.getAllAddresses('X');
+    public async getExternalAddressesX(): Promise<string[]> {
+        return await this.externalScan.getAllAddresses('X');
+    }
+
+    /**
+     * Returns every external X chain address used by the wallet up to now.
+     */
+    public getExternalAddressesXSync(): string[] {
+        return this.externalScan.getAllAddressesSync('X');
     }
 
     /**
      * Returns every internal X chain address used by the wallet up to now.
      */
-    public getInternalAddressesX(): string[] {
-        return this.internalScan.getAllAddresses('X');
+    public async getInternalAddressesX(): Promise<string[]> {
+        return await this.internalScan.getAllAddresses('X');
+    }
+
+    /**
+     * Returns every internal X chain address used by the wallet up to now.
+     */
+    public getInternalAddressesXSync(): string[] {
+        return this.internalScan.getAllAddressesSync('X');
     }
 
     /**
      * Returns every X chain address used by the wallet up to now (internal + external).
      */
-    public getAllAddressesX(): string[] {
-        return [...this.getExternalAddressesX(), ...this.getInternalAddressesX()];
+    public async getAllAddressesX(): Promise<string[]> {
+        return [...(await this.getExternalAddressesX()), ...(await this.getInternalAddressesX())];
     }
 
-    public getExternalAddressesP(): string[] {
+    /**
+     * Returns every X chain address used by the wallet up to now (internal + external).
+     */
+    public getAllAddressesXSync(): string[] {
+        return [...this.getExternalAddressesXSync(), ...this.getInternalAddressesXSync()];
+    }
+
+    public async getExternalAddressesP(): Promise<string[]> {
         return this.externalScan.getAllAddresses('P');
+    }
+
+    public getExternalAddressesPSync(): string[] {
+        return this.externalScan.getAllAddressesSync('P');
     }
 
     /**
      * Returns every P chain address used by the wallet up to now.
      */
-    public getAllAddressesP(): string[] {
+    public getAllAddressesP(): Promise<string[]> {
         return this.getExternalAddressesP();
+    }
+
+    /**
+     * Returns every P chain address used by the wallet up to now.
+     */
+    public getAllAddressesPSync(): string[] {
+        return this.getExternalAddressesPSync();
     }
 
     /**
