@@ -4,7 +4,7 @@ import { getAccountPathAvalanche } from '@/Wallet/helpers/derivationHelper';
 import { TEST_MNEMONIC, TEST_MNEMONIC_ADDRS_EXT, TEST_MNEMONIC_ADDRS_INT } from './constants';
 import HdScanner from '@/Wallet/HdScanner';
 import { activeNetwork, avalanche, explorer_api } from '@/Network/network';
-import { getAddressChains } from '@/Explorer/explorer';
+import { getAddressChains } from '@/Explorer';
 import { HD_SCAN_GAP_SIZE } from '@/Wallet/constants';
 import { add } from 'husky';
 
@@ -24,7 +24,7 @@ jest.mock('@/Network/network', () => {
     };
 });
 
-jest.mock('@/Explorer/explorer', () => {
+jest.mock('@/Explorer', () => {
     return {
         getAddressChains: jest.fn(),
     };

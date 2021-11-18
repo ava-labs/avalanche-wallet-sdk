@@ -7,7 +7,7 @@ import { KeyChain as PlatformKeyChain, KeyPair as PlatformKeyPair } from 'avalan
 import { HdChainType } from './types';
 import { Buffer } from 'avalanche';
 import { DERIVATION_SLEEP_INTERVAL, HD_SCAN_GAP_SIZE, SCAN_RANGE, SCAN_SIZE } from './constants';
-import { getAddressChains } from '../Explorer/Explorer';
+import { getAddressChains } from '../Explorer';
 import { NO_NETWORK } from '@/errors';
 import { bintools } from '@/common';
 import { sleep } from '@/utils';
