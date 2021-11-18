@@ -87,7 +87,7 @@ export default class AVMWebSocketProvider {
      * Creates a bloom filter from the addresses of the tracked wallets and subscribes to
      * transactions on the node.
      */
-    async updateFilterAddresses(): Promise<void> {
+    updateFilterAddresses() {
         if (!this.isConnected) {
             return;
         }
@@ -97,7 +97,7 @@ export default class AVMWebSocketProvider {
         let addrs = [];
         for (let i = 0; i < wallets.length; i++) {
             let w = wallets[i];
-            let externalAddrs = await w.getExternalAddressesX();
+            let externalAddrs = w.getExternalAddressesXSync();
             let addrsLen = externalAddrs.length;
             let startIndex = Math.max(0, addrsLen - FILTER_ADDRESS_SIZE);
             let addAddrs = externalAddrs.slice(startIndex);

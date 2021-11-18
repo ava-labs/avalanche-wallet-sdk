@@ -12,7 +12,7 @@ import {
     SCAN_RANGE,
     SCAN_SIZE,
 } from './constants';
-import { getAddressChains } from '../Explorer';
+import { getAddressChains } from '@/Explorer';
 import { NO_NETWORK } from '@/errors';
 import { bintools } from '@/common';
 import { sleep } from '@/utils';
