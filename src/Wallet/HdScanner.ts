@@ -6,7 +6,7 @@ import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/a
 import { KeyChain as PlatformKeyChain, KeyPair as PlatformKeyPair } from 'avalanche/dist/apis/platformvm';
 import { HdChainType } from './types';
 import { Buffer } from 'avalanche';
-import { DERIVATION_SLEEP_INTERVAL, INDEX_RANGE, SCAN_RANGE, SCAN_SIZE } from './constants';
+import { DERIVATION_SLEEP_INTERVAL, HD_SCAN_GAP_SIZE, SCAN_RANGE, SCAN_SIZE } from './constants';
 import { getAddressChains } from '../Explorer/Explorer';
 import { NO_NETWORK } from '@/errors';
 import { bintools } from '@/common';
@@ -67,12 +67,6 @@ export default class HdScanner {
     public async getAllAddresses(chainId: HdChainType = 'X'): Promise<string[]> {
         let upTo = this.index;
         return await this.getAddressesInRange(0, upTo + 1, chainId);
-        // let addrs = [];
-        // for (let i = 0; i <= upTo; i++) {
-        //     addrs.push(this.getAddressForIndex(i, chainId));
-        //     await sleep(0);
-        // }
-        // return addrs;
     }
 
     /**
@@ -156,7 +150,7 @@ export default class HdScanner {
         return key;
     }
 
-    private getAddressForIndex(index: number, chainId: HdChainType = 'X'): string {
+    public getAddressForIndex(index: number, chainId: HdChainType = 'X'): string {
         let key = this.getHdKeyForIndex(index);
 
         let publicKey = key.publicKey.toString('hex');
@@ -193,10 +187,10 @@ export default class HdScanner {
         let addrs = await this.getAddressesInRange(startIndex, startIndex + upTo);
         let addrChains = await getAddressChains(addrs);
 
-        for (let i = 0; i < addrs.length - INDEX_RANGE; i++) {
+        for (let i = 0; i < addrs.length - HD_SCAN_GAP_SIZE; i++) {
             let gapSize: number = 0;
 
-            for (let n = 0; n < INDEX_RANGE; n++) {
+            for (let n = 0; n < HD_SCAN_GAP_SIZE; n++) {
                 let scanIndex = i + n;
                 let scanAddr = addrs[scanIndex];
 
@@ -213,12 +207,12 @@ export default class HdScanner {
             }
 
             // If the gap is reached return the index
-            if (gapSize === INDEX_RANGE) {
+            if (gapSize === HD_SCAN_GAP_SIZE) {
                 return startIndex + i;
             }
         }
 
-        return await this.findAvailableIndexExplorer(startIndex + (upTo - INDEX_RANGE));
+        return await this.findAvailableIndexExplorer(startIndex + (upTo - HD_SCAN_GAP_SIZE));
     }
 
     // Uses the node to find last used HD index
@@ -238,10 +232,10 @@ export default class HdScanner {
         let utxoSetX = (await xChain.getUTXOs(addrsX)).utxos;
         let utxoSetP = (await pChain.getUTXOs(addrsP)).utxos;
 
-        // Scan UTXOs of these indexes and try to find a gap of INDEX_RANGE
-        for (let i: number = 0; i < addrsX.length - INDEX_RANGE; i++) {
+        // Scan UTXOs of these indexes and try to find a gap of HD_SCAN_GAP_SIZE
+        for (let i: number = 0; i < addrsX.length - HD_SCAN_GAP_SIZE; i++) {
             let gapSize: number = 0;
-            for (let n: number = 0; n < INDEX_RANGE; n++) {
+            for (let n: number = 0; n < HD_SCAN_GAP_SIZE; n++) {
                 let scanIndex: number = i + n;
                 let addr: string = addrsX[scanIndex];
                 let addrBuf = bintools.parseAddress(addr, 'X');
@@ -257,7 +251,7 @@ export default class HdScanner {
             }
 
             // If we found a gap of 20, we can return the last fullIndex+1
-            if (gapSize === INDEX_RANGE) {
+            if (gapSize === HD_SCAN_GAP_SIZE) {
                 let targetIndex = start + i;
                 return targetIndex;
             }

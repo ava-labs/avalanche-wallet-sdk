@@ -1,6 +1,4 @@
 import * as bip39 from 'bip39';
-import HDKey from 'hdkey';
-import { AVAX_ACCOUNT_PATH, ETH_ACCOUNT_PATH } from './constants';
 import * as bip32 from 'bip32';
 import EvmWallet from './EvmWallet';
 import { UnsafeWallet, WalletNameType } from './types';
@@ -10,12 +8,7 @@ import { Tx as AVMTx, UnsignedTx as AVMUnsignedTx } from 'avalanche/dist/apis/av
 import { Tx as PlatformTx, UnsignedTx as PlatformUnsignedTx } from 'avalanche/dist/apis/platformvm';
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
 import { KeyChain as PlatformKeyChain } from 'avalanche/dist/apis/platformvm';
-import {
-    UnsignedTx as EVMUnsignedTx,
-    Tx as EVMTx,
-    KeyChain as EVMKeychain,
-    KeyPair as EVMKeyPair,
-} from 'avalanche/dist/apis/evm';
+import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
 import { avalanche } from '@/Network/network';
 import { digestMessage } from '@/utils';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
