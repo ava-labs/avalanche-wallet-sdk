@@ -5,7 +5,13 @@ import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/a
 import { KeyChain as PlatformKeyChain, KeyPair as PlatformKeyPair } from 'avalanche/dist/apis/platformvm';
 import { HdChainType } from './types';
 import { Buffer } from 'avalanche';
-import { DERIVATION_SLEEP_INTERVAL, HD_SCAN_GAP_SIZE, SCAN_RANGE, SCAN_SIZE } from './constants';
+import {
+    DERIVATION_SLEEP_INTERVAL,
+    HD_SCAN_GAP_SIZE,
+    HD_SCAN_LOOK_UP_WINDOW,
+    SCAN_RANGE,
+    SCAN_SIZE,
+} from './constants';
 import { getAddressChains } from '../Explorer';
 import { NO_NETWORK } from '@/errors';
 import { bintools } from '@/common';
@@ -207,9 +213,7 @@ export default class HdScanner {
     // Scans the address space of this hd path and finds the last used index using the
     // explorer API.
     private async findAvailableIndexExplorer(startIndex = 0): Promise<number> {
-        let upTo = 512;
-
-        let addrs = await this.getAddressesInRange(startIndex, startIndex + upTo);
+        let addrs = await this.getAddressesInRange(startIndex, startIndex + HD_SCAN_LOOK_UP_WINDOW);
         let addrChains = await getAddressChains(addrs);
 
         for (let i = 0; i < addrs.length - HD_SCAN_GAP_SIZE; i++) {
@@ -237,7 +241,7 @@ export default class HdScanner {
             }
         }
 
-        return await this.findAvailableIndexExplorer(startIndex + (upTo - HD_SCAN_GAP_SIZE));
+        return await this.findAvailableIndexExplorer(startIndex + (HD_SCAN_LOOK_UP_WINDOW - HD_SCAN_GAP_SIZE));
     }
 
     // Uses the node to find last used HD index
