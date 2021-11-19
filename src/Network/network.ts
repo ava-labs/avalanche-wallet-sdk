@@ -8,7 +8,7 @@ import { NetworkConfig, NetworkConfigRpc, NetworkProtocolType } from './types';
 import { AxiosInstance } from 'axios';
 import { getRpcC, getRpcP, getRpcX } from './helpers/rpcFromConfig';
 import URL from 'url';
-import { bintools } from '@/utils';
+import { bintools } from '@/utils/bintools';
 import {
     canUseCredentials,
     createAvalancheProvider,
