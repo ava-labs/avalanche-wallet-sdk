@@ -24,7 +24,7 @@ import EthereumjsCommon from '@ethereumjs/common';
 
 import ERC20Abi from '@openzeppelin/contracts/build/contracts/ERC20.json';
 import ERC721Abi from '@openzeppelin/contracts/build/contracts/ERC721.json';
-import { bintools } from '@/common';
+import { bintools } from '@/utils';
 
 export async function buildCreateNftFamilyTx(
     name: string,

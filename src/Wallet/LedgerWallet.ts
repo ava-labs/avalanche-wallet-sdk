@@ -49,7 +49,7 @@ import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@
 import createHash from 'create-hash';
 //@ts-ignore
 import bippath from 'bip32-path';
-import { bintools } from '@/common';
+import { bintools } from '@/utils';
 import * as bip32 from 'bip32';
 
 export default class LedgerWallet extends HDWalletAbstract {

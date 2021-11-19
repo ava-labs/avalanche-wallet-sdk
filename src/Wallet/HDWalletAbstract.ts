@@ -3,7 +3,7 @@ import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
 import { avalanche } from '@/Network/network';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
 import { iHDWalletIndex } from '@/Wallet/types';
-import { bintools } from '@/common';
+import { bintools } from '@/utils';
 import * as bip32 from 'bip32';
 import { NetworkConfig } from '@/Network';
 import WalletAbstract from '@/Wallet/WalletAbstract';

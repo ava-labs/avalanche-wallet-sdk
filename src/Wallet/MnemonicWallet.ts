@@ -12,7 +12,7 @@ import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, KeyPair as EVMKeyPair } from 
 import { avalanche } from '@/Network/network';
 import { digestMessage } from '@/utils';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
-import { bintools } from '@/common';
+import { bintools } from '@/utils';
 import { getAccountPathAvalanche, getAccountPathEVM } from '@/Wallet/helpers/derivationHelper';
 
 export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {

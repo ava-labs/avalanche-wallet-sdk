@@ -1,4 +1,4 @@
-import Keystore from '@/Keystore/keystore';
+import { readKeyFile } from '@/Keystore';
 
 // A 2.0 and 3.0 Keystore version of the same keys
 // Passwords are: 111111111
@@ -15,27 +15,27 @@ const KEY_V5_V6 =
 
 describe('Export/Import Keystore', () => {
     test('can read v2', async () => {
-        const data = await Keystore.readKeyFile(JSON.parse(KEYFILE_2), '111111111');
+        const data = await readKeyFile(JSON.parse(KEYFILE_2), '111111111');
         expect(data.keys.some(({ key }) => key === KEY_V2_V3)).toBe(true);
     });
 
     test('can read v3', async () => {
-        const data = await Keystore.readKeyFile(JSON.parse(KEYFILE_3), '111111111');
+        const data = await readKeyFile(JSON.parse(KEYFILE_3), '111111111');
         expect(data.keys.some(({ key }) => key === KEY_V2_V3)).toBe(true);
     });
 
     test('can read v4', async () => {
-        const data = await Keystore.readKeyFile(JSON.parse(KEYFILE_4), '111111111');
+        const data = await readKeyFile(JSON.parse(KEYFILE_4), '111111111');
         expect(data.keys.some(({ key }) => key === KEY_V4)).toBe(true);
     });
 
     test('can read v5', async () => {
-        const data = await Keystore.readKeyFile(JSON.parse(KEYFILE_5), '111111111');
+        const data = await readKeyFile(JSON.parse(KEYFILE_5), '111111111');
         expect(data.keys.some(({ key }) => key === KEY_V5_V6)).toBe(true);
     });
 
     test('can read v6', async () => {
-        const data = await Keystore.readKeyFile(JSON.parse(KEYFILE_6), '111111111');
+        const data = await readKeyFile(JSON.parse(KEYFILE_6), '111111111');
         expect(data.keys.some(({ key }) => key === KEY_V5_V6)).toBe(true);
     });
 });

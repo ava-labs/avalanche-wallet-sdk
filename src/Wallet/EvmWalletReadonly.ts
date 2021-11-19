@@ -3,7 +3,7 @@ import { avalanche, web3 } from '@/Network/network';
 import { publicToAddress, importPublic } from 'ethereumjs-util';
 import { ethers } from 'ethers';
 import { KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm/keychain';
-import { bintools } from '@/common';
+import { bintools } from '@/utils';
 
 export default class EvmWalletReadonly {
     balance = new BN(0);

@@ -1,6 +1,6 @@
 import { ChainIdType } from '@/types';
 import Web3 from 'web3';
-import { bintools } from '@/common';
+import { bintools } from '@/utils';
 
 export const validateAddress = (address: string): boolean | string => {
     return validateAddressX(address) || validateAddressP(address) || validateAddressEVM(address);

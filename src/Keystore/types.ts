@@ -1,4 +1,5 @@
 import { WalletNameType } from '@/Wallet/types';
+import { Buffer } from 'buffer/';
 
 export type KeystoreFileKeyType = 'mnemonic' | 'singleton';
 export type AllKeyFileTypes = KeyFileV2 | KeyFileV3 | KeyFileV4 | KeyFileV5 | KeyFileV6;
@@ -136,4 +137,15 @@ export interface KeyFileKeyDecryptedV6 {
 export interface AccessWalletMultipleInput {
     type: Extract<'mnemonic' | 'singleton', WalletNameType>;
     key: string;
+}
+
+export interface IHash {
+    salt: Buffer;
+    hash: Buffer;
+}
+
+export interface PKCrypt {
+    salt: Buffer;
+    iv: Buffer;
+    ciphertext: Buffer;
 }

@@ -14,7 +14,7 @@ import {
 } from './constants';
 import { getAddressChains } from '@/Explorer';
 import { NO_NETWORK } from '@/errors';
-import { bintools } from '@/common';
+import { bintools } from '@/utils';
 import { sleep } from '@/utils';
 
 type AddressCache = {

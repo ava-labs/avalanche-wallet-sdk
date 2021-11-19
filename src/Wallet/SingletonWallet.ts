@@ -11,7 +11,7 @@ import { Buffer as BufferAvalanche } from 'avalanche';
 import EvmWallet from '@/Wallet/EvmWallet';
 import { UnsignedTx, Tx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
 import { Transaction } from '@ethereumjs/tx';
-import { bintools } from '@/common';
+import { bintools } from '@/utils';
 import WalletAbstract from '@/Wallet/WalletAbstract';
 
 export default class SingletonWallet extends WalletAbstract implements UnsafeWallet {

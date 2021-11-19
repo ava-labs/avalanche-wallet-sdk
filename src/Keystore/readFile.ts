@@ -1,10 +1,7 @@
-// Functions to manage import/export of keystore files
 import {
     AllKeyFileDecryptedTypes,
     AllKeyFileTypes,
-    KeyFileDecryptedV2,
-    KeyFileDecryptedV3,
-    KeyFileDecryptedV4,
+    IHash,
     KeyFileDecryptedV5,
     KeyFileDecryptedV6,
     KeyFileKeyDecryptedV2,
@@ -23,35 +20,49 @@ import {
     KeyFileV5,
     KeyFileV6,
     KeystoreFileKeyType,
-} from './types';
-import { xChain } from '@/Network/network';
+} from '@/Keystore/types';
 import { Buffer } from 'buffer/';
-import MnemonicWallet from '@/Wallet/MnemonicWallet';
-import Crypto from './CryptoHelpers';
-import SingletonWallet from '@/Wallet/SingletonWallet';
-import { AccessWalletMultipleInput } from './types';
-// import { keyToKeypair } from '@/helpers/helper'
-import * as bip39 from 'bip39';
-import { bintools } from '@/common';
+import { bintools } from '@/utils';
+import { cryptoHelpers } from '@/Keystore/CryptoHelpers';
+import { ITERATIONS_V2, ITERATIONS_V3 } from '@/Keystore/constants';
 
-const cryptoHelpers = new Crypto();
+export async function readV2(data: KeyFileV2, pass: string) {
+    const version: string = data.version;
+    cryptoHelpers.keygenIterations = ITERATIONS_V2;
 
-const KEYSTORE_VERSION = '6.0';
+    let salt: Buffer = bintools.cb58Decode(data.salt);
+    let pass_hash: string = data.pass_hash;
 
-const ITERATIONS_V2 = 100000;
-const ITERATIONS_V3 = 200000; // and any version above
+    let checkHashString: string;
+    let checkHash: Buffer = await cryptoHelpers._pwcleaner(pass, salt);
+    checkHashString = bintools.cb58Encode(checkHash);
 
-const SUPPORTED_VERSION = ['2.0', '3.0', '4.0', '5.0', '6.0'];
+    if (checkHashString !== pass_hash) {
+        throw 'INVALID_PASS';
+    }
 
-interface IHash {
-    salt: Buffer;
-    hash: Buffer;
-}
+    let keys: KeyFileKeyV2[] = data.keys;
+    let keysDecrypt: KeyFileKeyDecryptedV2[] = [];
 
-interface PKCrypt {
-    salt: Buffer;
-    iv: Buffer;
-    ciphertext: Buffer;
+    for (let i = 0; i < keys.length; i++) {
+        let key_data: KeyFileKeyV2 = keys[i];
+
+        let key: Buffer = bintools.cb58Decode(key_data.key);
+        let nonce: Buffer = bintools.cb58Decode(key_data.iv);
+
+        let key_decrypt: Buffer = await cryptoHelpers.decrypt(pass, key, salt, nonce);
+        let key_string = bintools.cb58Encode(key_decrypt);
+
+        keysDecrypt.push({
+            key: key_string,
+        });
+    }
+
+    return {
+        version,
+        activeIndex: 0,
+        keys: keysDecrypt,
+    };
 }
 
 async function readV3(data: KeyFileV3, pass: string) {
@@ -229,108 +240,4 @@ export async function readKeyFile(data: AllKeyFileTypes, pass: string): Promise<
         default:
             throw 'INVALID_VERSION';
     }
-}
-
-function extractKeysV2(
-    file: KeyFileDecryptedV2 | KeyFileDecryptedV3 | KeyFileDecryptedV4
-): AccessWalletMultipleInput[] {
-    let chainID = xChain.getBlockchainAlias();
-    let keys = (file as KeyFileDecryptedV2 | KeyFileDecryptedV3 | KeyFileDecryptedV4).keys;
-
-    return keys.map((key) => {
-        // Private keys from the keystore file do not have the PrivateKey- prefix
-        let pk = 'PrivateKey-' + key.key;
-        // let keypair = keyToKeypair(pk, chainID)
-        let keypair = xChain.newKeyChain().importKey(pk);
-
-        let keyBuf = keypair.getPrivateKey();
-        let keyHex: string = keyBuf.toString('hex');
-        let paddedKeyHex = keyHex.padStart(64, '0');
-        let mnemonic: string = bip39.entropyToMnemonic(paddedKeyHex);
-
-        return {
-            key: mnemonic,
-            type: 'mnemonic',
-        };
-    });
-}
-
-function extractKeysV5(file: KeyFileDecryptedV5): AccessWalletMultipleInput[] {
-    return file.keys.map((key) => ({
-        key: key.key,
-        type: 'mnemonic',
-    }));
-}
-
-function extractKeysV6(file: KeyFileDecryptedV6): AccessWalletMultipleInput[] {
-    return file.keys.map((key) => ({
-        type: key.type,
-        key: key.key,
-    }));
-}
-
-export function extractKeysFromDecryptedFile(file: AllKeyFileDecryptedTypes): AccessWalletMultipleInput[] {
-    switch (file.version) {
-        case '6.0':
-            return extractKeysV6(file as KeyFileDecryptedV6);
-        case '5.0':
-            return extractKeysV5(file as KeyFileDecryptedV5);
-        case '4.0':
-            return extractKeysV2(file as KeyFileDecryptedV4);
-        case '3.0':
-            return extractKeysV2(file as KeyFileDecryptedV3);
-        case '2.0':
-            return extractKeysV2(file as KeyFileDecryptedV2);
-        default:
-            throw 'INVALID_VERSION';
-    }
-}
-
-/**
- * Given an array of wallets, the active index, and a password, return an encrypted JSON object that is the keystore file
- * @param wallets An array of wallet to encrypt
- * @param pass Password used in encryption
- * @param activeIndex Index of the active wallet in the `wallets` array
- * @return Returns a JSON object that can later be decrypted with `readKeyfile` and the given password
- */
-export async function makeKeyfile(
-    wallets: (MnemonicWallet | SingletonWallet)[],
-    pass: string,
-    activeIndex: number
-): Promise<KeyFileV6> {
-    // 3.0 and above uses 200,000
-    cryptoHelpers.keygenIterations = ITERATIONS_V3;
-
-    let salt: Buffer = await cryptoHelpers.makeSalt();
-
-    let keys: KeyFileKeyV6[] = [];
-
-    for (let i = 0; i < wallets.length; i++) {
-        let wallet = wallets[i];
-        let key;
-        let type: KeystoreFileKeyType;
-        if (wallet.type === 'singleton') {
-            key = (wallet as SingletonWallet).key;
-            type = 'singleton';
-        } else {
-            key = (wallet as MnemonicWallet).mnemonic;
-            type = 'mnemonic';
-        }
-        let pk_crypt: PKCrypt = await cryptoHelpers.encrypt(pass, key, salt);
-
-        let key_data: KeyFileKeyV6 = {
-            key: bintools.cb58Encode(pk_crypt.ciphertext),
-            iv: bintools.cb58Encode(pk_crypt.iv),
-            type: type,
-        };
-        keys.push(key_data);
-    }
-
-    let file_data: KeyFileV6 = {
-        version: KEYSTORE_VERSION,
-        salt: bintools.cb58Encode(salt),
-        activeIndex,
-        keys: keys,
-    };
-    return file_data;
 }

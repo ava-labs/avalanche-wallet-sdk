@@ -72,7 +72,7 @@ import {
     ITransactionData,
 } from '@/History';
 import moment from 'moment';
-import { bintools } from '@/common';
+import { bintools } from '@/utils';
 import { ChainIdType } from '@/types';
 import {
     createGraphForC,

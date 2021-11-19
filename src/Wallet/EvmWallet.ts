@@ -9,7 +9,7 @@ import {
     Tx as EVMTx,
 } from 'avalanche/dist/apis/evm';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
-import { bintools } from '@/common';
+import { bintools } from '@/utils';
 
 export default class EvmWallet extends EvmWalletReadonly {
     private privateKey: Buffer;
