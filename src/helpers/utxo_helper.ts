@@ -98,7 +98,6 @@ export async function avmGetAllUTXOsForAddresses(addrs: string[], endIndex?: any
     }
 
     let utxoSet = response.utxos;
-    let utxos = utxoSet.getAllUTXOs();
     let nextEndIndex = response.endIndex;
     let len = response.numFetched;
 

@@ -1,7 +1,7 @@
 import { explorer_api } from '@/Network/network';
 import { NO_EXPLORER_API } from '@/errors';
 
-async function isAddressUsedX(addr: string) {
+export async function isAddressUsedX(addr: string) {
     if (!explorer_api) {
         throw NO_EXPLORER_API;
     }
@@ -14,7 +14,7 @@ async function isAddressUsedX(addr: string) {
     else return false;
 }
 
-async function getAddressDetailX(addr: string) {
+export async function getAddressDetailX(addr: string) {
     if (!explorer_api) {
         throw NO_EXPLORER_API;
     }
@@ -27,7 +27,7 @@ async function getAddressDetailX(addr: string) {
 }
 
 // Given an array of addresses, checks which chain each address was already used on
-async function getAddressChains(addrs: string[]) {
+export async function getAddressChains(addrs: string[]) {
     if (!explorer_api) {
         throw NO_EXPLORER_API;
     }
@@ -46,5 +46,3 @@ async function getAddressChains(addrs: string[]) {
 
     return res.data.addressChains;
 }
-
-export { getAddressDetailX, isAddressUsedX, getAddressChains };

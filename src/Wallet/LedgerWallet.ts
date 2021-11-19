@@ -50,6 +50,7 @@ import createHash from 'create-hash';
 //@ts-ignore
 import bippath from 'bip32-path';
 import { bintools } from '@/common';
+import * as bip32 from 'bip32';
 
 export default class LedgerWallet extends HDWalletAbstract {
     evmWallet: EvmWalletReadonly;
@@ -60,7 +61,13 @@ export default class LedgerWallet extends HDWalletAbstract {
     appAvax: AppAvax;
     ethApp: Eth;
 
-    constructor(avaxAcct: HDKey, evmAcct: HDKey, avaxApp: AppAvax, ethApp: Eth, config: ILedgerAppConfig) {
+    constructor(
+        avaxAcct: bip32.BIP32Interface,
+        evmAcct: HDKey,
+        avaxApp: AppAvax,
+        ethApp: Eth,
+        config: ILedgerAppConfig
+    ) {
         super(avaxAcct);
         this.evmAccount = evmAcct;
         this.config = config;
@@ -98,11 +105,13 @@ export default class LedgerWallet extends HDWalletAbstract {
         return await LedgerWallet.fromApp(app, eth);
     }
 
-    static async getAvaxAccount(app: AppAvax): Promise<HDKey> {
+    static async getAvaxAccount(app: AppAvax): Promise<bip32.BIP32Interface> {
         let res = await app.getWalletExtendedPublicKey(AVAX_ACCOUNT_PATH);
-        let hd = new HDKey();
-        hd.publicKey = res.public_key;
-        hd.chainCode = res.chain_code;
+
+        let pubKey = res.public_key;
+        let chainCode = res.chain_code;
+
+        let hd = bip32.fromPublicKey(pubKey, chainCode);
 
         return hd;
     }
@@ -186,10 +195,10 @@ export default class LedgerWallet extends HDWalletAbstract {
 
     // Returns an array of derivation paths that need to sign this transaction
     // Used with signTransactionHash and signTransactionParsable
-    getTransactionPaths<UnsignedTx extends AVMUnsignedTx | PlatformUnsignedTx>(
+    async getTransactionPaths<UnsignedTx extends AVMUnsignedTx | PlatformUnsignedTx>(
         unsignedTx: UnsignedTx,
         chainId: ChainIdType
-    ): { paths: string[]; isAvaxOnly: boolean } {
+    ): Promise<{ paths: string[]; isAvaxOnly: boolean }> {
         let tx = unsignedTx.getTransaction();
         let txType = tx.getTxType();
 
@@ -234,7 +243,7 @@ export default class LedgerWallet extends HDWalletAbstract {
 
             for (let j = 0; j < addrs.length; j++) {
                 let srcAddr = addrs[j];
-                let pathStr = this.getPathFromAddress(srcAddr); // returns change/index
+                let pathStr = await this.getPathFromAddress(srcAddr); // returns change/index
 
                 paths.push(pathStr);
             }
@@ -251,7 +260,7 @@ export default class LedgerWallet extends HDWalletAbstract {
 
             for (let j = 0; j < addrs.length; j++) {
                 let srcAddr = addrs[j];
-                let pathStr = this.getPathFromAddress(srcAddr); // returns change/index
+                let pathStr = await this.getPathFromAddress(srcAddr); // returns change/index
 
                 paths.push(pathStr);
             }
@@ -260,10 +269,10 @@ export default class LedgerWallet extends HDWalletAbstract {
         return { paths, isAvaxOnly };
     }
 
-    getPathFromAddress(address: string) {
-        let externalAddrs = this.externalScan.getAllAddresses();
-        let internalAddrs = this.internalScan.getAllAddresses();
-        let platformAddrs = this.externalScan.getAllAddresses('P');
+    async getPathFromAddress(address: string) {
+        let externalAddrs = await this.externalScan.getAllAddresses();
+        let internalAddrs = await this.internalScan.getAllAddresses();
+        let platformAddrs = await this.externalScan.getAllAddresses('P');
 
         let extIndex = externalAddrs.indexOf(address);
         let intIndex = internalAddrs.indexOf(address);
@@ -288,7 +297,7 @@ export default class LedgerWallet extends HDWalletAbstract {
         let chainId: ChainIdType = 'X';
 
         let parseableTxs = ParseableAvmTxEnum;
-        let { paths, isAvaxOnly } = this.getTransactionPaths<AVMUnsignedTx>(unsignedTx, chainId);
+        let { paths, isAvaxOnly } = await this.getTransactionPaths<AVMUnsignedTx>(unsignedTx, chainId);
 
         // If ledger doesnt support parsing, sign hash
         let canLedgerParse = this.config.version >= '0.3.1';
@@ -553,7 +562,7 @@ export default class LedgerWallet extends HDWalletAbstract {
         let chainId: ChainIdType = 'P';
         let parseableTxs = ParseablePlatformEnum;
 
-        let { paths, isAvaxOnly } = this.getTransactionPaths<PlatformUnsignedTx>(unsignedTx, chainId);
+        let { paths, isAvaxOnly } = await this.getTransactionPaths<PlatformUnsignedTx>(unsignedTx, chainId);
         // If ledger doesnt support parsing, sign hash
         let canLedgerParse = this.config.version >= '0.3.1';
         let isParsableType = txType in parseableTxs && isAvaxOnly;

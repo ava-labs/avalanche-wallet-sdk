@@ -1,6 +1,5 @@
 import * as bip39 from 'bip39';
-import HDKey from 'hdkey';
-import { AVAX_ACCOUNT_PATH, ETH_ACCOUNT_PATH } from './constants';
+import * as bip32 from 'bip32';
 import EvmWallet from './EvmWallet';
 import { UnsafeWallet, WalletNameType } from './types';
 import { Buffer } from 'avalanche';
@@ -9,12 +8,7 @@ import { Tx as AVMTx, UnsignedTx as AVMUnsignedTx } from 'avalanche/dist/apis/av
 import { Tx as PlatformTx, UnsignedTx as PlatformUnsignedTx } from 'avalanche/dist/apis/platformvm';
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
 import { KeyChain as PlatformKeyChain } from 'avalanche/dist/apis/platformvm';
-import {
-    UnsignedTx as EVMUnsignedTx,
-    Tx as EVMTx,
-    KeyChain as EVMKeychain,
-    KeyPair as EVMKeyPair,
-} from 'avalanche/dist/apis/evm';
+import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
 import { avalanche } from '@/Network/network';
 import { digestMessage } from '@/utils';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
@@ -27,12 +21,13 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
     mnemonic: string;
     accountIndex: number;
 
-    private ethAccountKey: HDKey;
+    private ethAccountKey: bip32.BIP32Interface;
 
     constructor(mnemonic: string, account = 0) {
         let seed: globalThis.Buffer = bip39.mnemonicToSeedSync(mnemonic);
-        let masterHdKey: HDKey = HDKey.fromMasterSeed(seed);
-        let accountKey = masterHdKey.derive(getAccountPathAvalanche(account));
+
+        let masterHdKey = bip32.fromSeed(seed);
+        let accountKey = masterHdKey.derivePath(getAccountPathAvalanche(account));
 
         super(accountKey);
 
@@ -41,10 +36,10 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
             throw new Error('Invalid mnemonic phrase.');
         }
 
-        let ethAccountKey = masterHdKey.derive(getAccountPathEVM(account));
+        let ethAccountKey = masterHdKey.derivePath(getAccountPathEVM(account));
         this.ethAccountKey = ethAccountKey;
         let ethKey = ethAccountKey.privateKey;
-        let evmWallet = new EvmWallet(ethKey);
+        let evmWallet = new EvmWallet(ethKey!);
 
         this.accountIndex = account;
         this.mnemonic = mnemonic;
