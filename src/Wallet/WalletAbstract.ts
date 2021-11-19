@@ -299,6 +299,22 @@ export default abstract class WalletAbstract {
     }
 
     /**
+     * Estimate gas limit for the given inputs.
+     * @param to
+     * @param data
+     */
+    async estimateGas(to: string, data: string) {
+        const from = this.getAddressC();
+        const nonce = await web3.eth.getTransactionCount(from);
+        return await web3.eth.estimateGas({
+            from: from,
+            nonce: nonce,
+            to: to,
+            data: data,
+        });
+    }
+
+    /**
      * Estimate the gas needed for a AVAX send transaction on the C chain.
      * @param to Destination address.
      * @param amount Amount of AVAX to send, in WEI.
