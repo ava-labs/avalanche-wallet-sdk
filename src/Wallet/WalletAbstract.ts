@@ -88,7 +88,7 @@ import { GetStakeResponse } from 'avalanche/dist/common';
 import { networkEvents } from '@/Network/eventEmitter';
 import { NetworkConfig } from '@/Network';
 
-export abstract class WalletProvider {
+export default abstract class WalletAbstract {
     abstract type: WalletNameType;
     abstract evmWallet: EvmWallet | EvmWalletReadonly;
 

@@ -9,7 +9,7 @@ import createHash from 'create-hash';
  * Helper utility for encryption and password hashing, browser-safe.
  * Encryption is using AES-GCM with a random public nonce.
  */
-export default class CryptoHelpers {
+export class CryptoHelpers {
     protected ivSize = 12;
 
     protected saltSize = 16;
@@ -192,3 +192,5 @@ export default class CryptoHelpers {
 
     constructor() {}
 }
+
+export const cryptoHelpers = new CryptoHelpers();

@@ -1,4 +1,3 @@
-import { WalletProvider } from '@/Wallet/Wallet';
 import HdScanner from '@/Wallet/HdScanner';
 import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
 import { avalanche } from '@/Network/network';
@@ -7,8 +6,9 @@ import { iHDWalletIndex } from '@/Wallet/types';
 import { bintools } from '@/common';
 import * as bip32 from 'bip32';
 import { NetworkConfig } from '@/Network';
+import WalletAbstract from '@/Wallet/WalletAbstract';
 
-export abstract class HDWalletAbstract extends WalletProvider {
+export abstract class HDWalletAbstract extends WalletAbstract {
     protected internalScan: HdScanner;
     protected externalScan: HdScanner;
     protected accountKey: bip32.BIP32Interface;
