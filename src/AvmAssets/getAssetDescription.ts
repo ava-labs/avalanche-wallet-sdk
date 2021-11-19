@@ -1,6 +1,6 @@
 import { xChain } from '@/Network/network';
 
-import { iAssetCache, iAssetDescriptionClean } from '@/Asset/types';
+import { iAssetCache, iAssetDescriptionClean } from '@/AvmAssets/types';
 import xss from 'xss';
 let assetCache: iAssetCache = {};
 

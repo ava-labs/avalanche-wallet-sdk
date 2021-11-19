@@ -35,7 +35,7 @@ jest.mock('@/Network/helpers/aliasFromNetworkID', () => {
     };
 });
 
-jest.mock('@/Asset/Assets', () => {
+jest.mock('@/AvmAssets/getAssetDescription', () => {
     return {
         getAssetDescription: jest.fn().mockImplementation((id: string) => {
             switch (id) {

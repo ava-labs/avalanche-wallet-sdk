@@ -54,8 +54,8 @@ import {
 import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, UTXOSet as EVMUTXOSet } from 'avalanche/dist/apis/evm';
 
 import { PayloadBase, UnixNow } from 'avalanche/dist/utils';
-import { getAssetDescription } from '@/Asset/Assets';
-import { getErc20Token } from '@/Asset/Erc20';
+import { getAssetDescription } from '@/AvmAssets/getAssetDescription';
+import { getErc20Token } from '@/Erc20/Erc20';
 import { NO_NETWORK } from '@/errors';
 import { avaxCtoX, bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';

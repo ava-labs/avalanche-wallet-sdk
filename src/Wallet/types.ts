@@ -6,7 +6,7 @@ import MnemonicWallet from '@/Wallet/MnemonicWallet';
 import SingletonWallet from '@/Wallet/SingletonWallet';
 import LedgerWallet from '@/Wallet/LedgerWallet';
 
-import { iAssetDescriptionClean } from '@/Asset/types';
+import { iAssetDescriptionClean } from '@/AvmAssets/types';
 
 export interface IIndexKeyCache {
     [index: number]: AVMKeyPair;

@@ -2,7 +2,7 @@ import { NetworkConfig } from './types';
 import { MainnetConfig, TestnetConfig, LocalnetConfig } from '@/Network/constants';
 import { activeNetwork, setRpcNetwork, getEvmChainID, getConfigFromUrl, setRpcNetworkAsync } from '@/Network/network';
 import WebsocketProvider from '@/Network/providers/WebsocketProvider';
-import { bustErc20Cache } from '@/Asset/Erc20';
+import { bustErc20Cache } from '@/Erc20/erc20Cache';
 import { emitNetworkChange } from '@/Network/eventEmitter';
 
 export function setNetwork(conf: NetworkConfig) {

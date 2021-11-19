@@ -10,7 +10,7 @@ import {
     ITransactionData,
     UTXO,
 } from '@/History';
-import * as Assets from '@/Asset/Assets';
+import * as Assets from '@/AvmAssets';
 import { bnToLocaleString, getTxFeeX } from '@/utils';
 import { AVMConstants } from 'avalanche/dist/apis/avm';
 import { BN } from 'avalanche';

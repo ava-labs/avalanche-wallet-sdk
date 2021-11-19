@@ -1,10 +1,10 @@
 import { activeNetwork, web3 } from '@/Network/network';
 import ERC20Abi from '@openzeppelin/contracts/build/contracts/ERC20.json';
-import { Erc20TokenData } from '@/Asset/types';
 import { NO_NETWORK } from '@/errors';
 import { BN } from 'avalanche';
 import { Contract } from 'web3-eth-contract';
 import xss from 'xss';
+import { Erc20TokenData } from '@/Erc20/types';
 export default class Erc20Token {
     contract: Contract;
     address: string;

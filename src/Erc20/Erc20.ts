@@ -1,20 +1,6 @@
-import { Erc20Store, Erc20TokenData } from '@/Asset/types';
-import Erc20Token from '@/Asset/Erc20Token';
-
-export let erc20Cache: Erc20Store = {};
-
-export function getErc20Cache(): Erc20Store {
-    return {
-        ...erc20Cache,
-    };
-}
-
-/**
- * Clears the internal erc20 cache.
- */
-export function bustErc20Cache() {
-    erc20Cache = {};
-}
+import Erc20Token from '@/Erc20/Erc20Token';
+import { erc20Cache } from '@/Erc20/erc20Cache';
+import { Erc20TokenData } from '@/Erc20/types';
 
 /**
  * Fetches ERC20 data from the given contract address and adds the token to the given store.

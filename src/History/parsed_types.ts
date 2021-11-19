@@ -1,6 +1,6 @@
 import { BN } from 'avalanche';
 import { ChainIdType } from '@/types';
-import { iAssetDescriptionClean } from '@/Asset/types';
+import { iAssetDescriptionClean } from '@/AvmAssets/types';
 
 export type HistoryItemType = AVMHistoryItemType | PVMHistoryItemType | EVMHistoryITemType | iHistoryItem;
 
