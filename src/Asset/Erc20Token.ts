@@ -57,6 +57,14 @@ export default class Erc20Token {
         };
     }
 
+    /**
+     * Returns the balanceOf method without calling it. Can be used to batch calls.
+     * @param addr
+     */
+    getBalanceOfMethod(addr: string) {
+        return this.contract.methods.balanceOf(addr);
+    }
+
     async balanceOf(address: string): Promise<BN> {
         let bal = await this.contract.methods.balanceOf(address).call();
         return new BN(bal);
