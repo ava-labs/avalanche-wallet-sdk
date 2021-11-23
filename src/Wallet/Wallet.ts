@@ -2,9 +2,10 @@ import {
     AssetBalanceP,
     AssetBalanceRawX,
     AssetBalanceX,
-    AvmExportChainType,
-    AvmImportChainType,
     ERC20Balance,
+    ExportChainsC,
+    ExportChainsP,
+    ExportChainsX,
     iAvaxBalance,
     WalletBalanceX,
     WalletEventArgsType,
@@ -30,6 +31,7 @@ import EvmWallet from '@/Wallet/EvmWallet';
 import {
     avmGetAllUTXOs,
     avmGetAtomicUTXOs,
+    evmGetAtomicUTXOs,
     getStakeForAddresses,
     platformGetAllUTXOs,
     platformGetAtomicUTXOs,
@@ -87,6 +89,7 @@ import { UniversalNode } from '@/helpers/UniversalNode';
 import { GetStakeResponse } from 'avalanche/dist/common';
 import { networkEvents } from '@/Network/eventEmitter';
 import { NetworkConfig } from '@/Network';
+import { chainIdFromAlias } from '@/Network/helpers/idFromAlias';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -672,7 +675,7 @@ export abstract class WalletProvider {
      * @remarks
      * The export transaction will cover the Export + Import Fees
      *
-     * @param amt amount of nAVAX to transfer
+     * @param amt amount of nAVAX to transfer. Fees excluded.
      * @return returns the transaction id.
      */
     async exportPChain(amt: BN) {
@@ -706,7 +709,7 @@ export abstract class WalletProvider {
      * @param amt amount of nAVAX to transfer
      * @return returns the transaction id.
      */
-    async exportCChain(amt: BN): Promise<string> {
+    async exportCChain(amt: BN, destinationChain: ExportChainsC): Promise<string> {
         let fee = xChain.getTxFee();
         let amtFee = amt.add(fee);
 
@@ -716,7 +719,13 @@ export abstract class WalletProvider {
         let fromAddresses = [hexAddr];
         let destinationAddr = this.getAddressX();
 
-        let exportTx = await buildEvmExportTransaction(fromAddresses, destinationAddr, amtFee, bechAddr);
+        let exportTx = await buildEvmExportTransaction(
+            fromAddresses,
+            destinationAddr,
+            amtFee,
+            bechAddr,
+            destinationChain
+        );
 
         let tx = await this.signC(exportTx);
 
@@ -737,7 +746,7 @@ export abstract class WalletProvider {
      * @param destinationChain Which chain to export to.
      * @return returns the transaction id.
      */
-    async exportXChain(amt: BN, destinationChain: AvmExportChainType) {
+    async exportXChain(amt: BN, destinationChain: ExportChainsX) {
         let fee = xChain.getTxFee();
         let amtFee = amt.add(fee);
 
@@ -772,23 +781,30 @@ export abstract class WalletProvider {
         return txId;
     }
 
-    async getAtomicUTXOsX(chainID: AvmImportChainType) {
+    async getAtomicUTXOsX(sourceChain: ExportChainsX) {
         let addrs = await this.getAllAddressesX();
-        let result = await avmGetAtomicUTXOs(addrs, chainID);
+        let result = await avmGetAtomicUTXOs(addrs, sourceChain);
         return result;
     }
 
-    async getAtomicUTXOsP(): Promise<PlatformUTXOSet> {
+    async getAtomicUTXOsP(sourceChain: ExportChainsP): Promise<PlatformUTXOSet> {
         let addrs = await this.getAllAddressesP();
-        return await platformGetAtomicUTXOs(addrs);
+        return await platformGetAtomicUTXOs(addrs, sourceChain);
+    }
+
+    async getAtomicUTXOsC(sourceChain: ExportChainsC) {
+        const bechAddr = this.getEvmAddressBech();
+        return await evmGetAtomicUTXOs([bechAddr], sourceChain);
+        // const utxoResponse = await cChain.getUTXOs(bechAddr, xChain.getBlockchainID());
+        // const utxoSet: EVMUTXOSet = utxoResponse.utxos;
     }
 
     /**
      * Imports atomic X chain utxos to the current actie X chain address
      * @param chainID The chain ID to import from, either `P` or `C`
      */
-    async importX(chainID: AvmImportChainType) {
-        const utxoSet = await this.getAtomicUTXOsX(chainID);
+    async importX(sourceChain: ExportChainsX) {
+        const utxoSet = await this.getAtomicUTXOsX(sourceChain);
 
         if (utxoSet.getAllUTXOs().length === 0) {
             throw new Error('Nothing to import.');
@@ -802,12 +818,7 @@ export abstract class WalletProvider {
         let fromAddrs = utxoAddrs;
         let ownerAddrs = utxoAddrs;
 
-        let sourceChainId;
-        if (chainID === 'P') {
-            sourceChainId = pChain.getBlockchainID();
-        } else {
-            sourceChainId = cChain.getBlockchainID();
-        }
+        const sourceChainId = chainIdFromAlias(sourceChain);
 
         // Owner addresses, the addresses we exported to
         const unsignedTx = await xChain.buildImportTx(utxoSet, ownerAddrs, sourceChainId, [xToAddr], fromAddrs, [
@@ -825,8 +836,8 @@ export abstract class WalletProvider {
         return txId;
     }
 
-    async importP(toAddress?: string): Promise<string> {
-        const utxoSet = await this.getAtomicUTXOsP();
+    async importP(sourceChain: ExportChainsP, toAddress?: string): Promise<string> {
+        const utxoSet = await this.getAtomicUTXOsP(sourceChain);
 
         if (utxoSet.getAllUTXOs().length === 0) {
             throw new Error('Nothing to import.');
@@ -838,17 +849,18 @@ export abstract class WalletProvider {
         let hrp = avalanche.getHRP();
         let utxoAddrs = utxoSet.getAddresses().map((addr) => bintools.addressToString(hrp, 'P', addr));
 
-        // let fromAddrs = utxoAddrs;
         let ownerAddrs = utxoAddrs;
 
         if (!toAddress) {
             toAddress = walletAddrP;
         }
 
+        const sourceChainId = chainIdFromAlias(sourceChain);
+
         const unsignedTx = await pChain.buildImportTx(
             utxoSet,
             ownerAddrs,
-            xChain.getBlockchainID(),
+            sourceChainId,
             [toAddress],
             ownerAddrs,
             [walletAddrP],
@@ -865,11 +877,12 @@ export abstract class WalletProvider {
         return txId;
     }
 
-    async importC() {
+    async importC(sourceChain: ExportChainsC) {
         let bechAddr = this.getEvmAddressBech();
 
-        const utxoResponse = await cChain.getUTXOs(bechAddr, xChain.getBlockchainID());
-        const utxoSet: EVMUTXOSet = utxoResponse.utxos;
+        const utxoSet = await this.getAtomicUTXOsC(sourceChain);
+        // const utxoResponse = await cChain.getUTXOs(bechAddr, xChain.getBlockchainID());
+        // const utxoSet: EVMUTXOSet = utxoResponse.utxos;
 
         if (utxoSet.getAllUTXOs().length === 0) {
             throw new Error('Nothing to import.');
@@ -878,9 +891,9 @@ export abstract class WalletProvider {
         let toAddress = this.getAddressC();
         let ownerAddresses = [bechAddr];
         let fromAddresses = ownerAddresses;
-        let sourceChain = xChain.getBlockchainID();
+        const sourceChainId = chainIdFromAlias(sourceChain);
 
-        const unsignedTx = await cChain.buildImportTx(utxoSet, toAddress, ownerAddresses, sourceChain, fromAddresses);
+        const unsignedTx = await cChain.buildImportTx(utxoSet, toAddress, ownerAddresses, sourceChainId, fromAddresses);
         let tx = await this.signC(unsignedTx);
         let id = await cChain.issueTx(tx);
 
@@ -1068,15 +1081,15 @@ export abstract class WalletProvider {
                 if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
                 return await this.exportXChain(tx.amount, 'C');
             case 'import_x_c':
-                return await this.importC();
+                return await this.importC('X');
             case 'export_x_p':
                 if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
                 return await this.exportXChain(tx.amount, 'P');
             case 'import_x_p':
-                return await this.importP();
+                return await this.importP('X');
             case 'export_c_x':
                 if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
-                return await this.exportCChain(tx.amount);
+                return await this.exportCChain(tx.amount, 'X');
             case 'import_c_x':
                 return await this.importX('C');
             case 'export_p_x':

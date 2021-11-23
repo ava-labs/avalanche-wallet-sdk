@@ -13,8 +13,12 @@ export interface IIndexKeyCache {
 }
 
 export type ChainAlias = 'X' | 'P';
-export type AvmImportChainType = 'P' | 'C';
-export type AvmExportChainType = 'P' | 'C';
+// export type ImportChainsX = 'P' | 'C';
+// export type AvmExportChainType = 'P' | 'C';
+export type ExportChainsX = 'P' | 'C';
+export type ExportChainsP = 'X' | 'C';
+export type ExportChainsC = 'X' | 'P';
+
 export type HdChainType = 'X' | 'P';
 
 export type WalletNameType = 'mnemonic' | 'ledger' | 'singleton' | 'xpub';
