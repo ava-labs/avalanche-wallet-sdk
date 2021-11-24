@@ -168,10 +168,6 @@ export async function buildEvmTransferEIP1559Tx(
 
     const common = Common.custom({ networkId, chainId });
 
-    // const chainParams = {
-    //     common: EthereumjsCommon.forCustomChain('mainnet', { networkId, chainId }, 'istanbul'),
-    // };
-
     const tx = FeeMarketEIP1559Transaction.fromTxData(
         {
             nonce: nonce,
@@ -199,10 +195,6 @@ export async function buildEvmTransferNativeTx(
     const networkId = await web3.eth.net.getId();
 
     const common = Common.custom({ networkId, chainId });
-    // const common = new Common({chain: Chain.Mainnet, c[{networkId, chainId}]})
-    // const chainParams = {
-    //     common: EthereumjsCommon.forCustomChain('mainnet', { networkId, chainId }, 'istanbul'),
-    // };
 
     const tx = Transaction.fromTxData(
         {
