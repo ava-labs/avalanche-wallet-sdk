@@ -1,26 +1,27 @@
-import { xChain, cChain, pChain, web3 } from '@/Network/network';
+import { cChain, pChain, web3, xChain } from '@/Network/network';
 
 // import { ITransaction } from '@/components/wallet/transfer/types';
 import { BN, Buffer } from 'avalanche';
 import {
+    AVMConstants,
     MinterSet,
     NFTMintOutput,
     UnsignedTx as AVMUnsignedTx,
     UTXO as AVMUTXO,
-    UTXOSet,
     UTXOSet as AVMUTXOSet,
-    AVMConstants,
+    UTXOSet,
 } from 'avalanche/dist/apis/avm';
 
 import { PayloadBase } from 'avalanche/dist/utils';
 import { OutputOwners } from 'avalanche/dist/common';
-import { UTXOSet as PlatformUTXOSet, PlatformVMConstants } from 'avalanche/dist/apis/platformvm';
+import { PlatformVMConstants, UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm';
 
 import { EVMConstants } from 'avalanche/dist/apis/evm';
 
 import { AvmExportChainType } from '../Wallet/types';
-import { Transaction } from '@ethereumjs/tx';
+import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import EthereumjsCommon from '@ethereumjs/common';
+import Common, { Chain } from '@ethereumjs/common';
 
 import ERC20Abi from '@openzeppelin/contracts/build/contracts/ERC20.json';
 import ERC721Abi from '@openzeppelin/contracts/build/contracts/ERC721.json';
@@ -153,6 +154,35 @@ export async function buildEvmExportTransaction(
     );
 }
 
+export async function buildEvmTransferEIP1559Tx(
+    from: string,
+    to: string,
+    amount: BN, // in wei
+    priorityFee: BN,
+    maxFee: BN,
+    gasLimit: number
+) {
+    const nonce = await web3.eth.getTransactionCount(from);
+    const chainId = await web3.eth.getChainId();
+    const networkId = await web3.eth.net.getId();
+
+    const common = Common.custom({ networkId, chainId });
+
+    const tx = FeeMarketEIP1559Transaction.fromTxData(
+        {
+            nonce: nonce,
+            maxFeePerGas: '0x' + maxFee.toString('hex'),
+            maxPriorityFeePerGas: '0x' + priorityFee.toString('hex'),
+            gasLimit: gasLimit,
+            to: to,
+            value: '0x' + amount.toString('hex'),
+            data: '0x',
+        },
+        { common }
+    );
+    return tx;
+}
+
 export async function buildEvmTransferNativeTx(
     from: string,
     to: string,
@@ -163,9 +193,8 @@ export async function buildEvmTransferNativeTx(
     const nonce = await web3.eth.getTransactionCount(from);
     const chainId = await web3.eth.getChainId();
     const networkId = await web3.eth.net.getId();
-    const chainParams = {
-        common: EthereumjsCommon.forCustomChain('mainnet', { networkId, chainId }, 'istanbul'),
-    };
+
+    const common = Common.custom({ networkId, chainId });
 
     const tx = Transaction.fromTxData(
         {
@@ -176,7 +205,7 @@ export async function buildEvmTransferNativeTx(
             value: '0x' + amount.toString('hex'),
             data: '0x',
         },
-        chainParams
+        { common }
     );
     return tx;
 }
