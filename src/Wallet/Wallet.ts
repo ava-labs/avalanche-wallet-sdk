@@ -227,33 +227,9 @@ export abstract class WalletProvider {
      *
      * @return Returns the transaction hash
      */
-    async sendAvaxCLegacy(to: string, amount: BN, gasPrice: BN, gasLimit: number): Promise<string> {
+    async sendAvaxC(to: string, amount: BN, gasPrice: BN, gasLimit: number): Promise<string> {
         let fromAddr = this.getAddressC();
         let tx = await buildEvmTransferNativeTx(fromAddr, to, amount, gasPrice, gasLimit);
-        let txId = await this.issueEvmTx(tx);
-        await this.updateAvaxBalanceC();
-        return txId;
-    }
-
-    /**
-     * Sends AVAX to another address on the C chain using the EIP1559 format.
-     * @param to Hex address to send AVAX to.
-     * @param amount Amount of AVAX to send, represented in WEI format.
-     * @param maxFeePerGas Gas price in WEI format
-     * @param maxPriorityFeePerGas Gas price in WEI format
-     * @param gasLimit Gas limit
-     *
-     * @return Returns the transaction hash
-     */
-    async sendAvaxC(
-        to: string,
-        amount: BN,
-        maxFeePerGas: BN,
-        maxPriorityFeePerGas: BN,
-        gasLimit: number
-    ): Promise<string> {
-        let fromAddr = this.getAddressC();
-        let tx = await buildEvmTransferEIP1559Tx(fromAddr, to, amount, maxFeePerGas, maxPriorityFeePerGas, gasLimit);
         let txId = await this.issueEvmTx(tx);
         await this.updateAvaxBalanceC();
         return txId;
