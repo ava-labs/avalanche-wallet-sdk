@@ -1,3 +1,4 @@
+//@ts-ignore
 import Eth from '@ledgerhq/hw-app-eth';
 // @ts-ignore
 import AppAvax from '@obsidiansystems/hw-app-avalanche';

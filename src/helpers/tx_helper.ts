@@ -1,6 +1,5 @@
 import { xChain, cChain, pChain, web3 } from '@/Network/network';
 
-// import { ITransaction } from '@/components/wallet/transfer/types';
 import { BN, Buffer } from 'avalanche';
 import {
     MinterSet,

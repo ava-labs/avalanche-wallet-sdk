@@ -1,5 +1,6 @@
 import { web3 } from '@/Network/network';
 import { BN } from 'avalanche';
+import { ImportTx, Tx } from 'avalanche/dist/apis/evm';
 
 const MAX_GAS = new BN(1000_000_000_000);
 
@@ -19,3 +20,9 @@ export async function getAdjustedGasPrice(): Promise<BN> {
     let adjustedGas = gasPrice.add(additionalGas);
     return BN.min(adjustedGas, MAX_GAS);
 }
+
+// export function estimateAtomicGasLimit(unsignedTxByteLen: number, sigNum = 1): number {
+// the gas used by an atomic transaction is `1 * len(unsignedTxBytes) + 1,000 * numSignatures + 10,000
+// Assuming there is only one signature since there is only one C chain address
+// return unsignedTxByteLen + sigNum * 1000 + 10000;
+// }

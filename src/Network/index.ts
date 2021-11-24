@@ -47,3 +47,4 @@ export function getActiveNetworkConfig() {
 export { WebsocketProvider, getEvmChainID, getConfigFromUrl };
 
 export { NetworkConfig } from './types';
+export * from './helpers';
