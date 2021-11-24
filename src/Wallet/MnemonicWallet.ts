@@ -3,7 +3,7 @@ import * as bip32 from 'bip32';
 import EvmWallet from './EvmWallet';
 import { UnsafeWallet, WalletNameType } from './types';
 import { Buffer } from 'avalanche';
-import { Transaction } from '@ethereumjs/tx';
+import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import { Tx as AVMTx, UnsignedTx as AVMUnsignedTx } from 'avalanche/dist/apis/avm';
 import { Tx as PlatformTx, UnsignedTx as PlatformUnsignedTx } from 'avalanche/dist/apis/platformvm';
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
@@ -92,7 +92,7 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
      * Signs an EVM transaction on the C chain.
      * @param tx The unsigned transaction
      */
-    async signEvm(tx: Transaction): Promise<Transaction> {
+    async signEvm(tx: Transaction | FeeMarketEIP1559Transaction): Promise<Transaction | FeeMarketEIP1559Transaction> {
         return this.evmWallet.signEVM(tx);
     }
 

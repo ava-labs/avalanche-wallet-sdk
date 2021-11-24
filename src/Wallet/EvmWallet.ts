@@ -1,6 +1,6 @@
 import { Buffer as BufferAvalanche } from 'avalanche';
 import { privateToPublic } from 'ethereumjs-util';
-import { Transaction } from '@ethereumjs/tx';
+import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import { avalanche } from '@/Network/network';
 import {
     KeyChain as EVMKeyChain,
@@ -36,7 +36,7 @@ export default class EvmWallet extends EvmWalletReadonly {
         return keychain.importKey(this.getPrivateKeyBech());
     }
 
-    signEVM(tx: Transaction) {
+    signEVM(tx: Transaction | FeeMarketEIP1559Transaction) {
         return tx.sign(this.privateKey);
     }
 
