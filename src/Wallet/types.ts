@@ -13,8 +13,6 @@ export interface IIndexKeyCache {
 }
 
 export type ChainAlias = 'X' | 'P';
-// export type ImportChainsX = 'P' | 'C';
-// export type AvmExportChainType = 'P' | 'C';
 export type ExportChainsX = 'P' | 'C';
 export type ExportChainsP = 'X' | 'C';
 export type ExportChainsC = 'X' | 'P';

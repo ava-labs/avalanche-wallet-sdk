@@ -100,15 +100,7 @@ export async function buildAvmExportTransaction(
     amount: BN, // export amount + fee
     sourceChangeAddress: string
 ) {
-    let destinationChainId;
-    switch (destinationChain) {
-        case 'P':
-            destinationChainId = pChain.getBlockchainID();
-            break;
-        case 'C':
-            destinationChainId = cChain.getBlockchainID();
-            break;
-    }
+    let destinationChainId = chainIdFromAlias(destinationChain);
 
     return await xChain.buildExportTx(utxoSet as AVMUTXOSet, amount, destinationChainId, [toAddress], fromAddresses, [
         sourceChangeAddress,

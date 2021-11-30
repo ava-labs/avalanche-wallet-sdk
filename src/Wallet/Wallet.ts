@@ -21,6 +21,7 @@ import {
     buildEvmTransferErc20Tx,
     buildEvmTransferNativeTx,
     buildMintNftTx,
+    buildPlatformExportTransaction,
     estimateAvaxGas,
     estimateErc20Gas,
 } from '@/helpers/tx_helper';
@@ -60,7 +61,7 @@ import { PayloadBase, UnixNow } from 'avalanche/dist/utils';
 import { getAssetDescription } from '@/Asset/Assets';
 import { getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
-import { avaxCtoX, bnToLocaleString, getTxFeeX, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils';
+import { avaxCtoX, bnToLocaleString, getTxFeeP, getTxFeeX, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
 import {
@@ -91,7 +92,12 @@ import { GetStakeResponse } from 'avalanche/dist/apis/platformvm/interfaces';
 import { networkEvents } from '@/Network/eventEmitter';
 import { NetworkConfig } from '@/Network';
 import { chainIdFromAlias } from '@/Network/helpers/idFromAlias';
-import { estimateExportGasFee, getBaseFeeRecommended } from '@/helpers/gas_helper';
+import {
+    estimateExportGasFee,
+    estimateExportGasFeeFromMockTx,
+    estimateImportGasFeeFromMockTx,
+    getBaseFeeRecommended,
+} from '@/helpers/gas_helper';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -680,19 +686,44 @@ export abstract class WalletProvider {
      * @param amt amount of nAVAX to transfer. Fees excluded.
      * @return returns the transaction id.
      */
-    async exportPChain(amt: BN) {
-        let fee = xChain.getTxFee();
-        let amtFee = amt.add(fee);
-
-        let utxoSet = this.utxosP;
-        let destinationAddr = this.getAddressX();
+    async exportPChain(amt: BN, destinationChain: ExportChainsP, importFee?: BN) {
+        if (destinationChain === 'C' && !importFee) throw new Error('Exports to C chain must specify an import fee.');
+        // TODO: Use dynamic fee for C chain imports
 
         let pChangeAddr = this.getAddressP();
         let fromAddrs = await this.getAllAddressesP();
 
-        let xId = xChain.getBlockchainID();
+        const destinationAddr = destinationChain === 'X' ? this.getAddressX() : this.getEvmAddressBech();
 
-        let exportTx = await pChain.buildExportTx(utxoSet, amtFee, xId, [destinationAddr], fromAddrs, [pChangeAddr]);
+        let amtFee;
+        if (!importFee) {
+            if (destinationChain === 'X') {
+                let fee = getTxFeeP();
+                amtFee = amt.add(fee);
+            } else {
+                // Calculate dynamic fee for C chain
+                const gas = estimateImportGasFeeFromMockTx('P', amt, destinationAddr);
+                const baseFee = await getBaseFeeRecommended();
+                const feeNAvax = avaxCtoX(baseFee.mul(new BN(gas)));
+                amtFee = amt.add(feeNAvax);
+            }
+        } else {
+            amtFee = amt.add(importFee);
+        }
+
+        let utxoSet = this.utxosP;
+
+        // TODO: Use buildPlatformExportTransaction
+        // TODO: Support C chain
+
+        const exportTx = await buildPlatformExportTransaction(
+            utxoSet,
+            fromAddrs,
+            destinationAddr,
+            amtFee,
+            pChangeAddr,
+            destinationChain
+        );
 
         let tx = await this.signP(exportTx);
         let txId = await pChain.issueTx(tx);
@@ -726,7 +757,7 @@ export abstract class WalletProvider {
 
         // Calculate export fee if it's not given.
         if (!exportFee) {
-            const gas = await estimateExportGasFee(destinationChain, hexAddr, bechAddr, destinationAddr, amtFee);
+            const gas = estimateExportGasFeeFromMockTx(destinationChain, amtFee, hexAddr, destinationAddr);
             const baseFee = await getBaseFeeRecommended();
             exportFee = avaxCtoX(baseFee.mul(new BN(gas)));
         }
@@ -757,31 +788,36 @@ export abstract class WalletProvider {
      *
      * @param amt amount of nAVAX to transfer
      * @param destinationChain Which chain to export to.
+     * @param importFee This fee will be added to the exported amount.
      * @return returns the transaction id.
      */
-    async exportXChain(amt: BN, destinationChain: ExportChainsX) {
-        let fee = xChain.getTxFee();
-        let amtFee = amt.add(fee);
+    async exportXChain(amt: BN, destinationChain: ExportChainsX, importFee?: BN) {
+        let destinationAddr = destinationChain === 'P' ? this.getAddressP() : this.getEvmAddressBech();
 
-        let destinationAddr;
-        if (destinationChain === 'P') {
-            destinationAddr = this.getAddressP();
+        let amtWithImportFee;
+        if (importFee) {
+            amtWithImportFee = amt.add(importFee);
         } else {
-            // C Chain
-            destinationAddr = this.getEvmAddressBech();
+            if (destinationChain === 'P') {
+                let fee = getTxFeeP();
+                amtWithImportFee = amt.add(fee);
+            } else {
+                //TODO: Calculate C chain dynamic import fee
+                throw new Error('Exports to C chain must provide an import fee.');
+            }
         }
 
         let fromAddresses = await this.getAllAddressesX();
         let changeAddress = this.getChangeAddressX();
         let utxos = this.utxosX;
-        let exportTx = (await buildAvmExportTransaction(
+        let exportTx = await buildAvmExportTransaction(
             destinationChain,
             utxos,
             fromAddresses,
             destinationAddr,
-            amtFee,
+            amtWithImportFee,
             changeAddress
-        )) as AVMUnsignedTx;
+        );
 
         let tx = await this.signX(exportTx);
 
@@ -808,8 +844,6 @@ export abstract class WalletProvider {
     async getAtomicUTXOsC(sourceChain: ExportChainsC) {
         const bechAddr = this.getEvmAddressBech();
         return await evmGetAtomicUTXOs([bechAddr], sourceChain);
-        // const utxoResponse = await cChain.getUTXOs(bechAddr, xChain.getBlockchainID());
-        // const utxoSet: EVMUTXOSet = utxoResponse.utxos;
     }
 
     /**
@@ -890,12 +924,18 @@ export abstract class WalletProvider {
         return txId;
     }
 
-    async importC(sourceChain: ExportChainsC) {
+    /**
+     *
+     * @param sourceChain Which chain to import from. `X` or `P`
+     * @param fee If omitted tries to calculate the fee.
+     * @param utxoSet If omitted imports all atomic UTXOs.
+     */
+    async importC(sourceChain: ExportChainsC, fee?: BN, utxoSet?: EVMUTXOSet) {
         let bechAddr = this.getEvmAddressBech();
 
-        const utxoSet = await this.getAtomicUTXOsC(sourceChain);
-        // const utxoResponse = await cChain.getUTXOs(bechAddr, xChain.getBlockchainID());
-        // const utxoSet: EVMUTXOSet = utxoResponse.utxos;
+        if (!utxoSet) {
+            utxoSet = await this.getAtomicUTXOsC(sourceChain);
+        }
 
         if (utxoSet.getAllUTXOs().length === 0) {
             throw new Error('Nothing to import.');
@@ -906,7 +946,21 @@ export abstract class WalletProvider {
         let fromAddresses = ownerAddresses;
         const sourceChainId = chainIdFromAlias(sourceChain);
 
-        const unsignedTx = await cChain.buildImportTx(utxoSet, toAddress, ownerAddresses, sourceChainId, fromAddresses);
+        // Calculate fee if not provided
+        if (!fee) {
+            const importGas = estimateImportGasFeeFromMockTx(sourceChain, new BN(0), toAddress);
+            const baseFee = await getBaseFeeRecommended();
+            fee = avaxCtoX(baseFee.mul(new BN(importGas)));
+        }
+
+        const unsignedTx = await cChain.buildImportTx(
+            utxoSet,
+            toAddress,
+            ownerAddresses,
+            sourceChainId,
+            fromAddresses,
+            fee
+        );
         let tx = await this.signC(unsignedTx);
         let id = await cChain.issueTx(tx);
 
@@ -1090,11 +1144,18 @@ export abstract class WalletProvider {
      */
     public async issueUniversalTx(tx: UniversalTx): Promise<string> {
         switch (tx.action) {
-            case 'export_x_c':
+            case 'export_x_c': {
                 if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
-                return await this.exportXChain(tx.amount, 'C');
-            case 'import_x_c':
-                return await this.importC('X');
+                // TODO: Instead of a fixed fee, use the fee param from the universal tx
+                const importFee = getTxFeeX();
+                return await this.exportXChain(tx.amount, 'C', importFee);
+            }
+
+            case 'import_x_c': {
+                // TODO: Instead of a fixed fee, use the fee param from the universal tx
+                const fee = getTxFeeX();
+                return await this.importC('X', fee);
+            }
             case 'export_x_p':
                 if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
                 return await this.exportXChain(tx.amount, 'P');
@@ -1110,7 +1171,7 @@ export abstract class WalletProvider {
                 return await this.importX('C');
             case 'export_p_x':
                 if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
-                return await this.exportPChain(tx.amount);
+                return await this.exportPChain(tx.amount, 'X');
             case 'import_p_x':
                 return await this.importX('P');
             default:

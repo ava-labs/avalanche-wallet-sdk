@@ -10,8 +10,6 @@ import {
     TransferableInput,
     TransferableOutput,
     UnsignedTx,
-    UTXO,
-    UTXOSet,
 } from 'avalanche/dist/apis/evm';
 import { ExportChainsC } from '@/Wallet/types';
 import { bintools } from '@/common';
@@ -128,7 +126,6 @@ export function estimateExportGasFeeFromMockTx(
     const netID = activeNetwork.networkID;
     const chainID = activeNetwork.cChainID;
     const AVAX_ID = activeNetwork.avaxID;
-    // Create dummy Input and Output
     const avaxIDBuff = bintools.cb58Decode(AVAX_ID);
 
     // Create fake ins/outs
