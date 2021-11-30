@@ -29,7 +29,7 @@ describe('getBaseFee', () => {
     it('0 base fee', async () => {
         cChain.getBaseFee.mockReturnValueOnce('0x0');
         let baseFee = await getBaseFee();
-        expect(baseFee).toEqual(new BN(0));
+        expect(baseFee.toString()).toEqual('0');
     });
 
     it('1 gwei', async () => {
@@ -43,13 +43,13 @@ describe('getMaxPriorityFee', () => {
     it('0 fee', async () => {
         cChain.getMaxPriorityFeePerGas.mockReturnValueOnce('0x0');
         let fee = await getMaxPriorityFee();
-        expect(fee).toEqual(new BN(0));
+        expect(fee.toString()).toEqual('0');
     });
 
     it('1 gwei', async () => {
         cChain.getMaxPriorityFeePerGas.mockReturnValueOnce('0x3B9ACA00');
         let fee = await getMaxPriorityFee();
-        expect(fee).toEqual(new BN(1_000_000_000));
+        expect(fee.toString()).toEqual('1000000000');
     });
 });
 

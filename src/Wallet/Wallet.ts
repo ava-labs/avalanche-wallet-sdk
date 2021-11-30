@@ -698,7 +698,7 @@ export abstract class WalletProvider {
         let amtFee;
         if (!importFee) {
             if (destinationChain === 'X') {
-                let fee = getTxFeeP();
+                let fee = getTxFeeX();
                 amtFee = amt.add(fee);
             } else {
                 // Calculate dynamic fee for C chain
@@ -712,9 +712,6 @@ export abstract class WalletProvider {
         }
 
         let utxoSet = this.utxosP;
-
-        // TODO: Use buildPlatformExportTransaction
-        // TODO: Support C chain
 
         const exportTx = await buildPlatformExportTransaction(
             utxoSet,
