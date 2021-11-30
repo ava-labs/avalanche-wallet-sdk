@@ -1,5 +1,5 @@
-import { getBaseFee, getGasPrice, getMaxPriorityFee } from '@/helpers/gas_helper';
-import { cChain, web3 } from '@/Network/network';
+import { adjustValue, getBaseFee, getGasPrice, getMaxPriorityFee } from '@/helpers/gas_helper';
+import { cChain, setRpcNetwork, web3 } from '@/Network/network';
 import BN from 'bn.js';
 
 jest.mock('@/Network/network', () => {
@@ -13,6 +13,7 @@ jest.mock('@/Network/network', () => {
                 getGasPrice: jest.fn(),
             },
         },
+        setRpcNetwork: jest.fn(),
     };
 });
 
@@ -49,5 +50,20 @@ describe('getMaxPriorityFee', () => {
         cChain.getMaxPriorityFeePerGas.mockReturnValueOnce('0x3B9ACA00');
         let fee = await getMaxPriorityFee();
         expect(fee).toEqual(new BN(1_000_000_000));
+    });
+});
+
+describe('get adjusted values', () => {
+    it('add 20%', () => {
+        const val = new BN(100);
+        let res = adjustValue(val, 20);
+        expect(res).toEqual(new BN(120));
+    });
+
+    it('add 20% to 101', () => {
+        const val = new BN(101);
+        let res = adjustValue(val, 20);
+        // The real value is 121.2, but the decimals are dropped on BN calculations
+        expect(res).toEqual(new BN(121));
     });
 });

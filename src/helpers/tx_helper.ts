@@ -130,12 +130,22 @@ export async function buildPlatformExportTransaction(
     ]);
 }
 
+/**
+ *
+ * @param fromAddresses
+ * @param toAddress
+ * @param amount
+ * @param fromAddressBech
+ * @param destinationChain Either `X` or `P`
+ * @param fee Export fee in nAVAX
+ */
 export async function buildEvmExportTransaction(
     fromAddresses: string[],
     toAddress: string,
     amount: BN, // export amount + fee
     fromAddressBech: string,
-    destinationChain: ExportChainsC
+    destinationChain: ExportChainsC,
+    fee: BN
 ) {
     let destinationChainId = chainIdFromAlias(destinationChain);
 
@@ -152,7 +162,10 @@ export async function buildEvmExportTransaction(
         fromAddressHex,
         fromAddressBech,
         [toAddress],
-        nonce
+        nonce,
+        undefined,
+        undefined,
+        fee
     );
 }
 

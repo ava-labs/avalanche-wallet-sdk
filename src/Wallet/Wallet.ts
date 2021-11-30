@@ -60,7 +60,7 @@ import { PayloadBase, UnixNow } from 'avalanche/dist/utils';
 import { getAssetDescription } from '@/Asset/Assets';
 import { getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
-import { avaxCtoX, bnToLocaleString, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils';
+import { avaxCtoX, bnToLocaleString, getTxFeeX, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
 import {
@@ -91,6 +91,7 @@ import { GetStakeResponse } from 'avalanche/dist/apis/platformvm/interfaces';
 import { networkEvents } from '@/Network/eventEmitter';
 import { NetworkConfig } from '@/Network';
 import { chainIdFromAlias } from '@/Network/helpers/idFromAlias';
+import { estimateExportGasFee, getBaseFeeRecommended } from '@/helpers/gas_helper';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -708,24 +709,35 @@ export abstract class WalletProvider {
      * The export transaction will cover the Export + Import Fees
      *
      * @param amt amount of nAVAX to transfer
+     * @param destinationChain either `X` or `P`
+     * @param exportFee Export fee in nAVAX
      * @return returns the transaction id.
      */
-    async exportCChain(amt: BN, destinationChain: ExportChainsC): Promise<string> {
-        let fee = xChain.getTxFee();
-        let amtFee = amt.add(fee);
+    async exportCChain(amt: BN, destinationChain: ExportChainsC, exportFee?: BN): Promise<string> {
+        // Add import fee to the export transaction
+        const importFee = getTxFeeX();
+        let amtFee = amt.add(importFee);
 
         let hexAddr = this.getAddressC();
         let bechAddr = this.getEvmAddressBech();
 
         let fromAddresses = [hexAddr];
-        let destinationAddr = this.getAddressX();
+        let destinationAddr = destinationChain === 'X' ? this.getAddressX() : this.getAddressP();
+
+        // Calculate export fee if it's not given.
+        if (!exportFee) {
+            const gas = await estimateExportGasFee(destinationChain, hexAddr, bechAddr, destinationAddr, amtFee);
+            const baseFee = await getBaseFeeRecommended();
+            exportFee = avaxCtoX(baseFee.mul(new BN(gas)));
+        }
 
         let exportTx = await buildEvmExportTransaction(
             fromAddresses,
             destinationAddr,
             amtFee,
             bechAddr,
-            destinationChain
+            destinationChain,
+            exportFee
         );
 
         let tx = await this.signC(exportTx);
@@ -1088,9 +1100,12 @@ export abstract class WalletProvider {
                 return await this.exportXChain(tx.amount, 'P');
             case 'import_x_p':
                 return await this.importP('X');
-            case 'export_c_x':
+            case 'export_c_x': {
                 if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
-                return await this.exportCChain(tx.amount, 'X');
+                // TODO: Instead of a fixed fee, use the fee param from the universal tx
+                const fee = getTxFeeX();
+                return await this.exportCChain(tx.amount, 'X', fee);
+            }
             case 'import_c_x':
                 return await this.importX('C');
             case 'export_p_x':
