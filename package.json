@@ -70,11 +70,12 @@
         "typescript": "^4.2.4"
     },
     "dependencies": {
-        "@ethereumjs/common": "2.5.0",
-        "@ethereumjs/tx": "3.3.2",
+        "@ethereumjs/common": "2.6.0",
+        "@ethereumjs/tx": "3.4.0",
         "@ledgerhq/hw-app-eth": "6.12.2",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
         "@openzeppelin/contracts": "4.3.3",
+        "@rollup/plugin-commonjs": "^21.0.1",
         "big.js": "^6.1.1",
         "bip32": "^2.0.6",
         "bip32-path": "^0.4.2",
@@ -84,7 +85,6 @@
         "ethereumjs-util": "^7.0.7",
         "ethers": "^5.1.4",
         "moment": "^2.29.1",
-        "rollup-plugin-commonjs": "^10.1.0",
         "sockette": "^2.0.6",
         "typescript-transform-paths": "^2.2.3",
         "url": "^0.11.0",
