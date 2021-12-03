@@ -1,4 +1,4 @@
-import { createGraphForP, createGraphForX, UniversalTx } from '@/UniversalTx';
+import { createGraphForC, createGraphForP, createGraphForX, UniversalTx } from '@/UniversalTx';
 import { BN } from 'avalanche';
 import { pChain, xChain } from '@/Network/network';
 
@@ -18,7 +18,9 @@ jest.mock('@/Network/network', () => {
     };
 });
 
-const FEE = new BN(1000000);
+// Assume constant import export fee for all chains
+const FEE_XP = new BN(1_000_000);
+const FEE_C = new BN(100_000);
 
 function compareSteps(steps: UniversalTx[], expected: UniversalTx[]) {
     expect(steps.length).toEqual(expected.length);
@@ -32,8 +34,8 @@ function compareSteps(steps: UniversalTx[], expected: UniversalTx[]) {
 
 describe('Reduce parent balance of UniversalNode P', () => {
     beforeEach(() => {
-        (pChain.getTxFee as jest.Mock).mockReturnValue(FEE);
-        (xChain.getTxFee as jest.Mock).mockReturnValue(FEE);
+        (pChain.getTxFee as jest.Mock).mockReturnValue(FEE_XP);
+        (xChain.getTxFee as jest.Mock).mockReturnValue(FEE_XP);
     });
 
     it('all parents have balance of 1 AVAX', () => {
@@ -41,30 +43,30 @@ describe('Reduce parent balance of UniversalNode P', () => {
         let balP = new BN(1000000000);
         let balC = new BN(1000000000);
 
-        let expected = new BN(2996000000);
-        let startNode = createGraphForP(balX, balP, balC);
+        let expected = balP.add(balX.sub(FEE_XP.add(FEE_XP)).add(balC.sub(FEE_C.add(FEE_XP))));
+        let startNode = createGraphForP(balX, balP, balC, FEE_XP, FEE_C);
         let tot = startNode.reduceTotalBalanceFromParents();
         expect(tot).toEqual(expected);
     });
 
-    it('middle child empty', () => {
+    it('Only self and parent C has balance', () => {
         let balP = new BN(1000000000);
         let balX = new BN(0);
         let balC = new BN(1000000000);
 
-        let expected = new BN(1996000000);
-        let startNode = createGraphForP(balX, balP, balC);
+        let expected = balP.add(balC.sub(FEE_C).sub(FEE_XP));
+        let startNode = createGraphForP(balX, balP, balC, FEE_XP, FEE_C);
         let tot = startNode.reduceTotalBalanceFromParents();
         expect(tot).toEqual(expected);
     });
 
-    it('only top parent has balance', () => {
+    it('only parent C has balance', () => {
         let balP = new BN(0);
         let balX = new BN(0);
         let balC = new BN(1000000000);
 
-        let expected = new BN(996000000);
-        let startNode = createGraphForP(balX, balP, balC);
+        let expected = balC.sub(FEE_XP).sub(FEE_C);
+        let startNode = createGraphForP(balX, balP, balC, FEE_XP, FEE_C);
         let tot = startNode.reduceTotalBalanceFromParents();
         expect(tot).toEqual(expected);
     });
@@ -74,8 +76,8 @@ describe('Reduce parent balance of UniversalNode P', () => {
         let balX = new BN(0);
         let balC = new BN(0);
 
-        let expected = new BN(1000000000);
-        let startNode = createGraphForP(balX, balP, balC);
+        let expected = balP;
+        let startNode = createGraphForP(balX, balP, balC, FEE_XP, FEE_C);
         let tot = startNode.reduceTotalBalanceFromParents();
         expect(tot).toEqual(expected);
     });
@@ -83,8 +85,8 @@ describe('Reduce parent balance of UniversalNode P', () => {
 
 describe('Reduce parent balance of UniversalNode X', () => {
     beforeEach(() => {
-        (pChain.getTxFee as jest.Mock).mockReturnValue(FEE);
-        (xChain.getTxFee as jest.Mock).mockReturnValue(FEE);
+        (pChain.getTxFee as jest.Mock).mockReturnValue(FEE_XP);
+        (xChain.getTxFee as jest.Mock).mockReturnValue(FEE_XP);
     });
 
     it('all nodes have balance of 1 AVAX', () => {
@@ -92,8 +94,8 @@ describe('Reduce parent balance of UniversalNode X', () => {
         let balP = new BN(1000000000);
         let balC = new BN(1000000000);
 
-        let expected = new BN(2996000000);
-        let startNode = createGraphForX(balX, balP, balC);
+        let expected = balX.add(balP.sub(FEE_XP).sub(FEE_XP)).add(balC.sub(FEE_C).sub(FEE_XP));
+        let startNode = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
         let tot = startNode.reduceTotalBalanceFromParents();
         expect(tot).toEqual(expected);
     });
@@ -103,30 +105,30 @@ describe('Reduce parent balance of UniversalNode X', () => {
         let balP = new BN(1000000000);
         let balC = new BN(1000000000);
 
-        let expected = new BN(1996000000);
-        let startNode = createGraphForX(balX, balP, balC);
+        let expected = balP.sub(FEE_XP).sub(FEE_XP).add(balC.sub(FEE_C).sub(FEE_XP));
+        let startNode = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
         let tot = startNode.reduceTotalBalanceFromParents();
         expect(tot).toEqual(expected);
     });
 
-    it('one parent has balance of 1 AVAX', () => {
+    it('parent P has balance of 1 AVAX', () => {
         let balX = new BN(0);
         let balP = new BN(1000000000);
         let balC = new BN(0);
 
-        let expected = new BN(998000000);
-        let startNode = createGraphForX(balX, balP, balC);
+        let expected = balP.sub(FEE_XP).sub(FEE_XP);
+        let startNode = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
         let tot = startNode.reduceTotalBalanceFromParents();
         expect(tot).toEqual(expected);
     });
 
-    it('other parent has balance of 1 AVAX', () => {
+    it('parent C has balance of 1 AVAX', () => {
         let balX = new BN(0);
         let balP = new BN(0);
         let balC = new BN(1000000000);
 
-        let expected = new BN(998000000);
-        let startNode = createGraphForX(balX, balP, balC);
+        let expected = balC.sub(FEE_C).sub(FEE_XP);
+        let startNode = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
         let tot = startNode.reduceTotalBalanceFromParents();
         expect(tot).toEqual(expected);
     });
@@ -137,7 +139,7 @@ describe('Reduce parent balance of UniversalNode X', () => {
         let balC = new BN(0);
 
         let expected = new BN(0);
-        let startNode = createGraphForX(balX, balP, balC);
+        let startNode = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
         let tot = startNode.reduceTotalBalanceFromParents();
         expect(tot).toEqual(expected);
     });
@@ -147,8 +149,81 @@ describe('Reduce parent balance of UniversalNode X', () => {
         let balP = new BN(0);
         let balC = new BN(0);
 
-        let expected = new BN(1000000000);
-        let startNode = createGraphForX(balX, balP, balC);
+        let expected = balX;
+        let startNode = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
+        let tot = startNode.reduceTotalBalanceFromParents();
+        expect(tot).toEqual(expected);
+    });
+});
+
+describe('Reduce parent balance of UniversalNode C', () => {
+    beforeEach(() => {
+        (pChain.getTxFee as jest.Mock).mockReturnValue(FEE_XP);
+        (xChain.getTxFee as jest.Mock).mockReturnValue(FEE_XP);
+    });
+
+    it('all nodes have balance of 1 AVAX', () => {
+        let balX = new BN(1000000000);
+        let balP = new BN(1000000000);
+        let balC = new BN(1000000000);
+
+        let expected = balC.add(balX.sub(FEE_XP).sub(FEE_C)).add(balP.sub(FEE_XP).sub(FEE_C));
+        let startNode = createGraphForC(balX, balP, balC, FEE_XP, FEE_C);
+        let tot = startNode.reduceTotalBalanceFromParents();
+        expect(tot).toEqual(expected);
+    });
+
+    it('both parents have balance of 1 AVAX', () => {
+        let balX = new BN(1000000000);
+        let balP = new BN(1000000000);
+        let balC = new BN(0);
+
+        let expected = balX.sub(FEE_XP).sub(FEE_C).add(balP.sub(FEE_XP).sub(FEE_C));
+        let startNode = createGraphForC(balX, balP, balC, FEE_XP, FEE_C);
+        let tot = startNode.reduceTotalBalanceFromParents();
+        expect(tot).toEqual(expected);
+    });
+
+    it('parent P has balance of 1 AVAX', () => {
+        let balX = new BN(0);
+        let balP = new BN(1000000000);
+        let balC = new BN(0);
+
+        let expected = balP.sub(FEE_XP).sub(FEE_C);
+        let startNode = createGraphForC(balX, balP, balC, FEE_XP, FEE_C);
+        let tot = startNode.reduceTotalBalanceFromParents();
+        expect(tot).toEqual(expected);
+    });
+
+    it('parent X has balance of 1 AVAX', () => {
+        let balX = new BN(1000000000);
+        let balP = new BN(0);
+        let balC = new BN(0);
+
+        let expected = balX.sub(FEE_XP).sub(FEE_C);
+        let startNode = createGraphForC(balX, balP, balC, FEE_XP, FEE_C);
+        let tot = startNode.reduceTotalBalanceFromParents();
+        expect(tot).toEqual(expected);
+    });
+
+    it('no balance', () => {
+        let balX = new BN(0);
+        let balP = new BN(0);
+        let balC = new BN(0);
+
+        let expected = new BN(0);
+        let startNode = createGraphForC(balX, balP, balC, FEE_XP, FEE_C);
+        let tot = startNode.reduceTotalBalanceFromParents();
+        expect(tot).toEqual(expected);
+    });
+
+    it('starting node has 1 AVAX', () => {
+        let balX = new BN(0);
+        let balP = new BN(0);
+        let balC = new BN(1000000000);
+
+        let expected = balC;
+        let startNode = createGraphForC(balX, balP, balC, FEE_XP, FEE_C);
         let tot = startNode.reduceTotalBalanceFromParents();
         expect(tot).toEqual(expected);
     });
@@ -156,38 +231,40 @@ describe('Reduce parent balance of UniversalNode X', () => {
 
 describe('Get transactions for balance on UniversalNode P', () => {
     beforeEach(() => {
-        (pChain.getTxFee as jest.Mock).mockReturnValue(FEE);
-        (xChain.getTxFee as jest.Mock).mockReturnValue(FEE);
+        (pChain.getTxFee as jest.Mock).mockReturnValue(FEE_XP);
+        (xChain.getTxFee as jest.Mock).mockReturnValue(FEE_XP);
     });
 
     it('node has enough balance, return empty array', () => {
-        let balP = new BN(1000000000);
+        let balP = new BN(1_000_000_000);
         let balX = new BN(0);
         let balC = new BN(0);
 
-        let nodeP = createGraphForP(balX, balP, balC);
-        let target = new BN(1000000000);
+        let nodeP = createGraphForP(balX, balP, balC, FEE_XP, FEE_C);
+        let target = new BN(1_000_000_000);
 
         let steps = nodeP.getStepsForTargetBalance(target);
 
         expect(steps.length).toEqual(0);
     });
 
-    it('node needs balance from parent', () => {
-        let balP = new BN(1000000000);
-        let balX = new BN(2000000000);
+    it('node needs balance from parent X', () => {
+        let balP = new BN(1_000_000_000);
+        let balX = new BN(2_000_000_000);
         let balC = new BN(0);
 
-        let nodeP = createGraphForP(balX, balP, balC);
-        let target = new BN(2000000000);
+        let nodeP = createGraphForP(balX, balP, balC, FEE_XP, FEE_C);
+        let target = new BN(2_000_000_000);
 
         let stepsExpected: UniversalTx[] = [
             {
                 action: 'export_x_p',
-                amount: new BN(1000000000),
+                amount: target.sub(balP).add(FEE_XP),
+                fee: FEE_XP,
             },
             {
                 action: 'import_x_p',
+                fee: FEE_XP,
             },
         ];
 
@@ -201,23 +278,27 @@ describe('Get transactions for balance on UniversalNode P', () => {
         let balX = new BN(0);
         let balC = new BN(2000000000);
 
-        let nodeP = createGraphForP(balX, balP, balC);
+        let nodeP = createGraphForP(balX, balP, balC, FEE_XP, FEE_C);
         let target = new BN(2000000000);
 
         let stepsExpected: UniversalTx[] = [
             {
                 action: 'export_c_x',
                 amount: new BN(1002000000),
+                fee: FEE_C,
             },
             {
                 action: 'import_c_x',
+                fee: FEE_XP,
             },
             {
                 action: 'export_x_p',
                 amount: new BN(1000000000),
+                fee: FEE_XP,
             },
             {
                 action: 'import_x_p',
+                fee: FEE_XP,
             },
         ];
 
@@ -231,23 +312,27 @@ describe('Get transactions for balance on UniversalNode P', () => {
         let balX = new BN(500000000); // 0.5 AVAX
         let balC = new BN(2000000000); // 2 AVAX
 
-        let nodeP = createGraphForP(balX, balP, balC);
+        let nodeP = createGraphForP(balX, balP, balC, FEE_XP, FEE_C);
         let target = new BN(2000000000); // 2 AVAX
 
         let stepsExpected: UniversalTx[] = [
             {
                 action: 'export_c_x',
                 amount: new BN(502000000),
+                fee: FEE_C,
             },
             {
                 action: 'import_c_x',
+                fee: FEE_XP,
             },
             {
                 action: 'export_x_p',
                 amount: new BN(1000000000),
+                fee: FEE_XP,
             },
             {
                 action: 'import_x_p',
+                fee: FEE_XP,
             },
         ];
 
@@ -258,26 +343,31 @@ describe('Get transactions for balance on UniversalNode P', () => {
 
     it('node needs balance from both parents', () => {
         let balP = new BN(0); // 0 AVAX
-        let balX = new BN(1000000000); // 1 AVAX
-        let balC = new BN(2000000000); // 2 AVAX
+        let balX = new BN(1_000_000_000); // 1 AVAX
+        let balC = new BN(2_000_000_000); // 2 AVAX
 
-        let nodeP = createGraphForP(balX, balP, balC);
-        let target = new BN(2000000000); // 2 AVAX
+        let nodeP = createGraphForP(balX, balP, balC, FEE_XP, FEE_C);
+        let target = new BN(2_000_000_000); // 2 AVAX
 
         let stepsExpected: UniversalTx[] = [
             {
-                action: 'export_c_x',
-                amount: new BN(1002000000),
-            },
-            {
-                action: 'import_c_x',
-            },
-            {
                 action: 'export_x_p',
-                amount: new BN(2000000000),
+                amount: balX.sub(FEE_XP), // All of the balance minus export fee
+                fee: FEE_XP,
             },
             {
                 action: 'import_x_p',
+                fee: FEE_XP,
+            },
+            {
+                action: 'export_c_p',
+                // amount: new BN(2_000_000_000),
+                amount: target.sub(balX.sub(FEE_XP).sub(FEE_XP)).sub(FEE_C),
+                fee: FEE_C,
+            },
+            {
+                action: 'import_c_p',
+                fee: FEE_XP,
             },
         ];
 
@@ -289,8 +379,8 @@ describe('Get transactions for balance on UniversalNode P', () => {
 
 describe('Get transactions for balance on UniversalNode X', () => {
     beforeEach(() => {
-        (pChain.getTxFee as jest.Mock).mockReturnValue(FEE);
-        (xChain.getTxFee as jest.Mock).mockReturnValue(FEE);
+        (pChain.getTxFee as jest.Mock).mockReturnValue(FEE_XP);
+        (xChain.getTxFee as jest.Mock).mockReturnValue(FEE_XP);
     });
 
     it('node has enough balance return empty array', () => {
@@ -298,7 +388,7 @@ describe('Get transactions for balance on UniversalNode X', () => {
         let balP = new BN(0);
         let balC = new BN(0);
 
-        let nodeP = createGraphForX(balX, balP, balC);
+        let nodeP = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
         let target = new BN(1000000000);
 
         let steps = nodeP.getStepsForTargetBalance(target);
@@ -311,16 +401,18 @@ describe('Get transactions for balance on UniversalNode X', () => {
         let balP = new BN(5000000000); // 5 AVAX
         let balC = new BN(0);
 
-        let nodeX = createGraphForX(balX, balP, balC);
+        let nodeX = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
         let target = new BN(2000000000); // 2 AVAX
 
         let stepsExpected: UniversalTx[] = [
             {
                 action: 'export_p_x',
                 amount: new BN(2000000000),
+                fee: FEE_XP,
             },
             {
                 action: 'import_p_x',
+                fee: FEE_XP,
             },
         ];
 
@@ -334,16 +426,18 @@ describe('Get transactions for balance on UniversalNode X', () => {
         let balP = new BN(5000000000); // 5 AVAX
         let balC = new BN(5000000000); // 5 AVAX
 
-        let nodeX = createGraphForX(balX, balP, balC);
+        let nodeX = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
         let target = new BN(2000000000); // 2 AVAX
 
         let stepsExpected: UniversalTx[] = [
             {
                 action: 'export_p_x',
                 amount: new BN(2000000000),
+                fee: FEE_XP,
             },
             {
                 action: 'import_p_x',
+                fee: FEE_XP,
             },
         ];
 
@@ -357,16 +451,18 @@ describe('Get transactions for balance on UniversalNode X', () => {
         let balP = new BN(0);
         let balC = new BN(5000000000); // 5 AVAX
 
-        let nodeX = createGraphForX(balX, balP, balC);
+        let nodeX = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
         let target = new BN(2000000000); // 2 AVAX
 
         let stepsExpected: UniversalTx[] = [
             {
                 action: 'export_c_x',
                 amount: new BN(2000000000),
+                fee: FEE_C,
             },
             {
                 action: 'import_c_x',
+                fee: FEE_XP,
             },
         ];
 
@@ -377,26 +473,30 @@ describe('Get transactions for balance on UniversalNode X', () => {
 
     it('node needs balance from both parents', () => {
         let balX = new BN(0);
-        let balP = new BN(700000000);
-        let balC = new BN(700000000);
+        let balP = new BN(700_000_000);
+        let balC = new BN(700_000_000);
 
-        let nodeX = createGraphForX(balX, balP, balC);
-        let target = new BN(1000000000); // 1 AVAX
+        let nodeX = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
+        let target = new BN(1_000_000_000); // 1 AVAX
 
         let stepsExpected: UniversalTx[] = [
             {
                 action: 'export_p_x',
                 amount: new BN(698000000),
+                fee: FEE_XP,
             },
             {
                 action: 'import_p_x',
+                fee: FEE_XP,
             },
             {
                 action: 'export_c_x',
                 amount: new BN(302000000),
+                fee: FEE_C,
             },
             {
                 action: 'import_c_x',
+                fee: FEE_XP,
             },
         ];
 

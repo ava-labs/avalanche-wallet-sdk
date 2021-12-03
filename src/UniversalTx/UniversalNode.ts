@@ -1,6 +1,5 @@
 import { BN } from 'avalanche';
 import { ChainIdType } from '@/types';
-import { xChain } from '@/Network/network';
 import {
     UniversalTx,
     UniversalTxActionExport,
@@ -8,7 +7,6 @@ import {
     UniversalTxExport,
     UniversalTxImport,
 } from './types';
-import { ExportChainsC } from '@/Wallet/types';
 
 export abstract class UniversalNodeAbstract {
     parents: UniversalNodeAbstract[];
@@ -90,10 +88,6 @@ export abstract class UniversalNodeAbstract {
             return [];
         }
 
-        let fee = xChain.getTxFee();
-        //TODO: This should be calculated depending on the parent
-        // let feeImportExport = fee.add(fee);
-
         // If not enough balance and no parents
         // return all the balance
         if (this.balance.lt(target) && this.parents.length === 0) {
@@ -112,7 +106,9 @@ export abstract class UniversalNodeAbstract {
         if (this.parents.length === 1) {
             // Export from parent to this node
             let parent = this.parents[0];
-            const feeImportExport = this.feeImport.add(parent.feeExport);
+            const exportFee = parent.feeExport;
+            const impotyFee = this.feeImport;
+            const feeImportExport = impotyFee.add(exportFee);
             let parentBalanceNeeded = remaining.add(feeImportExport);
             let txs = parent.getStepsForTargetBalance(parentBalanceNeeded);
             let tx = parent.buildExportTx(this.chain, remaining);
