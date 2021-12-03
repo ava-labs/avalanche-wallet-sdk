@@ -71,7 +71,6 @@ import {
     HistoryItemType,
     ITransactionData,
 } from '@/History';
-import moment from 'moment';
 import { bintools } from '@/common';
 import { ChainIdType } from '@/types';
 import {
@@ -1144,7 +1143,7 @@ export abstract class WalletProvider {
 
         // Sort and join X,P,C transactions
         let parsedAll = [...parsedXPC, ...parsedEVM];
-        let txsSorted = parsedAll.sort((x, y) => (moment(x.timestamp).isBefore(moment(y.timestamp)) ? 1 : -1));
+        let txsSorted = parsedAll.sort((x, y) => (x.timestamp.getTime() < y.timestamp.getTime() ? 1 : -1));
 
         // If there is a limit only return that much
         if (limit > 0) {
