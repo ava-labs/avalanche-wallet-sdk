@@ -86,8 +86,8 @@ import {
     getStepsForBalanceP,
     getStepsForBalanceX,
     UniversalTx,
-} from '@/helpers/universal_tx_helper';
-import { UniversalNode } from '@/helpers/UniversalNode';
+} from '@/UniversalTx';
+import { UniversalNodeAbstract } from '@/UniversalTx/UniversalNode';
 import { GetStakeResponse } from 'avalanche/dist/apis/platformvm/interfaces';
 import { networkEvents } from '@/Network/eventEmitter';
 import { NetworkConfig } from '@/Network';
@@ -355,8 +355,8 @@ export abstract class WalletProvider {
      * Scans all chains and take cross over fees into account
      * @param chainType X, P or C
      */
-    public getUsableAvaxBalanceForChain(chainType: ChainIdType): BN {
-        return this.createUniversalNode(chainType).reduceTotalBalanceFromParents();
+    public getUsableAvaxBalanceForChain(chainType: ChainIdType, atomicFeeXP: BN, atomicFeeC: BN): BN {
+        return this.createUniversalNode(chainType, atomicFeeXP, atomicFeeC).reduceTotalBalanceFromParents();
     }
 
     /**
@@ -364,18 +364,18 @@ export abstract class WalletProvider {
      * @param chain Chain of the universal node.
      * @private
      */
-    private createUniversalNode(chain: ChainIdType): UniversalNode {
+    private createUniversalNode(chain: ChainIdType, atomicFeeXP: BN, atomicFeeC: BN): UniversalNodeAbstract {
         let xBal = this.getAvaxBalanceX().unlocked;
         let pBal = this.getAvaxBalanceP().unlocked;
         let cBal = avaxCtoX(this.getAvaxBalanceC()); // need to use 9 decimal places
 
         switch (chain) {
             case 'X':
-                return createGraphForX(xBal, pBal, cBal);
+                return createGraphForX(xBal, pBal, cBal, atomicFeeXP, atomicFeeC);
             case 'P':
-                return createGraphForP(xBal, pBal, cBal);
+                return createGraphForP(xBal, pBal, cBal, atomicFeeXP, atomicFeeC);
             case 'C':
-                return createGraphForC(xBal, pBal, cBal);
+                return createGraphForC(xBal, pBal, cBal, atomicFeeXP, atomicFeeC);
         }
     }
 
@@ -384,9 +384,9 @@ export abstract class WalletProvider {
      * @param chain X/P/C
      * @param amount The amount to check against
      */
-    public canHaveBalanceOnChain(chain: ChainIdType, amount: BN): boolean {
+    public canHaveBalanceOnChain(chain: ChainIdType, amount: BN, atomicFeeXP: BN, atomicFeeC: BN): boolean {
         // The maximum amount of AVAX we can have on this chain
-        let maxAmt = this.createUniversalNode(chain).reduceTotalBalanceFromParents();
+        let maxAmt = this.createUniversalNode(chain, atomicFeeXP, atomicFeeC).reduceTotalBalanceFromParents();
         return maxAmt.gte(amount);
     }
 
@@ -395,18 +395,18 @@ export abstract class WalletProvider {
      * @param chain The chain (X/P/C) to have the desired amount on
      * @param amount The desired amount
      */
-    public getTransactionsForBalance(chain: ChainIdType, amount: BN): UniversalTx[] {
+    public getTransactionsForBalance(chain: ChainIdType, amount: BN, atomicFeeXP: BN, atomicFeeC: BN): UniversalTx[] {
         let xBal = this.getAvaxBalanceX().unlocked;
         let pBal = this.getAvaxBalanceP().unlocked;
         let cBal = avaxCtoX(this.getAvaxBalanceC()); // need to use 9 decimal places
 
         switch (chain) {
             case 'P':
-                return getStepsForBalanceP(xBal, pBal, cBal, amount);
+                return getStepsForBalanceP(xBal, pBal, cBal, amount, atomicFeeXP, atomicFeeC);
             case 'C':
-                return getStepsForBalanceC(xBal, pBal, cBal, amount);
+                return getStepsForBalanceC(xBal, pBal, cBal, amount, atomicFeeXP, atomicFeeC);
             case 'X':
-                return getStepsForBalanceX(xBal, pBal, cBal, amount);
+                return getStepsForBalanceX(xBal, pBal, cBal, amount, atomicFeeXP, atomicFeeC);
         }
     }
 

@@ -19,5 +19,6 @@ export { BN } from 'avalanche';
 import Big from 'big.js';
 
 export * from '@/helpers';
+export * from '@/UniversalTx';
 
 export { MnemonicWallet, SingletonWallet, NetworkConstants, Utils, Keystore, LedgerWallet, PublicMnemonicWallet, Big };

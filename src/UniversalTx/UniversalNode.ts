@@ -1,18 +1,30 @@
 import { BN } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { xChain } from '@/Network/network';
-import { UniversalTx, UniversalTxActionType } from '@/helpers/universal_tx_helper';
+import {
+    UniversalTx,
+    UniversalTxActionExport,
+    UniversalTxActionImport,
+    UniversalTxExport,
+    UniversalTxImport,
+} from './types';
+import { ExportChainsC } from '@/Wallet/types';
 
-export class UniversalNode {
-    parents: UniversalNode[];
-    child: UniversalNode | null; // can only have 1 child
+export abstract class UniversalNodeAbstract {
+    parents: UniversalNodeAbstract[];
+    child: UniversalNodeAbstract | null; // can only have 1 child
     balance: BN;
     chain: ChainIdType;
-    constructor(balance: BN, chain: ChainIdType, parents: UniversalNode[] = [], child: UniversalNode | null = null) {
-        this.parents = parents;
-        this.child = child;
+    feeExport: BN;
+    feeImport: BN;
+
+    protected constructor(balance: BN, chain: ChainIdType, feeExport: BN, feeImport: BN) {
+        this.parents = [];
+        this.child = null;
         this.balance = balance;
         this.chain = chain;
+        this.feeExport = feeExport;
+        this.feeImport = feeImport;
     }
 
     // Sum of the node's balance + all balance of parents minus the transfer fees
@@ -22,13 +34,11 @@ export class UniversalNode {
             return this.balance;
         }
 
-        let fee = xChain.getTxFee();
-
         let parentBals = this.parents.map((node) => {
             // Subtract transfer fees from parent balance
             // import + export
             let parentBalance = node.reduceTotalBalanceFromParents();
-            parentBalance = parentBalance.sub(fee).sub(fee);
+            parentBalance = parentBalance.sub(this.feeImport).sub(node.feeExport);
             let zero = new BN(0);
             return BN.max(parentBalance, zero);
         });
@@ -44,50 +54,26 @@ export class UniversalNode {
      * Returns the export action type from this node to its child
      * @param to
      */
-    getExportMethod(to?: ChainIdType): UniversalTxActionType {
-        switch (this.chain) {
-            case 'X':
-                if (to === 'P') {
-                    return 'export_x_p';
-                } else {
-                    return 'export_x_c';
-                }
-            case 'C':
-                return 'export_c_x';
-            case 'P':
-                return 'export_p_x';
-        }
-    }
+    abstract getExportMethod(to: ChainIdType): UniversalTxActionExport;
 
     /**
      * Returns the import action type from this node to its child
      * @param from Which chain are we importing from
      */
-    getImportMethod(from?: ChainIdType): UniversalTxActionType {
-        switch (this.chain) {
-            case 'X':
-                if (from === 'P') {
-                    return 'import_p_x';
-                } else {
-                    return 'import_c_x';
-                }
-            case 'C':
-                return 'import_x_c';
-            case 'P':
-                return 'import_x_p';
-        }
-    }
+    abstract getImportMethod(from: ChainIdType): UniversalTxActionImport;
 
-    buildExportTx(amount: BN): UniversalTx {
+    buildExportTx(destChain: ChainIdType, amount: BN): UniversalTxExport {
         return {
-            action: this.getExportMethod(this.child?.chain),
+            action: this.getExportMethod(destChain),
             amount: amount,
+            fee: this.feeExport,
         };
     }
 
-    buildImportTx(from?: ChainIdType): UniversalTx {
+    buildImportTx(sourceChain: ChainIdType): UniversalTxImport {
         return {
-            action: this.getImportMethod(from),
+            action: this.getImportMethod(sourceChain),
+            fee: this.feeImport,
         };
     }
 
@@ -105,13 +91,15 @@ export class UniversalNode {
         }
 
         let fee = xChain.getTxFee();
-        let feeImportExport = fee.add(fee);
+        //TODO: This should be calculated depending on the parent
+        // let feeImportExport = fee.add(fee);
 
         // If not enough balance and no parents
         // return all the balance
         if (this.balance.lt(target) && this.parents.length === 0) {
-            let tx = this.buildExportTx(this.balance.sub(feeImportExport));
-            return [tx];
+            // let tx = this.buildExportTx(this.balance.sub(feeImportExport));
+            // return [tx];
+            return [];
         }
 
         // If not enough balance
@@ -124,9 +112,10 @@ export class UniversalNode {
         if (this.parents.length === 1) {
             // Export from parent to this node
             let parent = this.parents[0];
+            const feeImportExport = this.feeImport.add(parent.feeExport);
             let parentBalanceNeeded = remaining.add(feeImportExport);
             let txs = parent.getStepsForTargetBalance(parentBalanceNeeded);
-            let tx = parent.buildExportTx(remaining);
+            let tx = parent.buildExportTx(this.chain, remaining);
             let importTx = this.buildImportTx(parent.chain);
             return [...txs, tx, importTx];
         } else {
@@ -134,6 +123,7 @@ export class UniversalNode {
             for (let i = 0; i < this.parents.length; i++) {
                 let p = this.parents[i];
                 let pBal = p.reduceTotalBalanceFromParents();
+                const feeImportExport = this.feeImport.add(p.feeExport);
                 let pBalMax = pBal.sub(feeImportExport);
                 let parentBalanceNeeded = remaining.add(feeImportExport);
 
@@ -143,7 +133,7 @@ export class UniversalNode {
                 if (exportAmt.lte(new BN(0))) continue;
 
                 let pTxs = p.getStepsForTargetBalance(target);
-                let pTx = p.buildExportTx(exportAmt);
+                let pTx = p.buildExportTx(this.chain, exportAmt);
                 let importTx = this.buildImportTx(p.chain);
                 transactions.push(...pTxs);
                 transactions.push(pTx);
@@ -161,11 +151,11 @@ export class UniversalNode {
         }
     }
 
-    addParent(node: UniversalNode) {
+    addParent(node: UniversalNodeAbstract) {
         this.parents.push(node);
     }
 
-    setChild(node: UniversalNode) {
+    setChild(node: UniversalNodeAbstract) {
         this.child = node;
     }
 }

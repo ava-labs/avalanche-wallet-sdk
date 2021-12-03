@@ -1,4 +1,4 @@
-import { createGraphForP, createGraphForX, UniversalTx } from '@/helpers/universal_tx_helper';
+import { createGraphForP, createGraphForX, UniversalTx } from '@/UniversalTx';
 import { BN } from 'avalanche';
 import { pChain, xChain } from '@/Network/network';
 
