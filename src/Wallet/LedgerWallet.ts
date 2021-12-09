@@ -2,7 +2,7 @@ import Eth from '@ledgerhq/hw-app-eth';
 // @ts-ignore
 import AppAvax from '@obsidiansystems/hw-app-avalanche';
 import EthereumjsCommon from '@ethereumjs/common';
-import { importPublic, publicToAddress, bnToRlp, rlp, BN as EthBN } from 'ethereumjs-util';
+import { importPublic, bnToRlp, rlp, BN as EthBN } from 'ethereumjs-util';
 import {
     AVAX_ACCOUNT_PATH,
     ETH_ACCOUNT_PATH,
@@ -83,10 +83,9 @@ export default class LedgerWallet extends HDWalletAbstract {
      */
     static async fromTransport(transport: any) {
         transport.setExchangeTimeout(LEDGER_EXCHANGE_TIMEOUT);
-        let app, eth;
 
-        app = new AppAvax(transport, 'w0w');
-        eth = new Eth(transport, 'w0w');
+        const app = LedgerWallet.getAppAvax(transport);
+        const eth = LedgerWallet.getAppEth(transport);
 
         let config = await app.getAppConfiguration();
 
@@ -120,6 +119,7 @@ export default class LedgerWallet extends HDWalletAbstract {
     }
 
     static async getEvmAccount(eth: Eth): Promise<HDKey> {
+        //TODO: Use account derivation path instead of address
         let ethRes = await eth.getAddress(LEDGER_ETH_ACCOUNT_PATH, true, true);
         let hdEth = new HDKey();
         // @ts-ignore
@@ -128,6 +128,53 @@ export default class LedgerWallet extends HDWalletAbstract {
         hdEth.chainCode = Buffer.from(ethRes.chainCode, 'hex');
 
         return hdEth;
+    }
+
+    /**
+     * Returns the extended public key used by C chain for address derivation.
+     * @remarks Returns the extended public key for path `m/44'/60'/0'/0/0`
+     * @param transport
+     */
+    static async getExtendedPublicKeyEth(transport: any): Promise<string> {
+        const ethApp = LedgerWallet.getAppEth(transport);
+        let ethRes = await ethApp.getAddress(ETH_ACCOUNT_PATH, true, true);
+        let hdEth = new HDKey();
+        // @ts-ignore
+        hdEth.publicKey = Buffer.from(ethRes.publicKey, 'hex');
+        // @ts-ignore
+        hdEth.chainCode = Buffer.from(ethRes.chainCode, 'hex');
+        return hdEth.publicExtendedKey;
+    }
+
+    /**
+     * Returns the extended public key used by X and P chains for address derivation.
+     * @remarks Returns the extended public key for path `m/44'/90000'/0'`
+     * @param transport
+     */
+    static async getExtendedPublicKeyAvax(transport: any): Promise<string> {
+        const app = LedgerWallet.getAppAvax(transport);
+
+        let res = await app.getWalletExtendedPublicKey(AVAX_ACCOUNT_PATH);
+
+        let pubKey = res.public_key;
+        let chainCode = res.chain_code;
+
+        // Get the base58 publick key from the HDKey instance
+        let hdKey = new HDKey();
+        // @ts-ignore
+        hdKey.publicKey = pubKey;
+        // @ts-ignore
+        hdKey.chainCode = chainCode;
+
+        return hdKey.publicExtendedKey;
+    }
+
+    static getAppAvax(transport: any) {
+        return new AppAvax(transport, 'w0w');
+    }
+
+    static getAppEth(transport: any) {
+        return new Eth(transport, 'w0w');
     }
 
     static async fromApp(app: AppAvax, eth: Eth): Promise<LedgerWallet> {
@@ -159,7 +206,7 @@ export default class LedgerWallet extends HDWalletAbstract {
             Buffer.from([]),
             Buffer.from([]),
         ]);
-
+        //TODO: Use account derivation path instead of address
         const signature = await this.ethApp.signTransaction(LEDGER_ETH_ACCOUNT_PATH, rawUnsignedTx.toString('hex'));
 
         const signatureBN = {
