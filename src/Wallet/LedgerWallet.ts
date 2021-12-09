@@ -88,12 +88,8 @@ export default class LedgerWallet extends HDWalletAbstract {
         transport.setExchangeTimeout(LEDGER_EXCHANGE_TIMEOUT);
         let app, eth;
 
-        try {
-            app = new AppAvax(transport, 'w0w');
-            eth = new Eth(transport, 'w0w');
-        } catch (e) {
-            throw new Error('Failed to create ledger instance from the given transport.');
-        }
+        app = new AppAvax(transport, 'w0w');
+        eth = new Eth(transport, 'w0w');
 
         let config = await app.getAppConfiguration();
 
@@ -114,7 +110,14 @@ export default class LedgerWallet extends HDWalletAbstract {
         let pubKey = res.public_key;
         let chainCode = res.chain_code;
 
-        let hd = bip32.fromPublicKey(pubKey, chainCode);
+        // Get the base58 publick key from the HDKey instance
+        let hdKey = new HDKey();
+        // @ts-ignore
+        hdKey.publicKey = pubKey;
+        // @ts-ignore
+        hdKey.chainCode = chainCode;
+
+        let hd = bip32.fromBase58(hdKey.publicExtendedKey);
 
         return hd;
     }
@@ -131,14 +134,10 @@ export default class LedgerWallet extends HDWalletAbstract {
     }
 
     static async fromApp(app: AppAvax, eth: Eth): Promise<LedgerWallet> {
-        try {
-            let avaxAccount = await LedgerWallet.getAvaxAccount(app);
-            let evmAccount = await LedgerWallet.getEvmAccount(eth);
-            let config = await app.getAppConfiguration();
-            return new LedgerWallet(avaxAccount, evmAccount, app, eth, config);
-        } catch (e) {
-            throw new Error('Unable to create ledger wallet instance from the given apps.');
-        }
+        let avaxAccount = await LedgerWallet.getAvaxAccount(app);
+        let evmAccount = await LedgerWallet.getEvmAccount(eth);
+        let config = await app.getAppConfiguration();
+        return new LedgerWallet(avaxAccount, evmAccount, app, eth, config);
     }
 
     getAddressC(): string {
