@@ -273,31 +273,22 @@ describe('Get transactions for balance on UniversalNode P', () => {
         compareSteps(steps, stepsExpected);
     });
 
-    it('node needs balance from top parent', () => {
-        let balP = new BN(1000000000);
+    it('node needs balance from 2nd parent', () => {
+        let balP = new BN(1_000_000_000);
         let balX = new BN(0);
-        let balC = new BN(2000000000);
+        let balC = new BN(2_000_000_000);
 
         let nodeP = createGraphForP(balX, balP, balC, FEE_XP, FEE_C);
-        let target = new BN(2000000000);
+        let target = new BN(2_000_000_000);
 
         let stepsExpected: UniversalTx[] = [
             {
-                action: 'export_c_x',
-                amount: new BN(1002000000),
+                action: 'export_c_p',
+                amount: target.sub(balP).add(FEE_XP),
                 fee: FEE_C,
             },
             {
-                action: 'import_c_x',
-                fee: FEE_XP,
-            },
-            {
-                action: 'export_x_p',
-                amount: new BN(1000000000),
-                fee: FEE_XP,
-            },
-            {
-                action: 'import_x_p',
+                action: 'import_c_p',
                 fee: FEE_XP,
             },
         ];
@@ -308,30 +299,30 @@ describe('Get transactions for balance on UniversalNode P', () => {
     });
 
     it('node needs balance from both parents and self', () => {
-        let balP = new BN(1000000000); // 1 AVAX
-        let balX = new BN(500000000); // 0.5 AVAX
-        let balC = new BN(2000000000); // 2 AVAX
+        let balP = new BN(1_000_000_000); // 1 AVAX
+        let balX = new BN(500_000_000); // 0.5 AVAX
+        let balC = new BN(2_000_000_000); // 2 AVAX
 
         let nodeP = createGraphForP(balX, balP, balC, FEE_XP, FEE_C);
-        let target = new BN(2000000000); // 2 AVAX
+        let target = new BN(2_000_000_000); // 2 AVAX
 
         let stepsExpected: UniversalTx[] = [
             {
-                action: 'export_c_x',
-                amount: new BN(502000000),
-                fee: FEE_C,
-            },
-            {
-                action: 'import_c_x',
-                fee: FEE_XP,
-            },
-            {
                 action: 'export_x_p',
-                amount: new BN(1000000000),
+                amount: balX.sub(FEE_XP),
                 fee: FEE_XP,
             },
             {
                 action: 'import_x_p',
+                fee: FEE_XP,
+            },
+            {
+                action: 'export_c_p',
+                amount: target.sub(balP).sub(balX.sub(FEE_XP).sub(FEE_XP)).add(FEE_XP),
+                fee: FEE_C,
+            },
+            {
+                action: 'import_c_p',
                 fee: FEE_XP,
             },
         ];
@@ -361,8 +352,7 @@ describe('Get transactions for balance on UniversalNode P', () => {
             },
             {
                 action: 'export_c_p',
-                // amount: new BN(2_000_000_000),
-                amount: target.sub(balX.sub(FEE_XP).sub(FEE_XP)).sub(FEE_C),
+                amount: target.sub(balX.sub(FEE_XP).sub(FEE_XP)).add(FEE_XP),
                 fee: FEE_C,
             },
             {
@@ -384,30 +374,55 @@ describe('Get transactions for balance on UniversalNode X', () => {
     });
 
     it('node has enough balance return empty array', () => {
-        let balX = new BN(1000000000);
+        let balX = new BN(1_000_000_000);
         let balP = new BN(0);
         let balC = new BN(0);
 
-        let nodeP = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
-        let target = new BN(1000000000);
+        let nodeX = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
+        let target = new BN(1_000_000_000);
 
-        let steps = nodeP.getStepsForTargetBalance(target);
+        let steps = nodeX.getStepsForTargetBalance(target);
 
         compareSteps(steps, []);
     });
 
-    it('node needs balance from P', () => {
+    it('node needs balance from parent P', () => {
         let balX = new BN(0);
-        let balP = new BN(5000000000); // 5 AVAX
+        let balP = new BN(5_000_000_000); // 5 AVAX
         let balC = new BN(0);
 
         let nodeX = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
-        let target = new BN(2000000000); // 2 AVAX
+        let target = new BN(2_000_000_000); // 2 AVAX
 
         let stepsExpected: UniversalTx[] = [
             {
                 action: 'export_p_x',
-                amount: new BN(2000000000),
+                amount: target.add(FEE_XP),
+                fee: FEE_XP,
+            },
+            {
+                action: 'import_p_x',
+                fee: FEE_XP,
+            },
+        ];
+
+        let steps = nodeX.getStepsForTargetBalance(target);
+
+        compareSteps(steps, stepsExpected);
+    });
+
+    it('node has partial balance, needs rest from parent P', () => {
+        let balX = new BN(1_000_000_000);
+        let balP = new BN(5_000_000_000); // 5 AVAX
+        let balC = new BN(0);
+
+        let nodeX = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
+        let target = new BN(2_000_000_000); // 2 AVAX
+
+        let stepsExpected: UniversalTx[] = [
+            {
+                action: 'export_p_x',
+                amount: target.sub(balX).add(FEE_XP),
                 fee: FEE_XP,
             },
             {
@@ -423,16 +438,16 @@ describe('Get transactions for balance on UniversalNode X', () => {
 
     it('node needs balance from P, both parent have balance', () => {
         let balX = new BN(0);
-        let balP = new BN(5000000000); // 5 AVAX
-        let balC = new BN(5000000000); // 5 AVAX
+        let balP = new BN(5_000_000_000); // 5 AVAX
+        let balC = new BN(5_000_000_000); // 5 AVAX
 
         let nodeX = createGraphForX(balX, balP, balC, FEE_XP, FEE_C);
-        let target = new BN(2000000000); // 2 AVAX
+        let target = new BN(2_000_000_000); // 2 AVAX
 
         let stepsExpected: UniversalTx[] = [
             {
                 action: 'export_p_x',
-                amount: new BN(2000000000),
+                amount: target.add(FEE_XP),
                 fee: FEE_XP,
             },
             {

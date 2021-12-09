@@ -96,55 +96,64 @@ export abstract class UniversalNodeAbstract {
             return [];
         }
 
-        // If not enough balance
-
+        // If not enough balance on this node, try to collect it from parents
         // Amount needed to collect from parents
         let remaining = target.sub(this.balance);
 
         // Amount the parent must have
 
-        if (this.parents.length === 1) {
-            // Export from parent to this node
-            let parent = this.parents[0];
-            const exportFee = parent.feeExport;
-            const impotyFee = this.feeImport;
-            const feeImportExport = impotyFee.add(exportFee);
+        // if (this.parents.length === 1) {
+        //     // Export from parent to this node
+        //     let parent = this.parents[0];
+        //     const exportFee = parent.feeExport;
+        //     const importFee = this.feeImport;
+        //     const feeImportExport = importFee.add(exportFee);
+        //     let parentBalanceNeeded = remaining.add(feeImportExport);
+        //     let txs = parent.getStepsForTargetBalance(parentBalanceNeeded);
+        //     let tx = parent.buildExportTx(this.chain, remaining.add(importFee));
+        //     let importTx = this.buildImportTx(parent.chain);
+        //     return [...txs, tx, importTx];
+        // } else {
+        let transactions = [];
+        for (let i = 0; i < this.parents.length; i++) {
+            let p = this.parents[i];
+
+            // Parent's balance
+            let pBal = p.reduceTotalBalanceFromParents();
+            const exportFee = p.feeExport;
+            const importFee = this.feeImport;
+            const feeImportExport = exportFee.add(importFee);
+            // Maximum balance we can import from parent
+            let pBalMax = pBal.sub(feeImportExport);
+            // The parent needs to have this balance to satisfy the needed amount
             let parentBalanceNeeded = remaining.add(feeImportExport);
-            let txs = parent.getStepsForTargetBalance(parentBalanceNeeded);
-            let tx = parent.buildExportTx(this.chain, remaining);
-            let importTx = this.buildImportTx(parent.chain);
-            return [...txs, tx, importTx];
-        } else {
-            let transactions = [];
-            for (let i = 0; i < this.parents.length; i++) {
-                let p = this.parents[i];
-                let pBal = p.reduceTotalBalanceFromParents();
-                const feeImportExport = this.feeImport.add(p.feeExport);
-                let pBalMax = pBal.sub(feeImportExport);
-                let parentBalanceNeeded = remaining.add(feeImportExport);
 
-                let exportAmt = BN.min(pBalMax, remaining); // The amount that will cross to the target chain
-                let target = BN.min(pBalMax, parentBalanceNeeded);
+            // Try to export the remaining amount, if the parent balance is lower than that export the maximum amount
+            // Import amount is the usable amount imported
+            const importAmt = BN.min(pBalMax, remaining); // The amount that will cross to the target chain
+            // Exported amount should include the import fees
+            const exportAmt = importAmt.add(importFee);
 
-                if (exportAmt.lte(new BN(0))) continue;
+            // let target = BN.min(pBalMax, parentBalanceNeeded);
+            if (exportAmt.lte(new BN(0))) continue;
 
-                let pTxs = p.getStepsForTargetBalance(target);
-                let pTx = p.buildExportTx(this.chain, exportAmt);
-                let importTx = this.buildImportTx(p.chain);
-                transactions.push(...pTxs);
-                transactions.push(pTx);
-                transactions.push(importTx);
+            // let pTxs = p.getStepsForTargetBalance(target);
+            let pTx = p.buildExportTx(this.chain, exportAmt);
+            let importTx = this.buildImportTx(p.chain);
+            // transactions.push(...pTxs);
+            transactions.push(pTx);
+            transactions.push(importTx);
 
-                remaining = remaining.sub(exportAmt);
-            }
-
-            // If we still have remaining balance, we can not complete this transfer
-            if (remaining.gt(new BN(0))) {
-                throw new Error('Insufficient AVAX balances.');
-            }
-
-            return transactions;
+            remaining = remaining.sub(importAmt);
         }
+
+        // If we still have remaining balance, we can not complete this transfer
+        if (remaining.gt(new BN(0))) {
+            throw new Error('Insufficient AVAX balances.');
+        }
+
+        return transactions;
+        // }
     }
 
     addParent(node: UniversalNodeAbstract) {
