@@ -91,8 +91,6 @@ export abstract class UniversalNodeAbstract {
         // If not enough balance and no parents
         // return all the balance
         if (this.balance.lt(target) && this.parents.length === 0) {
-            // let tx = this.buildExportTx(this.balance.sub(feeImportExport));
-            // return [tx];
             return [];
         }
 
@@ -100,20 +98,6 @@ export abstract class UniversalNodeAbstract {
         // Amount needed to collect from parents
         let remaining = target.sub(this.balance);
 
-        // Amount the parent must have
-
-        // if (this.parents.length === 1) {
-        //     // Export from parent to this node
-        //     let parent = this.parents[0];
-        //     const exportFee = parent.feeExport;
-        //     const importFee = this.feeImport;
-        //     const feeImportExport = importFee.add(exportFee);
-        //     let parentBalanceNeeded = remaining.add(feeImportExport);
-        //     let txs = parent.getStepsForTargetBalance(parentBalanceNeeded);
-        //     let tx = parent.buildExportTx(this.chain, remaining.add(importFee));
-        //     let importTx = this.buildImportTx(parent.chain);
-        //     return [...txs, tx, importTx];
-        // } else {
         let transactions = [];
         for (let i = 0; i < this.parents.length; i++) {
             let p = this.parents[i];
@@ -128,7 +112,6 @@ export abstract class UniversalNodeAbstract {
             // Maximum balance we can import from parent
             let pBalMax = pBal.sub(feeImportExport);
             // The parent needs to have this balance to satisfy the needed amount
-            // let parentBalanceNeeded = remaining.add(feeImportExport);
 
             // Try to export the remaining amount, if the parent balance is lower than that export the maximum amount
             // Import amount is the usable amount imported
@@ -136,13 +119,11 @@ export abstract class UniversalNodeAbstract {
             // Exported amount should include the import fees
             const exportAmt = importAmt.add(importFee);
 
-            // let target = BN.min(pBalMax, parentBalanceNeeded);
             if (exportAmt.lte(new BN(0))) continue;
 
-            // let pTxs = p.getStepsForTargetBalance(target);
             let pTx = p.buildExportTx(this.chain, exportAmt);
             let importTx = this.buildImportTx(p.chain);
-            // transactions.push(...pTxs);
+
             transactions.push(pTx);
             transactions.push(importTx);
 
