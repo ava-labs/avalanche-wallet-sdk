@@ -118,6 +118,8 @@ export abstract class UniversalNodeAbstract {
         for (let i = 0; i < this.parents.length; i++) {
             let p = this.parents[i];
 
+            if (remaining.lte(new BN(0))) break;
+
             // Parent's balance
             let pBal = p.reduceTotalBalanceFromParents();
             const exportFee = p.feeExport;
@@ -126,7 +128,7 @@ export abstract class UniversalNodeAbstract {
             // Maximum balance we can import from parent
             let pBalMax = pBal.sub(feeImportExport);
             // The parent needs to have this balance to satisfy the needed amount
-            let parentBalanceNeeded = remaining.add(feeImportExport);
+            // let parentBalanceNeeded = remaining.add(feeImportExport);
 
             // Try to export the remaining amount, if the parent balance is lower than that export the maximum amount
             // Import amount is the usable amount imported
@@ -153,7 +155,6 @@ export abstract class UniversalNodeAbstract {
         }
 
         return transactions;
-        // }
     }
 
     addParent(node: UniversalNodeAbstract) {
