@@ -693,22 +693,6 @@ export abstract class WalletProvider {
 
         const destinationAddr = destinationChain === 'X' ? this.getAddressX() : this.getEvmAddressBech();
 
-        // let amtFee;
-        // if (!importFee) {
-        //     if (destinationChain === 'X') {
-        //         let fee = getTxFeeX();
-        //         amtFee = amt.add(fee);
-        //     } else {
-        //         // Calculate dynamic fee for C chain
-        //         const gas = estimateImportGasFeeFromMockTx('P', amt, destinationAddr);
-        //         const baseFee = await getBaseFeeRecommended();
-        //         const feeNAvax = avaxCtoX(baseFee.mul(new BN(gas)));
-        //         amtFee = amt.add(feeNAvax);
-        //     }
-        // } else {
-        //     amtFee = amt.add(importFee);
-        // }
-
         let utxoSet = this.utxosP;
 
         const exportTx = await buildPlatformExportTransaction(
@@ -740,10 +724,6 @@ export abstract class WalletProvider {
      * @return returns the transaction id.
      */
     async exportCChain(amt: BN, destinationChain: ExportChainsC, exportFee?: BN): Promise<string> {
-        // Add import fee to the export transaction
-        // const importFee = getTxFeeX();
-        // let amtFee = amt.add(importFee);
-
         let hexAddr = this.getAddressC();
         let bechAddr = this.getEvmAddressBech();
 
@@ -787,19 +767,6 @@ export abstract class WalletProvider {
      */
     async exportXChain(amt: BN, destinationChain: ExportChainsX) {
         let destinationAddr = destinationChain === 'P' ? this.getAddressP() : this.getEvmAddressBech();
-
-        // let amtWithImportFee;
-        // if (importFee) {
-        //     amtWithImportFee = amt.add(importFee);
-        // } else {
-        //     if (destinationChain === 'P') {
-        //         let fee = getTxFeeP();
-        //         amtWithImportFee = amt.add(fee);
-        //     } else {
-        //         //TODO: Calculate C chain dynamic import fee
-        //         throw new Error('Exports to C chain must provide an import fee.');
-        //     }
-        // }
 
         let fromAddresses = await this.getAllAddressesX();
         let changeAddress = this.getChangeAddressX();
@@ -926,7 +893,7 @@ export abstract class WalletProvider {
     /**
      *
      * @param sourceChain Which chain to import from. `X` or `P`
-     * @param [fee] The import fee to use in the transactions. If omitted the SDK will try to calculate the fee.
+     * @param [fee] The import fee to use in the transactions. If omitted the SDK will try to calculate the fee. For deterministic transactions you should always pre calculate and provide this value.
      * @param [utxoSet] If omitted imports all atomic UTXOs.
      */
     async importC(sourceChain: ExportChainsC, fee?: BN, utxoSet?: EVMUTXOSet) {
@@ -1143,34 +1110,30 @@ export abstract class WalletProvider {
      */
     public async issueUniversalTx(tx: UniversalTx): Promise<string> {
         switch (tx.action) {
-            case 'export_x_c': {
-                if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
+            case 'export_x_c':
                 return await this.exportXChain(tx.amount, 'C');
-            }
-
-            case 'import_x_c': {
-                // TODO: Instead of a fixed fee, use the fee param from the universal tx
-                const fee = getTxFeeX();
-                return await this.importC('X', fee);
-            }
+            case 'import_x_c':
+                return await this.importC('X', tx.fee);
             case 'export_x_p':
-                if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
                 return await this.exportXChain(tx.amount, 'P');
             case 'import_x_p':
                 return await this.importP('X');
-            case 'export_c_x': {
-                if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
-                // TODO: Instead of a fixed fee, use the fee param from the universal tx
-                const fee = getTxFeeX();
-                return await this.exportCChain(tx.amount, 'X', fee);
-            }
+            case 'export_c_x':
+                return await this.exportCChain(tx.amount, 'X', tx.fee);
             case 'import_c_x':
                 return await this.importX('C');
+            case 'export_c_p':
+                return await this.exportCChain(tx.amount, 'P', tx.fee);
+            case 'import_c_p':
+                return await this.importP('C');
             case 'export_p_x':
-                if (!tx.amount) throw new Error('Universal transaction must specify an amount.');
                 return await this.exportPChain(tx.amount, 'X');
             case 'import_p_x':
                 return await this.importX('P');
+            case 'export_p_c':
+                return await this.exportPChain(tx.amount, 'C');
+            case 'import_p_c':
+                return await this.importC('P', tx.fee);
             default:
                 throw new Error('Method not supported.');
         }
