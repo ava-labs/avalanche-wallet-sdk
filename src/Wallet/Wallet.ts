@@ -713,17 +713,31 @@ export abstract class WalletProvider {
     }
 
     /***
-     * Estimates the required fee for C chain export/import transactions
+     * Estimates the required fee for a C chain export transaction
      * @param destinationChain Either `X` or `P`
-     * @return BN Atomic transaction fee in nAVAX.
+     * @param baseFee Current base fee of the network, use a padded amount.
+     * @return BN C chain atomic export transaction fee in nAVAX.
      */
-    async estimateExportAtomicFeeC(destinationChain: ExportChainsC): Promise<BN> {
+    estimateAtomicFeeExportC(destinationChain: ExportChainsC, baseFee: BN): BN {
         let destinationAddr = destinationChain === 'X' ? this.getAddressX() : this.getAddressP();
         const hexAddr = this.getAddressC();
         // The amount does not effect the fee that much
         const amt = new BN(0);
         const gas = estimateExportGasFeeFromMockTx(destinationChain, amt, hexAddr, destinationAddr);
-        const baseFee = await getBaseFeeRecommended();
+        return avaxCtoX(baseFee.mul(new BN(gas)));
+    }
+
+    /***
+     * Estimates the required fee for a C chain import transaction
+     * @param sourceChain Either `X` or `P`
+     * @param baseFee Current base fee of the network, use a padded amount.
+     * @return BN C chain atomic export transaction fee in nAVAX.
+     */
+    estimateAtomicFeeImportC(sourceChain: ExportChainsC, baseFee: BN): BN {
+        const hexAddr = this.getAddressC();
+        // The amount does not effect the fee that much
+        const amt = new BN(0);
+        const gas = estimateImportGasFeeFromMockTx(sourceChain, amt, hexAddr);
         return avaxCtoX(baseFee.mul(new BN(gas)));
     }
 
