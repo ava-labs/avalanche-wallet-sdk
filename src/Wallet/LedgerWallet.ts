@@ -202,7 +202,7 @@ export default class LedgerWallet extends HDWalletAbstract {
     }
 
     static async fromApp(app: AppAvax, eth: Eth): Promise<LedgerWallet> {
-        let avaxAccount = await LedgerWallet.getAvaxAccount(app);
+        let avaxAccount = await LedgerWallet.getAvaxAccount(app, 0);
         let evmAccount = await LedgerWallet.getEvmAccount(eth, 0);
         let config = await app.getAppConfiguration();
         return new LedgerWallet(avaxAccount, evmAccount, app, eth, config);
