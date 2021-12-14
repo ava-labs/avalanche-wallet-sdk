@@ -22,7 +22,7 @@ jobs:
               with:
                   cache: yarn
                   node-version: ${{ env.node_version }}
-            - run: yarn --frozen-lockfile
+            - run: yarn --frozen-lockfile --network-timeout 1000000
             - run: yarn test --ci --coverage --maxWorkers=2
     Lint:
         runs-on: ubuntu-latest
