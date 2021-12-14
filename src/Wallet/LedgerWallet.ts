@@ -51,6 +51,7 @@ import createHash from 'create-hash';
 import bippath from 'bip32-path';
 import { bintools } from '@/common';
 import * as bip32 from 'bip32';
+import { getAccountPathAvalanche } from '@/Wallet/helpers/derivationHelper';
 
 export default class LedgerWallet extends HDWalletAbstract {
     evmWallet: EvmWalletReadonly;
@@ -100,8 +101,10 @@ export default class LedgerWallet extends HDWalletAbstract {
         return await LedgerWallet.fromApp(app, eth);
     }
 
-    static async getAvaxAccount(app: AppAvax): Promise<bip32.BIP32Interface> {
-        let res = await app.getWalletExtendedPublicKey(AVAX_ACCOUNT_PATH);
+    static async getAvaxAccount(app: AppAvax, accountIndex = 0): Promise<bip32.BIP32Interface> {
+        if (accountIndex < 0) throw new Error('Account index must be >= 0');
+
+        let res = await app.getWalletExtendedPublicKey(getAccountPathAvalanche(accountIndex));
 
         let pubKey = res.public_key;
         let chainCode = res.chain_code;
@@ -118,16 +121,19 @@ export default class LedgerWallet extends HDWalletAbstract {
         return hd;
     }
 
-    static async getEvmAccount(eth: Eth): Promise<HDKey> {
+    static async getEvmAccount(eth: Eth, accountIndex = 0): Promise<HDKey> {
+        if (accountIndex < 0) throw new Error('Account index must be >= 0');
+
         //TODO: Use account derivation path instead of address
-        let ethRes = await eth.getAddress(LEDGER_ETH_ACCOUNT_PATH, true, true);
+        let ethRes = await eth.getAddress(ETH_ACCOUNT_PATH, true, true);
         let hdEth = new HDKey();
         // @ts-ignore
         hdEth.publicKey = Buffer.from(ethRes.publicKey, 'hex');
         // @ts-ignore
         hdEth.chainCode = Buffer.from(ethRes.chainCode, 'hex');
 
-        return hdEth;
+        const acctPath = `m/0/${accountIndex}`;
+        return hdEth.derive(acctPath);
     }
 
     /**
@@ -179,7 +185,7 @@ export default class LedgerWallet extends HDWalletAbstract {
 
     static async fromApp(app: AppAvax, eth: Eth): Promise<LedgerWallet> {
         let avaxAccount = await LedgerWallet.getAvaxAccount(app);
-        let evmAccount = await LedgerWallet.getEvmAccount(eth);
+        let evmAccount = await LedgerWallet.getEvmAccount(eth, 0);
         let config = await app.getAppConfiguration();
         return new LedgerWallet(avaxAccount, evmAccount, app, eth, config);
     }
