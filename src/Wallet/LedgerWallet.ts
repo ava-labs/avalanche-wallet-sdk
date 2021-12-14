@@ -141,7 +141,7 @@ export default class LedgerWallet extends HDWalletAbstract {
 
     /**
      * Returns the extended public key used by C chain for address derivation.
-     * @remarks Returns the extended public key for path `m/44'/60'/0'/0/0`
+     * @remarks Returns the extended public key for path `m/44'/60'/0'`
      * @param transport
      */
     static async getExtendedPublicKeyEth(transport: any): Promise<string> {
