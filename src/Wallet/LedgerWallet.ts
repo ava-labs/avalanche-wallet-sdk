@@ -91,6 +91,9 @@ export default class LedgerWallet extends HDWalletAbstract {
         const app = LedgerWallet.getAppAvax(transport);
         const eth = LedgerWallet.getAppEth(transport);
 
+        const test = await app.getWalletExtendedPublicKey(`m/44'/9000'`);
+        console.log(test);
+
         let config = await app.getAppConfiguration();
 
         if (!config) {
@@ -104,6 +107,12 @@ export default class LedgerWallet extends HDWalletAbstract {
         return await LedgerWallet.fromApp(app, eth);
     }
 
+    /**
+     * Returns a bip32 HD Node that can be used to derive internal/external Avalanche addresses
+     * @param app Avalanche hw app instance
+     * @param accountIndex Index of the account.
+     * @return BIP32Interface The returned HD Node is of path `m/44'/9000'/n'` where `n` is the account index.
+     */
     static async getAvaxAccount(app: AppAvax, accountIndex = 0): Promise<bip32.BIP32Interface> {
         if (accountIndex < 0) throw new Error('Account index must be >= 0');
 
@@ -124,6 +133,12 @@ export default class LedgerWallet extends HDWalletAbstract {
         return hd;
     }
 
+    /**
+     * Returns a HDKey instance for the given account index.
+     * @param eth Eth hw app instance
+     * @param accountIndex
+     * @return HDKey Returned HD node is of derivation path `m/44'/60'/0'/0/n` where `n` is the account index.
+     */
     static async getEvmAccount(eth: Eth, accountIndex = 0): Promise<HDKey> {
         if (accountIndex < 0) throw new Error('Account index must be >= 0');
 
