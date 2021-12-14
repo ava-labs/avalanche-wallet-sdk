@@ -1,3 +1,4 @@
+//@ts-ignore
 import Eth from '@ledgerhq/hw-app-eth';
 // @ts-ignore
 import AppAvax from '@obsidiansystems/hw-app-avalanche';
@@ -36,6 +37,7 @@ import {
     UnsignedTx as PlatformUnsignedTx,
     Tx as PlatformTx,
     PlatformVMConstants,
+    ExportTx as PlatformExportTx,
     ImportTx as PlatformImportTx,
     SelectCredentialClass as PlatformSelectCredentialClass,
 } from 'avalanche/dist/apis/platformvm';
@@ -51,6 +53,7 @@ import createHash from 'create-hash';
 import bippath from 'bip32-path';
 import { bintools } from '@/common';
 import * as bip32 from 'bip32';
+import { idToChainAlias } from '@/Network';
 
 export default class LedgerWallet extends HDWalletAbstract {
     evmWallet: EvmWalletReadonly;
@@ -420,7 +423,9 @@ export default class LedgerWallet extends HDWalletAbstract {
         let bip32Paths = this.pathsToUniqueBipPaths(paths);
 
         // Sign the msg with ledger
-        const accountPath = bippath.fromString(`${AVAX_ACCOUNT_PATH}`);
+        //TODO: Update when ledger supports Accounts
+        const accountPathSource = chainId === 'C' ? ETH_ACCOUNT_PATH : AVAX_ACCOUNT_PATH;
+        const accountPath = bippath.fromString(accountPathSource);
         let sigMap = await this.appAvax.signHash(accountPath, bip32Paths, msg);
 
         let creds: Credential[] = this.getCredentials<UnsignedTx>(unsignedTx, paths, sigMap, chainId);
@@ -578,13 +583,33 @@ export default class LedgerWallet extends HDWalletAbstract {
             }
         }
 
+        // TODO: Remove after ledger update
+        // Ledger is not able to parse P/C atomic transactions
+        if (txType === PlatformVMConstants.EXPORTTX) {
+            const destChainBuff = (tx as PlatformExportTx).getDestinationChain();
+            // If destination chain is C chain, sign hash
+            const destChain = idToChainAlias(bintools.cb58Encode(destChainBuff));
+            if (destChain === 'C') {
+                canLedgerParse = false;
+            }
+        }
+        // TODO: Remove after ledger update
+        // Ledger is not able to parse P/C atomic transactions
+        if (txType === PlatformVMConstants.IMPORTTX) {
+            const sourceChainBuff = (tx as PlatformImportTx).getSourceChain();
+            // If destination chain is C chain, sign hash
+            const sourceChain = idToChainAlias(bintools.cb58Encode(sourceChainBuff));
+            if (sourceChain === 'C') {
+                canLedgerParse = false;
+            }
+        }
+
         let signedTx;
         if (canLedgerParse && isParsableType) {
             signedTx = await this.signTransactionParsable<PlatformUnsignedTx, PlatformTx>(unsignedTx, paths, chainId);
         } else {
             signedTx = await this.signTransactionHash<PlatformUnsignedTx, PlatformTx>(unsignedTx, paths, chainId);
         }
-        // store.commit('Ledger/closeModal')
         return signedTx;
     }
 
@@ -603,8 +628,35 @@ export default class LedgerWallet extends HDWalletAbstract {
             paths = ins.map(() => '0/0');
         }
 
-        let txSigned = (await this.signTransactionParsable(unsignedTx, paths, 'C')) as EVMTx;
-        // store.commit('Ledger/closeModal')
+        let canLedgerParse = true;
+
+        // TODO: Remove after ledger update
+        // Ledger is not able to parse P/C atomic transactions
+        if (typeId === EVMConstants.EXPORTTX) {
+            const destChainBuff = (tx as EVMExportTx).getDestinationChain();
+            // If destination chain is C chain, sign hash
+            const destChain = idToChainAlias(bintools.cb58Encode(destChainBuff));
+            if (destChain === 'P') {
+                canLedgerParse = false;
+            }
+        }
+        // TODO: Remove after ledger update
+        if (typeId === EVMConstants.IMPORTTX) {
+            const sourceChainBuff = (tx as EVMImportTx).getSourceChain();
+            // If destination chain is C chain, sign hash
+            const sourceChain = idToChainAlias(bintools.cb58Encode(sourceChainBuff));
+            if (sourceChain === 'P') {
+                canLedgerParse = false;
+            }
+        }
+
+        let txSigned;
+        if (canLedgerParse) {
+            txSigned = (await this.signTransactionParsable(unsignedTx, paths, 'C')) as EVMTx;
+        } else {
+            txSigned = (await this.signTransactionHash(unsignedTx, paths, 'C')) as EVMTx;
+        }
+
         return txSigned;
     }
 }

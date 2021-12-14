@@ -1,6 +1,5 @@
 import { cChain, pChain, web3, xChain } from '@/Network/network';
 
-// import { ITransaction } from '@/components/wallet/transfer/types';
 import { BN, Buffer } from 'avalanche';
 import {
     AVMConstants,
@@ -18,7 +17,6 @@ import { PlatformVMConstants, UTXOSet as PlatformUTXOSet } from 'avalanche/dist/
 
 import { EVMConstants } from 'avalanche/dist/apis/evm';
 
-import { AvmExportChainType } from '../Wallet/types';
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import EthereumjsCommon from '@ethereumjs/common';
 import Common, { Chain } from '@ethereumjs/common';
@@ -26,6 +24,8 @@ import Common, { Chain } from '@ethereumjs/common';
 import ERC20Abi from '@openzeppelin/contracts/build/contracts/ERC20.json';
 import ERC721Abi from '@openzeppelin/contracts/build/contracts/ERC721.json';
 import { bintools } from '@/common';
+import { ExportChainsC, ExportChainsP, ExportChainsX } from '@/Wallet/types';
+import { chainIdFromAlias } from '@/Network/helpers/idFromAlias';
 
 export async function buildCreateNftFamilyTx(
     name: string,
@@ -93,22 +93,14 @@ export async function buildMintNftTx(
 }
 
 export async function buildAvmExportTransaction(
-    destinationChain: AvmExportChainType,
+    destinationChain: ExportChainsX,
     utxoSet: AVMUTXOSet,
     fromAddresses: string[],
     toAddress: string,
     amount: BN, // export amount + fee
     sourceChangeAddress: string
 ) {
-    let destinationChainId;
-    switch (destinationChain) {
-        case 'P':
-            destinationChainId = pChain.getBlockchainID();
-            break;
-        case 'C':
-            destinationChainId = cChain.getBlockchainID();
-            break;
-    }
+    let destinationChainId = chainIdFromAlias(destinationChain);
 
     return await xChain.buildExportTx(utxoSet as AVMUTXOSet, amount, destinationChainId, [toAddress], fromAddresses, [
         sourceChangeAddress,
@@ -120,22 +112,34 @@ export async function buildPlatformExportTransaction(
     fromAddresses: string[],
     toAddress: string,
     amount: BN, // export amount + fee
-    sourceChangeAddress: string
+    sourceChangeAddress: string,
+    destinationChain: ExportChainsP
 ) {
-    let destinationChainId = xChain.getBlockchainID();
+    let destinationChainId = chainIdFromAlias(destinationChain);
 
     return await pChain.buildExportTx(utxoSet, amount, destinationChainId, [toAddress], fromAddresses, [
         sourceChangeAddress,
     ]);
 }
 
+/**
+ *
+ * @param fromAddresses
+ * @param toAddress
+ * @param amount
+ * @param fromAddressBech
+ * @param destinationChain Either `X` or `P`
+ * @param fee Export fee in nAVAX
+ */
 export async function buildEvmExportTransaction(
     fromAddresses: string[],
     toAddress: string,
     amount: BN, // export amount + fee
-    fromAddressBech: string
+    fromAddressBech: string,
+    destinationChain: ExportChainsC,
+    fee: BN
 ) {
-    let destinationChainId = xChain.getBlockchainID();
+    let destinationChainId = chainIdFromAlias(destinationChain);
 
     const nonce = await web3.eth.getTransactionCount(fromAddresses[0]);
     const avaxAssetIDBuf: Buffer = await xChain.getAVAXAssetID();
@@ -150,7 +154,10 @@ export async function buildEvmExportTransaction(
         fromAddressHex,
         fromAddressBech,
         [toAddress],
-        nonce
+        nonce,
+        undefined,
+        undefined,
+        fee
     );
 }
 

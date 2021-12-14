@@ -8,7 +8,7 @@ declare module 'big.js' {
 }
 
 Big.prototype.toLocaleString = function (toFixed: number = 9) {
-    let fixedStr = this.toFixed(toFixed);
+    let fixedStr = this.toFixed(toFixed, 0);
     let split = fixedStr.split('.');
     let wholeStr = parseInt(split[0]).toLocaleString('en-US');
 
@@ -35,7 +35,8 @@ Big.prototype.toLocaleString = function (toFixed: number = 9) {
  * @param denomination number of decimal places to parse with
  */
 export function bnToBig(val: BN, denomination = 0): Big {
-    return new Big(val.toString()).div(Math.pow(10, denomination));
+    let mult = Big(10).pow(denomination);
+    return new Big(val.toString()).div(mult);
 }
 
 /**
@@ -182,6 +183,15 @@ export function stringToBN(value: string, decimals: number) {
     let big = Big(value);
     let tens = Big(10).pow(decimals);
     let mult = big.times(tens);
-    let rawStr = mult.toFixed(0);
+    let rawStr = mult.toFixed(0, 0);
     return new BN(rawStr);
+}
+
+export function bigToBN(val: Big, denom: number): BN {
+    let denomFlr = Math.floor(denom);
+    if (denomFlr < 0) throw new Error('Denomination can not be less that 0.');
+
+    const bnBig = val.mul(Big(10).pow(denomFlr));
+    const bnStr = bnBig.toFixed(0, 0);
+    return new BN(bnStr);
 }
