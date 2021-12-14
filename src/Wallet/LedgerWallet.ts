@@ -91,9 +91,6 @@ export default class LedgerWallet extends HDWalletAbstract {
         const app = LedgerWallet.getAppAvax(transport);
         const eth = LedgerWallet.getAppEth(transport);
 
-        const test = await app.getWalletExtendedPublicKey(`m/44'/9000'`);
-        console.log(test);
-
         let config = await app.getAppConfiguration();
 
         if (!config) {
