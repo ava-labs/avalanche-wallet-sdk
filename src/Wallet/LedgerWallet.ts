@@ -45,7 +45,7 @@ import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import { KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm/keychain';
 import { activeNetwork, avalanche, web3 } from '@/Network/network';
-import { Buffer, BN } from 'avalanche';
+import { Buffer } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/tx_helper';
 import createHash from 'create-hash';
@@ -153,7 +153,7 @@ export default class LedgerWallet extends HDWalletAbstract {
 
     /**
      * Returns the extended public key used by C chain for address derivation.
-     * @remarks Returns the extended public key for path `m/44'/60'/0'`
+     * @remarks Returns the extended public key for path `m/44'/60'/0'`. This key can be used to derive C chain accounts.
      * @param transport
      */
     static async getExtendedPublicKeyEth(transport: any): Promise<string> {
@@ -169,13 +169,14 @@ export default class LedgerWallet extends HDWalletAbstract {
 
     /**
      * Returns the extended public key used by X and P chains for address derivation.
-     * @remarks Returns the extended public key for path `m/44'/90000'/0'`
+     * @remarks Returns the extended public key for path `m/44'/90000'/n'` where `n` is the account index.
      * @param transport
+     * @param accountIndex Which account's public key to derive
      */
-    static async getExtendedPublicKeyAvax(transport: any): Promise<string> {
+    static async getExtendedPublicKeyAvax(transport: any, accountIndex = 0): Promise<string> {
         const app = LedgerWallet.getAppAvax(transport);
 
-        let res = await app.getWalletExtendedPublicKey(AVAX_ACCOUNT_PATH);
+        let res = await app.getWalletExtendedPublicKey(getAccountPathAvalanche(accountIndex));
 
         let pubKey = res.public_key;
         let chainCode = res.chain_code;
