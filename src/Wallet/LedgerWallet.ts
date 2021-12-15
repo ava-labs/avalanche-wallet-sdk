@@ -3,7 +3,7 @@ import Eth from '@ledgerhq/hw-app-eth';
 // @ts-ignore
 import AppAvax from '@obsidiansystems/hw-app-avalanche';
 import EthereumjsCommon from '@ethereumjs/common';
-import { importPublic, publicToAddress, bnToRlp, rlp, BN as EthBN } from 'ethereumjs-util';
+import { importPublic, bnToRlp, rlp, BN as EthBN } from 'ethereumjs-util';
 import {
     AVAX_ACCOUNT_PATH,
     ETH_ACCOUNT_PATH,
@@ -45,7 +45,7 @@ import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
 import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
 import { KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm/keychain';
 import { activeNetwork, avalanche, web3 } from '@/Network/network';
-import { Buffer, BN } from 'avalanche';
+import { Buffer } from 'avalanche';
 import { ChainIdType } from '@/types';
 import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/tx_helper';
 import createHash from 'create-hash';
@@ -54,6 +54,7 @@ import bippath from 'bip32-path';
 import { bintools } from '@/common';
 import * as bip32 from 'bip32';
 import { idToChainAlias } from '@/Network';
+import { getAccountPathAvalanche } from '@/Wallet/helpers/derivationHelper';
 
 export default class LedgerWallet extends HDWalletAbstract {
     evmWallet: EvmWalletReadonly;
@@ -86,14 +87,9 @@ export default class LedgerWallet extends HDWalletAbstract {
      */
     static async fromTransport(transport: any) {
         transport.setExchangeTimeout(LEDGER_EXCHANGE_TIMEOUT);
-        let app, eth;
 
-        try {
-            app = new AppAvax(transport, 'w0w');
-            eth = new Eth(transport, 'w0w');
-        } catch (e) {
-            throw new Error('Failed to create ledger instance from the given transport.');
-        }
+        const app = LedgerWallet.getAppAvax(transport);
+        const eth = LedgerWallet.getAppEth(transport);
 
         let config = await app.getAppConfiguration();
 
@@ -108,37 +104,106 @@ export default class LedgerWallet extends HDWalletAbstract {
         return await LedgerWallet.fromApp(app, eth);
     }
 
-    static async getAvaxAccount(app: AppAvax): Promise<bip32.BIP32Interface> {
-        let res = await app.getWalletExtendedPublicKey(AVAX_ACCOUNT_PATH);
+    /**
+     * Returns a bip32 HD Node that can be used to derive internal/external Avalanche addresses
+     * @param app Avalanche hw app instance
+     * @param accountIndex Index of the account.
+     * @return BIP32Interface The returned HD Node is of path `m/44'/9000'/n'` where `n` is the account index.
+     */
+    static async getAvaxAccount(app: AppAvax, accountIndex = 0): Promise<bip32.BIP32Interface> {
+        if (accountIndex < 0) throw new Error('Account index must be >= 0');
+
+        let res = await app.getWalletExtendedPublicKey(getAccountPathAvalanche(accountIndex));
 
         let pubKey = res.public_key;
         let chainCode = res.chain_code;
 
-        let hd = bip32.fromPublicKey(pubKey, chainCode);
+        // Get the base58 publick key from the HDKey instance
+        let hdKey = new HDKey();
+        // @ts-ignore
+        hdKey.publicKey = pubKey;
+        // @ts-ignore
+        hdKey.chainCode = chainCode;
+
+        let hd = bip32.fromBase58(hdKey.publicExtendedKey);
 
         return hd;
     }
 
-    static async getEvmAccount(eth: Eth): Promise<HDKey> {
-        let ethRes = await eth.getAddress(LEDGER_ETH_ACCOUNT_PATH, true, true);
+    /**
+     * Returns a HDKey instance for the given account index.
+     * @param eth Eth hw app instance
+     * @param accountIndex
+     * @return HDKey Returned HD node is of derivation path `m/44'/60'/0'/0/n` where `n` is the account index.
+     */
+    static async getEvmAccount(eth: Eth, accountIndex = 0): Promise<HDKey> {
+        if (accountIndex < 0) throw new Error('Account index must be >= 0');
+
+        //TODO: Use account derivation path instead of address
+        let ethRes = await eth.getAddress(ETH_ACCOUNT_PATH, true, true);
         let hdEth = new HDKey();
         // @ts-ignore
         hdEth.publicKey = Buffer.from(ethRes.publicKey, 'hex');
         // @ts-ignore
         hdEth.chainCode = Buffer.from(ethRes.chainCode, 'hex');
 
-        return hdEth;
+        const acctPath = `m/0/${accountIndex}`;
+        return hdEth.derive(acctPath);
+    }
+
+    /**
+     * Returns the extended public key used by C chain for address derivation.
+     * @remarks Returns the extended public key for path `m/44'/60'/0'`. This key can be used to derive C chain accounts.
+     * @param transport
+     */
+    static async getExtendedPublicKeyEth(transport: any): Promise<string> {
+        const ethApp = LedgerWallet.getAppEth(transport);
+        let ethRes = await ethApp.getAddress(ETH_ACCOUNT_PATH, true, true);
+        let hdEth = new HDKey();
+        // @ts-ignore
+        hdEth.publicKey = Buffer.from(ethRes.publicKey, 'hex');
+        // @ts-ignore
+        hdEth.chainCode = Buffer.from(ethRes.chainCode, 'hex');
+        return hdEth.publicExtendedKey;
+    }
+
+    /**
+     * Returns the extended public key used by X and P chains for address derivation.
+     * @remarks Returns the extended public key for path `m/44'/90000'/n'` where `n` is the account index.
+     * @param transport
+     * @param accountIndex Which account's public key to derive
+     */
+    static async getExtendedPublicKeyAvax(transport: any, accountIndex = 0): Promise<string> {
+        const app = LedgerWallet.getAppAvax(transport);
+
+        let res = await app.getWalletExtendedPublicKey(getAccountPathAvalanche(accountIndex));
+
+        let pubKey = res.public_key;
+        let chainCode = res.chain_code;
+
+        // Get the base58 publick key from the HDKey instance
+        let hdKey = new HDKey();
+        // @ts-ignore
+        hdKey.publicKey = pubKey;
+        // @ts-ignore
+        hdKey.chainCode = chainCode;
+
+        return hdKey.publicExtendedKey;
+    }
+
+    static getAppAvax(transport: any) {
+        return new AppAvax(transport, 'w0w');
+    }
+
+    static getAppEth(transport: any) {
+        return new Eth(transport, 'w0w');
     }
 
     static async fromApp(app: AppAvax, eth: Eth): Promise<LedgerWallet> {
-        try {
-            let avaxAccount = await LedgerWallet.getAvaxAccount(app);
-            let evmAccount = await LedgerWallet.getEvmAccount(eth);
-            let config = await app.getAppConfiguration();
-            return new LedgerWallet(avaxAccount, evmAccount, app, eth, config);
-        } catch (e) {
-            throw new Error('Unable to create ledger wallet instance from the given apps.');
-        }
+        let avaxAccount = await LedgerWallet.getAvaxAccount(app, 0);
+        let evmAccount = await LedgerWallet.getEvmAccount(eth, 0);
+        let config = await app.getAppConfiguration();
+        return new LedgerWallet(avaxAccount, evmAccount, app, eth, config);
     }
 
     getAddressC(): string {
@@ -163,7 +228,7 @@ export default class LedgerWallet extends HDWalletAbstract {
             Buffer.from([]),
             Buffer.from([]),
         ]);
-
+        //TODO: Use account derivation path instead of address
         const signature = await this.ethApp.signTransaction(LEDGER_ETH_ACCOUNT_PATH, rawUnsignedTx.toString('hex'));
 
         const signatureBN = {
