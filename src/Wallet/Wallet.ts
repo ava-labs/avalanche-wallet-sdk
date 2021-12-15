@@ -122,8 +122,6 @@ export abstract class WalletProvider {
     abstract getAddressX(): string;
     abstract getChangeAddressX(): string;
     abstract getAddressP(): string;
-    abstract getAddressC(): string;
-    abstract getEvmAddressBech(): string;
 
     abstract getExternalAddressesX(): Promise<string[]>;
     abstract getExternalAddressesXSync(): string[];
@@ -196,6 +194,18 @@ export abstract class WalletProvider {
 
     protected emitBalanceChangeC(): void {
         this.emit('balanceChangedC', this.getAvaxBalanceC());
+    }
+
+    /**
+     * Gets the active address on the C chain
+     * @return Hex representation of the EVM address.
+     */
+    public getAddressC() {
+        return this.evmWallet.getAddress();
+    }
+
+    public getEvmAddressBech() {
+        return this.evmWallet.getAddressBech32();
     }
 
     /**

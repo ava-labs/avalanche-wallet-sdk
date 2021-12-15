@@ -67,7 +67,7 @@ export default class LedgerWallet extends HDWalletAbstract {
 
     constructor(
         avaxAcct: bip32.BIP32Interface,
-        evmAcct: HDKey,
+        evmAcct: HDKey, //TODO: Do not depend on hw app isntances on constructor
         avaxApp: AppAvax,
         ethApp: Eth,
         config: ILedgerAppConfig
@@ -204,16 +204,6 @@ export default class LedgerWallet extends HDWalletAbstract {
         let evmAccount = await LedgerWallet.getEvmAccount(eth, 0);
         let config = await app.getAppConfiguration();
         return new LedgerWallet(avaxAccount, evmAccount, app, eth, config);
-    }
-
-    getAddressC(): string {
-        return this.evmWallet.getAddress();
-    }
-
-    getEvmAddressBech(): string {
-        let keypair = new EVMKeyPair(avalanche.getHRP(), 'C');
-        let addr = keypair.addressFromPublicKey(Buffer.from(this.evmAccount.publicKey));
-        return bintools.addressToString(avalanche.getHRP(), 'C', addr);
     }
 
     async signEvm(tx: Transaction): Promise<Transaction> {

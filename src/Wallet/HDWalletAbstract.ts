@@ -14,6 +14,11 @@ export abstract class HDWalletAbstract extends WalletProvider {
     protected accountKey: bip32.BIP32Interface;
     public isHdReady = false;
 
+    /**
+     *
+     * @param accountKey The bip32 HD node for path `m/44'/9000'/n'` where n is the desired account index.
+     * @protected
+     */
     protected constructor(accountKey: bip32.BIP32Interface) {
         super();
 

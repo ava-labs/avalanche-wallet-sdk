@@ -140,15 +140,6 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
         return this.externalScan.getKeyChainP();
     }
 
-    /**
-     * Gets the active address on the C chain
-     * @return
-     * Hex representation of the EVM address.
-     */
-    public getAddressC(): string {
-        return this.evmWallet.getAddress();
-    }
-
     // TODO: Support internal address as well
     signMessage(msgStr: string, index: number): string {
         let key = this.externalScan.getKeyForIndexX(index) as AVMKeyPair;

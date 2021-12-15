@@ -28,14 +28,6 @@ export default class PublicMnemonicWallet extends HDWalletAbstract {
     evmWallet: EvmWallet | EvmWalletReadonly;
     type: WalletNameType;
 
-    getAddressC(): string {
-        return this.evmWallet.getAddress();
-    }
-
-    getEvmAddressBech(): string {
-        return this.evmWallet.getAddressBech32();
-    }
-
     //@ts-ignore
     signC(tx: EVMUnsignedTx): Promise<EVMTx> {
         throw new Error('Not supported.');

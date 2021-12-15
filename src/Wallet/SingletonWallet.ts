@@ -68,10 +68,6 @@ export default class SingletonWallet extends WalletProvider implements UnsafeWal
         return this.evmWallet.getPrivateKeyHex();
     }
 
-    getAddressC(): string {
-        return this.evmWallet.getAddress();
-    }
-
     getAddressP(): string {
         let keyChain = this.getKeyChainP();
         return keyChain.getAddressStrings()[0];
@@ -100,12 +96,6 @@ export default class SingletonWallet extends WalletProvider implements UnsafeWal
 
     getChangeAddressX(): string {
         return this.getAddressX();
-    }
-
-    getEvmAddressBech(): string {
-        let keypair = new EVMKeyPair(avalanche.getHRP(), 'C');
-        keypair.importKey(this.keyBuff);
-        return keypair.getAddressString();
     }
 
     async getExternalAddressesP(): Promise<string[]> {
