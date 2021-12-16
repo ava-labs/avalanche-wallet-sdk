@@ -28,7 +28,7 @@ import {
 import { BN, Buffer } from 'avalanche';
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import { activeNetwork, avalanche, cChain, pChain, web3, xChain } from '@/Network/network';
-import EvmWallet from '@/Wallet/EvmWallet';
+import { EvmWallet } from '@/Wallet/EvmWallet';
 
 import {
     avmGetAllUTXOs,
@@ -62,7 +62,7 @@ import { getAssetDescription } from '@/Asset/Assets';
 import { getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
 import { avaxCtoX, bnToLocaleString, getTxFeeP, getTxFeeX, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils';
-import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
+import { EvmWalletReadonly } from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
 import {
     filterDuplicateTransactions,
@@ -114,10 +114,13 @@ export abstract class WalletProvider {
 
     public balanceX: WalletBalanceX = {};
 
-    abstract signEvm(tx: Transaction | FeeMarketEIP1559Transaction): Promise<Transaction | FeeMarketEIP1559Transaction>;
-    abstract signX(tx: AVMUnsignedTx): Promise<AvmTx>;
-    abstract signP(tx: PlatformUnsignedTx): Promise<PlatformTx>;
-    abstract signC(tx: EVMUnsignedTx): Promise<EVMTx>;
+    abstract signEvm(
+        tx: Transaction | FeeMarketEIP1559Transaction,
+        transport?: any //used by ledger
+    ): Promise<Transaction | FeeMarketEIP1559Transaction>;
+    abstract signX(tx: AVMUnsignedTx, transport?: any): Promise<AvmTx>;
+    abstract signP(tx: PlatformUnsignedTx, transport?: any): Promise<PlatformTx>;
+    abstract signC(tx: EVMUnsignedTx, transport?: any): Promise<EVMTx>;
 
     abstract getAddressX(): string;
     abstract getChangeAddressX(): string;

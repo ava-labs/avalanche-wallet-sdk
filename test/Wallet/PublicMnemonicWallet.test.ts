@@ -11,7 +11,9 @@ jest.mock('@/Network', () => {
 
 import PublicMnemonicWallet from '@/Wallet/PublicMnemonicWallet';
 
+// m/44'/9000'/0'
 const XPUB_AVM = `xpub6CvdTKLRh3ehvVLR2f3M1GUTFesrz5zoYFbw32iZqRShmoDnxtfSaF7mdCvXwNRfTwce5RYEADGb6YAzhqEAujEkvjTod6s2WEkpUBJZwqf`;
+// m/44'/60'/0'
 const XPUB_EVM = `xpub6CQ5fy7iAochmG1tL2ww2P4BviDRRrcEjG3u1uM6GcyGwzihscWoX9RwiCrZDcpAbYK8reYcy7cT8ZgZWVbReZ44ehVYqi5jZD9NknLx4TS`;
 
 describe('Public Mnemonic Wallet', () => {

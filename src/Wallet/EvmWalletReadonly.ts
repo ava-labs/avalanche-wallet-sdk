@@ -5,11 +5,15 @@ import { ethers } from 'ethers';
 import { KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm/keychain';
 import { bintools } from '@/common';
 
-export default class EvmWalletReadonly {
+export class EvmWalletReadonly {
     balance = new BN(0);
     address: string;
     publicKey: Buffer;
 
+    /**
+     *
+     * @param publicKey Eth format public key.
+     */
     constructor(publicKey: Buffer) {
         this.publicKey = publicKey;
         this.address = '0x' + publicToAddress(publicKey).toString('hex');

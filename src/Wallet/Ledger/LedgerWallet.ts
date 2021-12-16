@@ -41,9 +41,6 @@ import {
     ImportTx as PlatformImportTx,
     SelectCredentialClass as PlatformSelectCredentialClass,
 } from 'avalanche/dist/apis/platformvm';
-import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
-import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
-import { KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm/keychain';
 import { activeNetwork, avalanche, web3 } from '@/Network/network';
 import { Buffer } from 'avalanche';
 import { ChainIdType } from '@/types';
@@ -55,53 +52,44 @@ import { bintools } from '@/common';
 import * as bip32 from 'bip32';
 import { idToChainAlias } from '@/Network';
 import { getAccountPathAvalanche } from '@/Wallet/helpers/derivationHelper';
+import { PublicMnemonicWallet } from '@/Wallet/PublicMnemonicWallet';
+import { getAppAvax, getAppEth, getEthAddressKeyFromAccountKey, getLedgerConfigAvax } from '@/Wallet/Ledger/utils';
 
-export default class LedgerWallet extends HDWalletAbstract {
-    evmWallet: EvmWalletReadonly;
-    type: WalletNameType = 'ledger';
-    evmAccount: HDKey;
+export class LedgerWallet extends PublicMnemonicWallet {
+    type: WalletNameType;
     config: ILedgerAppConfig;
 
-    appAvax: AppAvax;
-    ethApp: Eth;
+    /**
+     *
+     * @param xpubAVM of derivation path m/44'/9000'/n' where `n` is the account index
+     * @param xpubEVM of derivation path m/44'/60'/0'/0/n where `n` is the account index
+     * @param config
+     */
+    constructor(xpubAVM: string, xpubEVM: string, config: ILedgerAppConfig) {
+        super(xpubAVM, xpubEVM);
 
-    constructor(
-        avaxAcct: bip32.BIP32Interface,
-        evmAcct: HDKey, //TODO: Do not depend on hw app isntances on constructor
-        avaxApp: AppAvax,
-        ethApp: Eth,
-        config: ILedgerAppConfig
-    ) {
-        super(avaxAcct);
-        this.evmAccount = evmAcct;
+        this.type = 'ledger';
         this.config = config;
-        this.appAvax = avaxApp;
-        this.ethApp = ethApp;
-
-        this.evmWallet = new EvmWalletReadonly(importPublic(evmAcct.publicKey));
     }
 
     /**
      * Create a new ledger wallet instance from the given transport
      * @param transport
+     * @param accountIndex
      */
-    static async fromTransport(transport: any) {
+    static async fromTransport(transport: any, accountIndex = 0) {
         transport.setExchangeTimeout(LEDGER_EXCHANGE_TIMEOUT);
 
-        const app = LedgerWallet.getAppAvax(transport);
-        const eth = LedgerWallet.getAppEth(transport);
+        const pubAvax = await LedgerWallet.getExtendedPublicKeyAvaxAccount(transport, accountIndex);
+        const pubEth = await LedgerWallet.getExtendedPublicKeyEthAddress(transport, accountIndex);
 
-        let config = await app.getAppConfiguration();
-
-        if (!config) {
-            throw new Error(`Unable to connect ledger. You must use ledger version ${MIN_EVM_SUPPORT_V} or above.`);
-        }
+        let config = await getLedgerConfigAvax(transport);
 
         if (config.version < MIN_EVM_SUPPORT_V) {
             throw new Error(`Unable to connect ledger. You must use ledger version ${MIN_EVM_SUPPORT_V} or above.`);
         }
 
-        return await LedgerWallet.fromApp(app, eth);
+        return new LedgerWallet(pubAvax, pubEth, config);
     }
 
     /**
@@ -110,25 +98,25 @@ export default class LedgerWallet extends HDWalletAbstract {
      * @param accountIndex Index of the account.
      * @return BIP32Interface The returned HD Node is of path `m/44'/9000'/n'` where `n` is the account index.
      */
-    static async getAvaxAccount(app: AppAvax, accountIndex = 0): Promise<bip32.BIP32Interface> {
-        if (accountIndex < 0) throw new Error('Account index must be >= 0');
-
-        let res = await app.getWalletExtendedPublicKey(getAccountPathAvalanche(accountIndex));
-
-        let pubKey = res.public_key;
-        let chainCode = res.chain_code;
-
-        // Get the base58 publick key from the HDKey instance
-        let hdKey = new HDKey();
-        // @ts-ignore
-        hdKey.publicKey = pubKey;
-        // @ts-ignore
-        hdKey.chainCode = chainCode;
-
-        let hd = bip32.fromBase58(hdKey.publicExtendedKey);
-
-        return hd;
-    }
+    // static async getAvaxAccount(app: AppAvax, accountIndex = 0): Promise<bip32.BIP32Interface> {
+    //     if (accountIndex < 0) throw new Error('Account index must be >= 0');
+    //
+    //     let res = await app.getWalletExtendedPublicKey(getAccountPathAvalanche(accountIndex));
+    //
+    //     let pubKey = res.public_key;
+    //     let chainCode = res.chain_code;
+    //
+    //     // Get the base58 publick key from the HDKey instance
+    //     let hdKey = new HDKey();
+    //     // @ts-ignore
+    //     hdKey.publicKey = pubKey;
+    //     // @ts-ignore
+    //     hdKey.chainCode = chainCode;
+    //
+    //     let hd = bip32.fromBase58(hdKey.publicExtendedKey);
+    //
+    //     return hd;
+    // }
 
     /**
      * Returns a HDKey instance for the given account index.
@@ -136,28 +124,28 @@ export default class LedgerWallet extends HDWalletAbstract {
      * @param accountIndex
      * @return HDKey Returned HD node is of derivation path `m/44'/60'/0'/0/n` where `n` is the account index.
      */
-    static async getEvmAccount(eth: Eth, accountIndex = 0): Promise<HDKey> {
-        if (accountIndex < 0) throw new Error('Account index must be >= 0');
-
-        //TODO: Use account derivation path instead of address
-        let ethRes = await eth.getAddress(ETH_ACCOUNT_PATH, true, true);
-        let hdEth = new HDKey();
-        // @ts-ignore
-        hdEth.publicKey = Buffer.from(ethRes.publicKey, 'hex');
-        // @ts-ignore
-        hdEth.chainCode = Buffer.from(ethRes.chainCode, 'hex');
-
-        const acctPath = `m/0/${accountIndex}`;
-        return hdEth.derive(acctPath);
-    }
+    // static async getEvmAccount(eth: Eth, accountIndex = 0): Promise<HDKey> {
+    //     if (accountIndex < 0) throw new Error('Account index must be >= 0');
+    //
+    //     //TODO: Use account derivation path instead of address
+    //     let ethRes = await eth.getAddress(ETH_ACCOUNT_PATH, true, true);
+    //     let hdEth = new HDKey();
+    //     // @ts-ignore
+    //     hdEth.publicKey = Buffer.from(ethRes.publicKey, 'hex');
+    //     // @ts-ignore
+    //     hdEth.chainCode = Buffer.from(ethRes.chainCode, 'hex');
+    //
+    //     const acctPath = `m/0/${accountIndex}`;
+    //     return hdEth.derive(acctPath);
+    // }
 
     /**
      * Returns the extended public key used by C chain for address derivation.
-     * @remarks Returns the extended public key for path `m/44'/60'/0'`. This key can be used to derive C chain accounts.
+     * @remarks Returns the extended public key for path `m/44'/60'/0'`. This key can be used to derive C chain addresses.
      * @param transport
      */
-    static async getExtendedPublicKeyEth(transport: any): Promise<string> {
-        const ethApp = LedgerWallet.getAppEth(transport);
+    static async getExtendedPublicKeyEthAccount(transport: any): Promise<string> {
+        const ethApp = getAppEth(transport);
         let ethRes = await ethApp.getAddress(ETH_ACCOUNT_PATH, true, true);
         let hdEth = new HDKey();
         // @ts-ignore
@@ -168,13 +156,24 @@ export default class LedgerWallet extends HDWalletAbstract {
     }
 
     /**
+     * Get the extended public key for a specific C chain address.
+     * @returns The xpub of HD node m/44'/60'/0'/0/n where `n` is `accountIndex`
+     * @param transport
+     * @param accountIndex
+     */
+    static async getExtendedPublicKeyEthAddress(transport: any, accountIndex: number): Promise<string> {
+        const accountKey = await LedgerWallet.getExtendedPublicKeyEthAccount(transport);
+        return getEthAddressKeyFromAccountKey(accountKey, accountIndex);
+    }
+
+    /**
      * Returns the extended public key used by X and P chains for address derivation.
      * @remarks Returns the extended public key for path `m/44'/90000'/n'` where `n` is the account index.
      * @param transport
      * @param accountIndex Which account's public key to derive
      */
-    static async getExtendedPublicKeyAvax(transport: any, accountIndex = 0): Promise<string> {
-        const app = LedgerWallet.getAppAvax(transport);
+    static async getExtendedPublicKeyAvaxAccount(transport: any, accountIndex = 0): Promise<string> {
+        const app = getAppAvax(transport);
 
         let res = await app.getWalletExtendedPublicKey(getAccountPathAvalanche(accountIndex));
 
@@ -191,22 +190,20 @@ export default class LedgerWallet extends HDWalletAbstract {
         return hdKey.publicExtendedKey;
     }
 
-    static getAppAvax(transport: any) {
-        return new AppAvax(transport, 'w0w');
-    }
+    // /**
+    //  * Returns a new LedgerWallet instance.
+    //  * @param app An active Avalanche hw app instance
+    //  * @param eth An active eth hw app instance
+    //  * @param accountIndex The wallet instance will be for this account index.
+    //  */
+    // static async fromApp(app: AppAvax, eth: Eth, accountIndex: number): Promise<LedgerWallet> {
+    //     let avaxAccount = await LedgerWallet.getAvaxAccount(app, accountIndex);
+    //     let evmAccount = await LedgerWallet.getEvmAccount(eth, accountIndex);
+    //     let config = await app.getAppConfiguration();
+    //     return new LedgerWallet(avaxAccount, evmAccount, config);
+    // }
 
-    static getAppEth(transport: any) {
-        return new Eth(transport, 'w0w');
-    }
-
-    static async fromApp(app: AppAvax, eth: Eth): Promise<LedgerWallet> {
-        let avaxAccount = await LedgerWallet.getAvaxAccount(app, 0);
-        let evmAccount = await LedgerWallet.getEvmAccount(eth, 0);
-        let config = await app.getAppConfiguration();
-        return new LedgerWallet(avaxAccount, evmAccount, app, eth, config);
-    }
-
-    async signEvm(tx: Transaction): Promise<Transaction> {
+    async signEvm(tx: Transaction, transport: any): Promise<Transaction> {
         const rawUnsignedTx = rlp.encode([
             bnToRlp(tx.nonce),
             bnToRlp(tx.gasPrice),
@@ -218,8 +215,10 @@ export default class LedgerWallet extends HDWalletAbstract {
             Buffer.from([]),
             Buffer.from([]),
         ]);
+
+        const ethApp = getAppEth(transport);
         //TODO: Use account derivation path instead of address
-        const signature = await this.ethApp.signTransaction(LEDGER_ETH_ACCOUNT_PATH, rawUnsignedTx.toString('hex'));
+        const signature = await ethApp.signTransaction(LEDGER_ETH_ACCOUNT_PATH, rawUnsignedTx.toString('hex'));
 
         const signatureBN = {
             v: new EthBN(signature.v, 16),
@@ -349,7 +348,7 @@ export default class LedgerWallet extends HDWalletAbstract {
         }
     }
 
-    async signX(unsignedTx: AVMUnsignedTx): Promise<AVMTx> {
+    async signX(unsignedTx: AVMUnsignedTx, transport: any): Promise<AVMTx> {
         let tx = unsignedTx.getTransaction();
         let txType = tx.getTxType();
         let chainId: ChainIdType = 'X';
@@ -363,9 +362,9 @@ export default class LedgerWallet extends HDWalletAbstract {
 
         let signedTx;
         if (canLedgerParse && isParsableType) {
-            signedTx = await this.signTransactionParsable<AVMUnsignedTx, AVMTx>(unsignedTx, paths, chainId);
+            signedTx = await this.signTransactionParsable<AVMUnsignedTx, AVMTx>(unsignedTx, paths, chainId, transport);
         } else {
-            signedTx = await this.signTransactionHash<AVMUnsignedTx, AVMTx>(unsignedTx, paths, chainId);
+            signedTx = await this.signTransactionHash<AVMUnsignedTx, AVMTx>(unsignedTx, paths, chainId, transport);
         }
 
         return signedTx;
@@ -427,7 +426,7 @@ export default class LedgerWallet extends HDWalletAbstract {
     async signTransactionParsable<
         UnsignedTx extends AVMUnsignedTx | PlatformUnsignedTx | EVMUnsignedTx,
         SignedTx extends AVMTx | PlatformTx | EVMTx
-    >(unsignedTx: UnsignedTx, paths: string[], chainId: ChainIdType): Promise<SignedTx> {
+    >(unsignedTx: UnsignedTx, paths: string[], chainId: ChainIdType, transport: any): Promise<SignedTx> {
         let tx = unsignedTx.getTransaction();
         let txType = tx.getTxType();
         let parseableTxs = {
@@ -436,16 +435,15 @@ export default class LedgerWallet extends HDWalletAbstract {
             C: ParseableEvmTxEnum,
         }[chainId];
 
-        let title = `Sign ${parseableTxs[txType]}`;
-
         let bip32Paths = this.pathsToUniqueBipPaths(paths);
 
+        const appAvax = getAppAvax(transport);
         const accountPath =
             chainId === 'C' ? bippath.fromString(`${ETH_ACCOUNT_PATH}`) : bippath.fromString(`${AVAX_ACCOUNT_PATH}`);
         let txbuff = unsignedTx.toBuffer();
         let changePath = this.getChangeBipPath(unsignedTx, chainId);
 
-        let ledgerSignedTx = await this.appAvax.signTransaction(accountPath, bip32Paths, txbuff, changePath);
+        let ledgerSignedTx = await appAvax.signTransaction(accountPath, bip32Paths, txbuff, changePath);
 
         let sigMap = ledgerSignedTx.signatures;
         let creds = this.getCredentials<UnsignedTx>(unsignedTx, paths, sigMap, chainId);
@@ -471,17 +469,18 @@ export default class LedgerWallet extends HDWalletAbstract {
     async signTransactionHash<
         UnsignedTx extends AVMUnsignedTx | PlatformUnsignedTx | EVMUnsignedTx,
         SignedTx extends AVMTx | PlatformTx | EVMTx
-    >(unsignedTx: UnsignedTx, paths: string[], chainId: ChainIdType): Promise<SignedTx> {
+    >(unsignedTx: UnsignedTx, paths: string[], chainId: ChainIdType, transport: any): Promise<SignedTx> {
         let txbuff = unsignedTx.toBuffer();
         const msg: Buffer = Buffer.from(createHash('sha256').update(txbuff).digest());
 
         let bip32Paths = this.pathsToUniqueBipPaths(paths);
 
+        const appAvax = getAppAvax(transport);
         // Sign the msg with ledger
         //TODO: Update when ledger supports Accounts
         const accountPathSource = chainId === 'C' ? ETH_ACCOUNT_PATH : AVAX_ACCOUNT_PATH;
         const accountPath = bippath.fromString(accountPathSource);
-        let sigMap = await this.appAvax.signHash(accountPath, bip32Paths, msg);
+        let sigMap = await appAvax.signHash(accountPath, bip32Paths, msg);
 
         let creds: Credential[] = this.getCredentials<UnsignedTx>(unsignedTx, paths, sigMap, chainId);
 
@@ -616,7 +615,7 @@ export default class LedgerWallet extends HDWalletAbstract {
         return creds;
     }
 
-    async signP(unsignedTx: PlatformUnsignedTx): Promise<PlatformTx> {
+    async signP(unsignedTx: PlatformUnsignedTx, transport: any): Promise<PlatformTx> {
         let tx = unsignedTx.getTransaction();
         let txType = tx.getTxType();
         let chainId: ChainIdType = 'P';
@@ -661,14 +660,24 @@ export default class LedgerWallet extends HDWalletAbstract {
 
         let signedTx;
         if (canLedgerParse && isParsableType) {
-            signedTx = await this.signTransactionParsable<PlatformUnsignedTx, PlatformTx>(unsignedTx, paths, chainId);
+            signedTx = await this.signTransactionParsable<PlatformUnsignedTx, PlatformTx>(
+                unsignedTx,
+                paths,
+                chainId,
+                transport
+            );
         } else {
-            signedTx = await this.signTransactionHash<PlatformUnsignedTx, PlatformTx>(unsignedTx, paths, chainId);
+            signedTx = await this.signTransactionHash<PlatformUnsignedTx, PlatformTx>(
+                unsignedTx,
+                paths,
+                chainId,
+                transport
+            );
         }
         return signedTx;
     }
 
-    async signC(unsignedTx: EVMUnsignedTx): Promise<EVMTx> {
+    async signC(unsignedTx: EVMUnsignedTx, transport: any): Promise<EVMTx> {
         // TODO: Might need to upgrade paths array to:
         //  paths = Array(utxoSet.getAllUTXOs().length).fill('0/0'),
         let tx = unsignedTx.getTransaction();
@@ -707,9 +716,9 @@ export default class LedgerWallet extends HDWalletAbstract {
 
         let txSigned;
         if (canLedgerParse) {
-            txSigned = (await this.signTransactionParsable(unsignedTx, paths, 'C')) as EVMTx;
+            txSigned = (await this.signTransactionParsable(unsignedTx, paths, 'C', transport)) as EVMTx;
         } else {
-            txSigned = (await this.signTransactionHash(unsignedTx, paths, 'C')) as EVMTx;
+            txSigned = (await this.signTransactionHash(unsignedTx, paths, 'C', transport)) as EVMTx;
         }
 
         return txSigned;

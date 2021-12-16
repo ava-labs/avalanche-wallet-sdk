@@ -8,14 +8,15 @@ import {
     UnsignedTx as EVMUnsignedTx,
     Tx as EVMTx,
 } from 'avalanche/dist/apis/evm';
-import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
+import { EvmWalletReadonly } from '@/Wallet/EvmWalletReadonly';
 import { bintools } from '@/common';
 
-export default class EvmWallet extends EvmWalletReadonly {
+export class EvmWallet extends EvmWalletReadonly {
     private privateKey: Buffer;
 
     constructor(key: Buffer) {
         let pubKey = privateToPublic(key);
+        console.log(pubKey.toString('hex'));
         super(pubKey);
 
         this.privateKey = key;

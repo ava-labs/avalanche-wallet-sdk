@@ -1,6 +1,6 @@
 import * as bip39 from 'bip39';
 import * as bip32 from 'bip32';
-import EvmWallet from './EvmWallet';
+import { EvmWallet } from './EvmWallet';
 import { UnsafeWallet, WalletNameType } from './types';
 import { Buffer } from 'avalanche';
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
@@ -9,13 +9,12 @@ import { Tx as PlatformTx, UnsignedTx as PlatformUnsignedTx } from 'avalanche/di
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
 import { KeyChain as PlatformKeyChain } from 'avalanche/dist/apis/platformvm';
 import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
-import { avalanche } from '@/Network/network';
 import { digestMessage } from '@/utils';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
 import { bintools } from '@/common';
 import { getAccountPathAvalanche, getAccountPathEVM } from '@/Wallet/helpers/derivationHelper';
 
-export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
+export class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
     evmWallet: EvmWallet;
     type: WalletNameType;
     mnemonic: string;
@@ -51,11 +50,11 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
      * @return
      * Bech32 representation of the EVM address.
      */
-    public getEvmAddressBech(): string {
-        let keypair = new EVMKeyPair(avalanche.getHRP(), 'C');
-        let addr = keypair.addressFromPublicKey(Buffer.from(this.ethAccountKey.publicKey));
-        return bintools.addressToString(avalanche.getHRP(), 'C', addr);
-    }
+    // public getEvmAddressBech(): string {
+    //     let keypair = new EVMKeyPair(avalanche.getHRP(), 'C');
+    //     let addr = keypair.addressFromPublicKey(Buffer.from(this.ethAccountKey.publicKey));
+    //     return bintools.addressToString(avalanche.getHRP(), 'C', addr);
+    // }
 
     /**
      * Returns the derived private key used by the EVM wallet.
