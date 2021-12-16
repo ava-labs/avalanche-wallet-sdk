@@ -51,7 +51,7 @@ import bippath from 'bip32-path';
 import { bintools } from '@/common';
 import * as bip32 from 'bip32';
 import { idToChainAlias } from '@/Network';
-import { getAccountPathAvalanche } from '@/Wallet/helpers/derivationHelper';
+import { getAccountPathAvalanche, getAccountPathEVM } from '@/Wallet/helpers/derivationHelper';
 import { PublicMnemonicWallet } from '@/Wallet/PublicMnemonicWallet';
 import { getAppAvax, getAppEth, getEthAddressKeyFromAccountKey, getLedgerConfigAvax } from '@/Wallet/Ledger/utils';
 import Transport from '@ledgerhq/hw-transport';
@@ -61,18 +61,21 @@ export class LedgerWallet extends PublicMnemonicWallet {
     type: WalletNameType;
     config: ILedgerAppConfig;
     static transport: Transport | undefined;
+    accountIndex: number;
 
     /**
      *
      * @param xpubAVM of derivation path m/44'/9000'/n' where `n` is the account index
      * @param xpubEVM of derivation path m/44'/60'/0'/0/n where `n` is the account index
+     * @param accountIndex The given xpubs must match this index
      * @param config
      */
-    constructor(xpubAVM: string, xpubEVM: string, config: ILedgerAppConfig) {
+    constructor(xpubAVM: string, xpubEVM: string, accountIndex: number, config: ILedgerAppConfig) {
         super(xpubAVM, xpubEVM);
 
         this.type = 'ledger';
         this.config = config;
+        this.accountIndex = accountIndex;
     }
 
     static setTransport(transport: Transport) {
@@ -101,7 +104,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
         }
         // Use this transport for all ledger instances
         LedgerWallet.setTransport(transport);
-        const wallet = new LedgerWallet(pubAvax, pubEth, config);
+        const wallet = new LedgerWallet(pubAvax, pubEth, accountIndex, config);
         return wallet;
     }
 
@@ -233,7 +236,10 @@ export class LedgerWallet extends PublicMnemonicWallet {
 
         const ethApp = getAppEth(LedgerWallet.transport);
         //TODO: Use account derivation path instead of address
-        const signature = await ethApp.signTransaction(LEDGER_ETH_ACCOUNT_PATH, rawUnsignedTx.toString('hex'));
+        const signature = await ethApp.signTransaction(
+            getAccountPathEVM(this.accountIndex),
+            rawUnsignedTx.toString('hex')
+        );
 
         const signatureBN = {
             v: new EthBN(signature.v, 16),
@@ -456,7 +462,9 @@ export class LedgerWallet extends PublicMnemonicWallet {
 
         const appAvax = getAppAvax(LedgerWallet.transport);
         const accountPath =
-            chainId === 'C' ? bippath.fromString(`${ETH_ACCOUNT_PATH}`) : bippath.fromString(`${AVAX_ACCOUNT_PATH}`);
+            chainId === 'C'
+                ? bippath.fromString(`${ETH_ACCOUNT_PATH}`)
+                : bippath.fromString(getAccountPathAvalanche(this.accountIndex));
         let txbuff = unsignedTx.toBuffer();
         let changePath = this.getChangeBipPath(unsignedTx, chainId);
 
@@ -496,7 +504,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
         const appAvax = getAppAvax(LedgerWallet.transport);
         // Sign the msg with ledger
         //TODO: Update when ledger supports Accounts
-        const accountPathSource = chainId === 'C' ? ETH_ACCOUNT_PATH : AVAX_ACCOUNT_PATH;
+        const accountPathSource = chainId === 'C' ? ETH_ACCOUNT_PATH : getAccountPathAvalanche(this.accountIndex);
         const accountPath = bippath.fromString(accountPathSource);
         let sigMap = await appAvax.signHash(accountPath, bip32Paths, msg);
 
@@ -693,13 +701,13 @@ export class LedgerWallet extends PublicMnemonicWallet {
         let tx = unsignedTx.getTransaction();
         let typeId = tx.getTxType();
 
-        let paths = ['0/0'];
+        let paths = [`0/${this.accountIndex}`];
         if (typeId === EVMConstants.EXPORTTX) {
             let ins = (tx as EVMExportTx).getInputs();
-            paths = ins.map(() => '0/0');
+            paths = ins.map(() => `0/${this.accountIndex}`);
         } else if (typeId === EVMConstants.IMPORTTX) {
             let ins = (tx as EVMImportTx).getImportInputs();
-            paths = ins.map(() => '0/0');
+            paths = ins.map(() => `0/${this.accountIndex}`);
         }
 
         let canLedgerParse = true;
