@@ -8,6 +8,7 @@ import { EvmWallet } from '@/Wallet/EvmWallet';
 import { EvmWalletReadonly } from '@/Wallet/EvmWalletReadonly';
 import * as bip32 from 'bip32';
 import { importPublic } from 'ethereumjs-util';
+import { computePublicKey } from 'ethers/lib/utils';
 
 export class PublicMnemonicWallet extends HDWalletAbstract {
     /**
@@ -19,33 +20,30 @@ export class PublicMnemonicWallet extends HDWalletAbstract {
         let avmAcct = bip32.fromBase58(xpubAVM);
         let evmAcct = bip32.fromBase58(xpubEVM);
         super(avmAcct);
-
         this.type = 'xpub';
-
-        console.log(evmAcct.publicKey.toString('hex'));
-        console.log(importPublic(evmAcct.publicKey).toString('hex'));
-        this.evmWallet = new EvmWalletReadonly(importPublic(evmAcct.publicKey));
+        const uncompressedKey = computePublicKey(evmAcct.publicKey);
+        this.evmWallet = new EvmWalletReadonly(uncompressedKey);
     }
 
     evmWallet: EvmWallet | EvmWalletReadonly;
     type: WalletNameType;
 
     //@ts-ignore
-    signC(tx: EVMUnsignedTx, transport?: any): Promise<EVMTx> {
+    signC(tx: EVMUnsignedTx): Promise<EVMTx> {
         throw new Error('Not supported.');
     }
 
     //@ts-ignore
-    signEvm(tx: Transaction, transport?: any): Promise<Transaction> {
+    signEvm(tx: Transaction): Promise<Transaction> {
         throw new Error('Not supported.');
     }
     //@ts-ignore
-    signP(tx: PlatformUnsignedTx, transport?: any): Promise<PlatformTx> {
+    signP(tx: PlatformUnsignedTx): Promise<PlatformTx> {
         throw new Error('Not supported.');
     }
 
     //@ts-ignore
-    signX(tx: AVMUnsignedTx, transport?: any): Promise<AVMTx> {
+    signX(tx: AVMUnsignedTx): Promise<AVMTx> {
         throw new Error('Not supported.');
     }
 }

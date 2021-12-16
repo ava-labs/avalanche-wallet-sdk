@@ -13,7 +13,9 @@ import { digestMessage } from '@/utils';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
 import { bintools } from '@/common';
 import { getAccountPathAvalanche, getAccountPathEVM } from '@/Wallet/helpers/derivationHelper';
+import { avalanche } from '@/Network/network';
 
+//TODO: Should extend public mnemonic wallet
 export class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
     evmWallet: EvmWallet;
     type: WalletNameType;
@@ -52,6 +54,7 @@ export class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
      */
     // public getEvmAddressBech(): string {
     //     let keypair = new EVMKeyPair(avalanche.getHRP(), 'C');
+    //     console.log('eth account pub key: ', this.ethAccountKey.publicKey.toString('hex'));
     //     let addr = keypair.addressFromPublicKey(Buffer.from(this.ethAccountKey.publicKey));
     //     return bintools.addressToString(avalanche.getHRP(), 'C', addr);
     // }

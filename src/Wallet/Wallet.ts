@@ -114,13 +114,10 @@ export abstract class WalletProvider {
 
     public balanceX: WalletBalanceX = {};
 
-    abstract signEvm(
-        tx: Transaction | FeeMarketEIP1559Transaction,
-        transport?: any //used by ledger
-    ): Promise<Transaction | FeeMarketEIP1559Transaction>;
-    abstract signX(tx: AVMUnsignedTx, transport?: any): Promise<AvmTx>;
-    abstract signP(tx: PlatformUnsignedTx, transport?: any): Promise<PlatformTx>;
-    abstract signC(tx: EVMUnsignedTx, transport?: any): Promise<EVMTx>;
+    abstract signEvm(tx: Transaction | FeeMarketEIP1559Transaction): Promise<Transaction | FeeMarketEIP1559Transaction>;
+    abstract signX(tx: AVMUnsignedTx): Promise<AvmTx>;
+    abstract signP(tx: PlatformUnsignedTx): Promise<PlatformTx>;
+    abstract signC(tx: EVMUnsignedTx): Promise<EVMTx>;
 
     abstract getAddressX(): string;
     abstract getChangeAddressX(): string;

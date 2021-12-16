@@ -54,10 +54,13 @@ import { idToChainAlias } from '@/Network';
 import { getAccountPathAvalanche } from '@/Wallet/helpers/derivationHelper';
 import { PublicMnemonicWallet } from '@/Wallet/PublicMnemonicWallet';
 import { getAppAvax, getAppEth, getEthAddressKeyFromAccountKey, getLedgerConfigAvax } from '@/Wallet/Ledger/utils';
+import Transport from '@ledgerhq/hw-transport';
+import { ERR_TransportNotSet } from '@/Wallet/Ledger/errors';
 
 export class LedgerWallet extends PublicMnemonicWallet {
     type: WalletNameType;
     config: ILedgerAppConfig;
+    static transport: Transport | undefined;
 
     /**
      *
@@ -72,12 +75,20 @@ export class LedgerWallet extends PublicMnemonicWallet {
         this.config = config;
     }
 
+    static setTransport(transport: Transport) {
+        LedgerWallet.transport = transport;
+
+        transport.on('disconnect', () => {
+            console.log('transport disconnect');
+            LedgerWallet.transport = undefined;
+        });
+    }
     /**
      * Create a new ledger wallet instance from the given transport
      * @param transport
      * @param accountIndex
      */
-    static async fromTransport(transport: any, accountIndex = 0) {
+    static async fromTransport(transport: Transport, accountIndex = 0) {
         transport.setExchangeTimeout(LEDGER_EXCHANGE_TIMEOUT);
 
         const pubAvax = await LedgerWallet.getExtendedPublicKeyAvaxAccount(transport, accountIndex);
@@ -88,8 +99,10 @@ export class LedgerWallet extends PublicMnemonicWallet {
         if (config.version < MIN_EVM_SUPPORT_V) {
             throw new Error(`Unable to connect ledger. You must use ledger version ${MIN_EVM_SUPPORT_V} or above.`);
         }
-
-        return new LedgerWallet(pubAvax, pubEth, config);
+        // Use this transport for all ledger instances
+        LedgerWallet.setTransport(transport);
+        const wallet = new LedgerWallet(pubAvax, pubEth, config);
+        return wallet;
     }
 
     /**
@@ -144,7 +157,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
      * @remarks Returns the extended public key for path `m/44'/60'/0'`. This key can be used to derive C chain addresses.
      * @param transport
      */
-    static async getExtendedPublicKeyEthAccount(transport: any): Promise<string> {
+    static async getExtendedPublicKeyEthAccount(transport: Transport): Promise<string> {
         const ethApp = getAppEth(transport);
         let ethRes = await ethApp.getAddress(ETH_ACCOUNT_PATH, true, true);
         let hdEth = new HDKey();
@@ -161,7 +174,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
      * @param transport
      * @param accountIndex
      */
-    static async getExtendedPublicKeyEthAddress(transport: any, accountIndex: number): Promise<string> {
+    static async getExtendedPublicKeyEthAddress(transport: Transport, accountIndex: number): Promise<string> {
         const accountKey = await LedgerWallet.getExtendedPublicKeyEthAccount(transport);
         return getEthAddressKeyFromAccountKey(accountKey, accountIndex);
     }
@@ -172,7 +185,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
      * @param transport
      * @param accountIndex Which account's public key to derive
      */
-    static async getExtendedPublicKeyAvaxAccount(transport: any, accountIndex = 0): Promise<string> {
+    static async getExtendedPublicKeyAvaxAccount(transport: Transport, accountIndex = 0): Promise<string> {
         const app = getAppAvax(transport);
 
         let res = await app.getWalletExtendedPublicKey(getAccountPathAvalanche(accountIndex));
@@ -203,7 +216,9 @@ export class LedgerWallet extends PublicMnemonicWallet {
     //     return new LedgerWallet(avaxAccount, evmAccount, config);
     // }
 
-    async signEvm(tx: Transaction, transport: any): Promise<Transaction> {
+    async signEvm(tx: Transaction): Promise<Transaction> {
+        if (!LedgerWallet.transport) throw ERR_TransportNotSet;
+
         const rawUnsignedTx = rlp.encode([
             bnToRlp(tx.nonce),
             bnToRlp(tx.gasPrice),
@@ -216,7 +231,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
             Buffer.from([]),
         ]);
 
-        const ethApp = getAppEth(transport);
+        const ethApp = getAppEth(LedgerWallet.transport);
         //TODO: Use account derivation path instead of address
         const signature = await ethApp.signTransaction(LEDGER_ETH_ACCOUNT_PATH, rawUnsignedTx.toString('hex'));
 
@@ -348,7 +363,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
         }
     }
 
-    async signX(unsignedTx: AVMUnsignedTx, transport: any): Promise<AVMTx> {
+    async signX(unsignedTx: AVMUnsignedTx): Promise<AVMTx> {
         let tx = unsignedTx.getTransaction();
         let txType = tx.getTxType();
         let chainId: ChainIdType = 'X';
@@ -362,9 +377,9 @@ export class LedgerWallet extends PublicMnemonicWallet {
 
         let signedTx;
         if (canLedgerParse && isParsableType) {
-            signedTx = await this.signTransactionParsable<AVMUnsignedTx, AVMTx>(unsignedTx, paths, chainId, transport);
+            signedTx = await this.signTransactionParsable<AVMUnsignedTx, AVMTx>(unsignedTx, paths, chainId);
         } else {
-            signedTx = await this.signTransactionHash<AVMUnsignedTx, AVMTx>(unsignedTx, paths, chainId, transport);
+            signedTx = await this.signTransactionHash<AVMUnsignedTx, AVMTx>(unsignedTx, paths, chainId);
         }
 
         return signedTx;
@@ -426,7 +441,9 @@ export class LedgerWallet extends PublicMnemonicWallet {
     async signTransactionParsable<
         UnsignedTx extends AVMUnsignedTx | PlatformUnsignedTx | EVMUnsignedTx,
         SignedTx extends AVMTx | PlatformTx | EVMTx
-    >(unsignedTx: UnsignedTx, paths: string[], chainId: ChainIdType, transport: any): Promise<SignedTx> {
+    >(unsignedTx: UnsignedTx, paths: string[], chainId: ChainIdType): Promise<SignedTx> {
+        // There must be an active transport connection
+        if (!LedgerWallet.transport) throw ERR_TransportNotSet;
         let tx = unsignedTx.getTransaction();
         let txType = tx.getTxType();
         let parseableTxs = {
@@ -437,7 +454,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
 
         let bip32Paths = this.pathsToUniqueBipPaths(paths);
 
-        const appAvax = getAppAvax(transport);
+        const appAvax = getAppAvax(LedgerWallet.transport);
         const accountPath =
             chainId === 'C' ? bippath.fromString(`${ETH_ACCOUNT_PATH}`) : bippath.fromString(`${AVAX_ACCOUNT_PATH}`);
         let txbuff = unsignedTx.toBuffer();
@@ -469,13 +486,14 @@ export class LedgerWallet extends PublicMnemonicWallet {
     async signTransactionHash<
         UnsignedTx extends AVMUnsignedTx | PlatformUnsignedTx | EVMUnsignedTx,
         SignedTx extends AVMTx | PlatformTx | EVMTx
-    >(unsignedTx: UnsignedTx, paths: string[], chainId: ChainIdType, transport: any): Promise<SignedTx> {
+    >(unsignedTx: UnsignedTx, paths: string[], chainId: ChainIdType): Promise<SignedTx> {
+        if (!LedgerWallet.transport) throw ERR_TransportNotSet;
         let txbuff = unsignedTx.toBuffer();
         const msg: Buffer = Buffer.from(createHash('sha256').update(txbuff).digest());
 
         let bip32Paths = this.pathsToUniqueBipPaths(paths);
 
-        const appAvax = getAppAvax(transport);
+        const appAvax = getAppAvax(LedgerWallet.transport);
         // Sign the msg with ledger
         //TODO: Update when ledger supports Accounts
         const accountPathSource = chainId === 'C' ? ETH_ACCOUNT_PATH : AVAX_ACCOUNT_PATH;
@@ -615,7 +633,9 @@ export class LedgerWallet extends PublicMnemonicWallet {
         return creds;
     }
 
-    async signP(unsignedTx: PlatformUnsignedTx, transport: any): Promise<PlatformTx> {
+    async signP(unsignedTx: PlatformUnsignedTx): Promise<PlatformTx> {
+        if (!LedgerWallet.transport) throw ERR_TransportNotSet;
+
         let tx = unsignedTx.getTransaction();
         let txType = tx.getTxType();
         let chainId: ChainIdType = 'P';
@@ -660,24 +680,14 @@ export class LedgerWallet extends PublicMnemonicWallet {
 
         let signedTx;
         if (canLedgerParse && isParsableType) {
-            signedTx = await this.signTransactionParsable<PlatformUnsignedTx, PlatformTx>(
-                unsignedTx,
-                paths,
-                chainId,
-                transport
-            );
+            signedTx = await this.signTransactionParsable<PlatformUnsignedTx, PlatformTx>(unsignedTx, paths, chainId);
         } else {
-            signedTx = await this.signTransactionHash<PlatformUnsignedTx, PlatformTx>(
-                unsignedTx,
-                paths,
-                chainId,
-                transport
-            );
+            signedTx = await this.signTransactionHash<PlatformUnsignedTx, PlatformTx>(unsignedTx, paths, chainId);
         }
         return signedTx;
     }
 
-    async signC(unsignedTx: EVMUnsignedTx, transport: any): Promise<EVMTx> {
+    async signC(unsignedTx: EVMUnsignedTx): Promise<EVMTx> {
         // TODO: Might need to upgrade paths array to:
         //  paths = Array(utxoSet.getAllUTXOs().length).fill('0/0'),
         let tx = unsignedTx.getTransaction();
@@ -716,9 +726,9 @@ export class LedgerWallet extends PublicMnemonicWallet {
 
         let txSigned;
         if (canLedgerParse) {
-            txSigned = (await this.signTransactionParsable(unsignedTx, paths, 'C', transport)) as EVMTx;
+            txSigned = (await this.signTransactionParsable(unsignedTx, paths, 'C')) as EVMTx;
         } else {
-            txSigned = (await this.signTransactionHash(unsignedTx, paths, 'C', transport)) as EVMTx;
+            txSigned = (await this.signTransactionHash(unsignedTx, paths, 'C')) as EVMTx;
         }
 
         return txSigned;
