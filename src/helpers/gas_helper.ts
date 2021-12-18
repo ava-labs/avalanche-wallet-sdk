@@ -84,8 +84,14 @@ export function calculateMaxFee(baseFee: BN, maxPriorityFee: BN): BN {
  * @param sourceChain `X` or `P`
  * @param amount Amount to import in nAVAX
  * @param to C chain hex address receiving the outputs.
+ * @param utxoNum Number of UTXOs that will get imported.
  */
-export function estimateImportGasFeeFromMockTx(sourceChain: ExportChainsC, amount: BN, to: string): number {
+export function estimateImportGasFeeFromMockTx(
+    sourceChain: ExportChainsC,
+    amount: BN,
+    to: string,
+    utxoNum = 1
+): number {
     const sourceChainID = chainIdFromAlias(sourceChain);
     const netID = activeNetwork.networkID;
     const chainID = activeNetwork.cChainID;
@@ -94,14 +100,22 @@ export function estimateImportGasFeeFromMockTx(sourceChain: ExportChainsC, amoun
     // Create dummy Input and Output
     const avaxIDBuff = bintools.cb58Decode(AVAX_ID);
     const txIdBuff = new Buffer('0x0000000000000000000000000000000000000000000000000000000000000000'); // random 32 bytes
-    const secpIn = new SECPTransferInput(amount);
-    const txIn = new TransferableInput(txIdBuff, txIdBuff, avaxIDBuff, secpIn);
+
+    // Dummy input utxos
+    const amtPerInput = amount.div(new BN(utxoNum));
+    const ins = [];
+    for (let i = 0; i < utxoNum; i++) {
+        const secpIn = new SECPTransferInput(amtPerInput);
+        const txIn = new TransferableInput(txIdBuff, txIdBuff, avaxIDBuff, secpIn);
+        ins.push(txIn);
+    }
+
     const txOut = new EVMOutput(to, amount, avaxIDBuff);
 
     // Create fake import Tx
     const chainIdBuff = bintools.cb58Decode(chainID);
     const sourceChainId = bintools.cb58Decode(sourceChainID);
-    const importTx = new ImportTx(netID, chainIdBuff, sourceChainId, [txIn], [txOut], new BN(0));
+    const importTx = new ImportTx(netID, chainIdBuff, sourceChainId, ins, [txOut], new BN(0));
     const unisgnedTx = new UnsignedTx(importTx);
 
     return costImportTx(unisgnedTx);
@@ -129,6 +143,11 @@ export function estimateExportGasFeeFromMockTx(
     const avaxIDBuff = bintools.cb58Decode(AVAX_ID);
 
     // Create fake ins/outs
+    // const ins = [];
+    // for (let i = 0; i < utxoNum; i++) {
+    //     ins.push(new EVMInput(from, amount, avaxIDBuff));
+    // }
+
     const txIn = new EVMInput(from, amount, avaxIDBuff);
     const secpOut = new SECPTransferOutput(amount, [toBuff]);
     const txOut = new TransferableOutput(avaxIDBuff, secpOut);
