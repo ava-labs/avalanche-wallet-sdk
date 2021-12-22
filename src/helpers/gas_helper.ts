@@ -1,16 +1,6 @@
 import { activeNetwork, cChain, web3 } from '@/Network/network';
-import { BN, Buffer } from 'avalanche';
-import {
-    EVMInput,
-    EVMOutput,
-    ExportTx,
-    ImportTx,
-    SECPTransferInput,
-    SECPTransferOutput,
-    TransferableInput,
-    TransferableOutput,
-    UnsignedTx,
-} from 'avalanche/dist/apis/evm';
+import { BN } from 'avalanche';
+import { EVMInput, ExportTx, SECPTransferOutput, TransferableOutput, UnsignedTx } from 'avalanche/dist/apis/evm';
 import { ExportChainsC } from '@/Wallet/types';
 import { bintools } from '@/common';
 import { chainIdFromAlias } from '@/Network';
@@ -81,44 +71,26 @@ export function calculateMaxFee(baseFee: BN, maxPriorityFee: BN): BN {
 
 /**
  * Creates a mock import transaction and estimates the gas required for it. Returns fee in units of gas.
- * @param sourceChain `X` or `P`
- * @param amount Amount to import in nAVAX
- * @param to C chain hex address receiving the outputs.
- * @param utxoNum Number of UTXOs that will get imported.
+ * @param numIns Number of inputs for the import transaction.
+ * @param numSigs Number of signatures used in the import transactions. This value is the sum of owner addresses in every UTXO.
  */
 export function estimateImportGasFeeFromMockTx(
-    sourceChain: ExportChainsC,
-    amount: BN,
-    to: string,
-    utxoNum = 1
+    numIns = 1,
+    numSigs: number // number of signatures (sum of owner addresses in each utxo)
 ): number {
-    const sourceChainID = chainIdFromAlias(sourceChain);
-    const netID = activeNetwork.networkID;
-    const chainID = activeNetwork.cChainID;
-    const AVAX_ID = activeNetwork.avaxID;
+    const ATOMIC_TX_COST = 10000; // in gas
+    const SIG_COST = 1000; // in gas
+    const BASE_TX_SIZE = 78;
+    const SINGLE_OWNER_INPUT_SIZE = 90; // in bytes
+    const OUTPUT_SIZE = 60; // in bytes
 
-    // Create dummy Input and Output
-    const avaxIDBuff = bintools.cb58Decode(AVAX_ID);
-    const txIdBuff = new Buffer('0x0000000000000000000000000000000000000000000000000000000000000000'); // random 32 bytes
+    // C chain imports consolidate inputs to one output
+    const numOutputs = 1;
+    // Assuming each input has 1 owner
+    const baseSize = BASE_TX_SIZE + numIns * SINGLE_OWNER_INPUT_SIZE + numOutputs * OUTPUT_SIZE;
+    const importGas = baseSize + numSigs * SIG_COST + ATOMIC_TX_COST;
 
-    // Dummy input utxos
-    const amtPerInput = amount.div(new BN(utxoNum));
-    const ins = [];
-    for (let i = 0; i < utxoNum; i++) {
-        const secpIn = new SECPTransferInput(amtPerInput);
-        const txIn = new TransferableInput(txIdBuff, txIdBuff, avaxIDBuff, secpIn);
-        ins.push(txIn);
-    }
-
-    const txOut = new EVMOutput(to, amount, avaxIDBuff);
-
-    // Create fake import Tx
-    const chainIdBuff = bintools.cb58Decode(chainID);
-    const sourceChainId = bintools.cb58Decode(sourceChainID);
-    const importTx = new ImportTx(netID, chainIdBuff, sourceChainId, ins, [txOut], new BN(0));
-    const unisgnedTx = new UnsignedTx(importTx);
-
-    return costImportTx(unisgnedTx);
+    return importGas;
 }
 
 /**
@@ -141,12 +113,6 @@ export function estimateExportGasFeeFromMockTx(
     const chainID = activeNetwork.cChainID;
     const AVAX_ID = activeNetwork.avaxID;
     const avaxIDBuff = bintools.cb58Decode(AVAX_ID);
-
-    // Create fake ins/outs
-    // const ins = [];
-    // for (let i = 0; i < utxoNum; i++) {
-    //     ins.push(new EVMInput(from, amount, avaxIDBuff));
-    // }
 
     const txIn = new EVMInput(from, amount, avaxIDBuff);
     const secpOut = new SECPTransferOutput(amount, [toBuff]);

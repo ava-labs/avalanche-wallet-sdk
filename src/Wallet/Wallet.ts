@@ -733,13 +733,17 @@ export abstract class WalletProvider {
      * @param baseFee Current base fee of the network, use a padded amount.
      * @return BN C chain atomic export transaction fee in nAVAX.
      */
-    estimateAtomicFeeImportC(sourceChain: ExportChainsC, baseFee: BN): BN {
-        const hexAddr = this.getAddressC();
-        // The amount does not effect the fee that much
-        const amt = new BN(0);
-        const gas = estimateImportGasFeeFromMockTx(sourceChain, amt, hexAddr);
-        return avaxCtoX(baseFee.mul(new BN(gas)));
-    }
+    // estimateAtomicFeeImportC(sourceChain: ExportChainsC, baseFee: BN): BN {
+    //     // const hexAddr = this.getAddressC();
+    //     // The amount does not effect the fee that much
+    //     // const amt = new BN(0);
+    //
+    //     const numInputs = 1;
+    //     const numSigs = 1;
+    //
+    //     const gas = estimateImportGasFeeFromMockTx(sourceChain, amt, hexAddr);
+    //     return avaxCtoX(baseFee.mul(new BN(gas)));
+    // }
 
     /**
      * Exports AVAX from C chain to X chain
@@ -931,7 +935,8 @@ export abstract class WalletProvider {
             utxoSet = await this.getAtomicUTXOsC(sourceChain);
         }
 
-        if (utxoSet.getAllUTXOs().length === 0) {
+        const utxos = utxoSet.getAllUTXOs();
+        if (utxos.length === 0) {
             throw new Error('Nothing to import.');
         }
 
@@ -940,9 +945,15 @@ export abstract class WalletProvider {
         let fromAddresses = ownerAddresses;
         const sourceChainId = chainIdFromAlias(sourceChain);
 
+        // Calculate number of signatures
+        const numSigs = utxos.reduce((acc, utxo) => {
+            return acc + utxo.getOutput().getAddresses().length;
+        }, 0);
+        const numIns = utxos.length;
+
         // Calculate fee if not provided
         if (!fee) {
-            const importGas = estimateImportGasFeeFromMockTx(sourceChain, new BN(0), toAddress);
+            const importGas = estimateImportGasFeeFromMockTx(numIns, numSigs);
             const baseFee = await getBaseFeeRecommended();
             fee = avaxCtoX(baseFee.mul(new BN(importGas)));
         }
