@@ -927,14 +927,14 @@ export abstract class WalletProvider {
         let fromAddresses = ownerAddresses;
         const sourceChainId = chainIdFromAlias(sourceChain);
 
-        // Calculate number of signatures
-        const numSigs = utxos.reduce((acc, utxo) => {
-            return acc + utxo.getOutput().getAddresses().length;
-        }, 0);
-        const numIns = utxos.length;
-
         // Calculate fee if not provided
         if (!fee) {
+            // Calculate number of signatures
+            const numSigs = utxos.reduce((acc, utxo) => {
+                return acc + utxo.getOutput().getAddresses().length;
+            }, 0);
+            const numIns = utxos.length;
+
             const importGas = estimateImportGasFeeFromMockTx(numIns, numSigs);
             const baseFee = await getBaseFeeRecommended();
             fee = avaxCtoX(baseFee.mul(new BN(importGas)));
