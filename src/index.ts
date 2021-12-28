@@ -7,6 +7,7 @@ import MnemonicWallet from '@/Wallet/MnemonicWallet';
 import SingletonWallet from '@/Wallet/SingletonWallet';
 import LedgerWallet from '@/Wallet/LedgerWallet';
 import PublicMnemonicWallet from '@/Wallet/PublicMnemonicWallet';
+import { WalletProvider } from './Wallet/Wallet';
 
 // Type Exports
 export * from '@/Wallet/types';
@@ -21,4 +22,14 @@ import Big from 'big.js';
 export * from '@/helpers';
 export * from '@/UniversalTx';
 
-export { MnemonicWallet, SingletonWallet, NetworkConstants, Utils, Keystore, LedgerWallet, PublicMnemonicWallet, Big };
+export {
+    MnemonicWallet,
+    SingletonWallet,
+    WalletProvider,
+    NetworkConstants,
+    Utils,
+    Keystore,
+    LedgerWallet,
+    PublicMnemonicWallet,
+    Big,
+};
