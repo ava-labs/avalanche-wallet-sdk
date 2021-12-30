@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=avalanche-2&vs_currencies=usd';
+const getCoinGeckoURL = (vsCurrencySymbol: string) =>
+    `https://api.coingecko.com/api/v3/simple/price?ids=avalanche-2&vs_currencies=${vsCurrencySymbol}`;
 
 /**
  * Fetches the current AVAX price using Coin Gecko.
@@ -8,9 +9,9 @@ const COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=avalanc
  * You might get rate limited if you use this function frequently.
  *
  * @return
- * Current USD price of 1 AVAX
+ * Current price of 1 AVAX vs a currency (default USD)
  */
-export async function getAvaxPrice(): Promise<number> {
-    const res = await axios.get(COINGECKO_URL);
-    return res.data['avalanche-2'].usd;
+export async function getAvaxPrice(vsCurrencySymbol = 'USD'): Promise<number> {
+    const res = await axios.get(getCoinGeckoURL(vsCurrencySymbol));
+    return res.data['avalanche-2'][vsCurrencySymbol.toLowerCase()];
 }
