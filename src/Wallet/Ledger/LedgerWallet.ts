@@ -174,7 +174,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
         ]);
 
         const ethApp = getAppEth(LedgerWallet.transport);
-        //TODO: Use account derivation path instead of address
         const signature = await ethApp.signTransaction(
             getAccountPathEVM(this.accountIndex),
             rawUnsignedTx.toString('hex')
