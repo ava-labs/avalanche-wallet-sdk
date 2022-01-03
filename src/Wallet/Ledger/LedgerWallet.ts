@@ -49,7 +49,6 @@ import createHash from 'create-hash';
 //@ts-ignore
 import bippath from 'bip32-path';
 import { bintools } from '@/common';
-import * as bip32 from 'bip32';
 import { idToChainAlias } from '@/Network';
 import { getAccountPathAvalanche, getAccountPathEVM } from '@/Wallet/helpers/derivationHelper';
 import { PublicMnemonicWallet } from '@/Wallet/PublicMnemonicWallet';
@@ -109,53 +108,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
     }
 
     /**
-     * Returns a bip32 HD Node that can be used to derive internal/external Avalanche addresses
-     * @param app Avalanche hw app instance
-     * @param accountIndex Index of the account.
-     * @return BIP32Interface The returned HD Node is of path `m/44'/9000'/n'` where `n` is the account index.
-     */
-    // static async getAvaxAccount(app: AppAvax, accountIndex = 0): Promise<bip32.BIP32Interface> {
-    //     if (accountIndex < 0) throw new Error('Account index must be >= 0');
-    //
-    //     let res = await app.getWalletExtendedPublicKey(getAccountPathAvalanche(accountIndex));
-    //
-    //     let pubKey = res.public_key;
-    //     let chainCode = res.chain_code;
-    //
-    //     // Get the base58 publick key from the HDKey instance
-    //     let hdKey = new HDKey();
-    //     // @ts-ignore
-    //     hdKey.publicKey = pubKey;
-    //     // @ts-ignore
-    //     hdKey.chainCode = chainCode;
-    //
-    //     let hd = bip32.fromBase58(hdKey.publicExtendedKey);
-    //
-    //     return hd;
-    // }
-
-    /**
-     * Returns a HDKey instance for the given account index.
-     * @param eth Eth hw app instance
-     * @param accountIndex
-     * @return HDKey Returned HD node is of derivation path `m/44'/60'/0'/0/n` where `n` is the account index.
-     */
-    // static async getEvmAccount(eth: Eth, accountIndex = 0): Promise<HDKey> {
-    //     if (accountIndex < 0) throw new Error('Account index must be >= 0');
-    //
-    //     //TODO: Use account derivation path instead of address
-    //     let ethRes = await eth.getAddress(ETH_ACCOUNT_PATH, true, true);
-    //     let hdEth = new HDKey();
-    //     // @ts-ignore
-    //     hdEth.publicKey = Buffer.from(ethRes.publicKey, 'hex');
-    //     // @ts-ignore
-    //     hdEth.chainCode = Buffer.from(ethRes.chainCode, 'hex');
-    //
-    //     const acctPath = `m/0/${accountIndex}`;
-    //     return hdEth.derive(acctPath);
-    // }
-
-    /**
      * Returns the extended public key used by C chain for address derivation.
      * @remarks Returns the extended public key for path `m/44'/60'/0'`. This key can be used to derive C chain addresses.
      * @param transport
@@ -205,19 +157,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
 
         return hdKey.publicExtendedKey;
     }
-
-    // /**
-    //  * Returns a new LedgerWallet instance.
-    //  * @param app An active Avalanche hw app instance
-    //  * @param eth An active eth hw app instance
-    //  * @param accountIndex The wallet instance will be for this account index.
-    //  */
-    // static async fromApp(app: AppAvax, eth: Eth, accountIndex: number): Promise<LedgerWallet> {
-    //     let avaxAccount = await LedgerWallet.getAvaxAccount(app, accountIndex);
-    //     let evmAccount = await LedgerWallet.getEvmAccount(eth, accountIndex);
-    //     let config = await app.getAppConfiguration();
-    //     return new LedgerWallet(avaxAccount, evmAccount, config);
-    // }
 
     async signEvm(tx: Transaction): Promise<Transaction> {
         if (!LedgerWallet.transport) throw ERR_TransportNotSet;
@@ -307,8 +246,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
             let item = items[i];
 
             let assetId = bintools.cb58Encode(item.getAssetID());
-            // @ts-ignore
-            // if (assetId !== store.state.Assets.AVA_ASSET_ID) {
             if (assetId !== activeNetwork.avaxID) {
                 isAvaxOnly = false;
             }

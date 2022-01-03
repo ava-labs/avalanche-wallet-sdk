@@ -48,18 +48,6 @@ export class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
     }
 
     /**
-     * Gets the active address on the C chain in Bech32 encoding
-     * @return
-     * Bech32 representation of the EVM address.
-     */
-    // public getEvmAddressBech(): string {
-    //     let keypair = new EVMKeyPair(avalanche.getHRP(), 'C');
-    //     console.log('eth account pub key: ', this.ethAccountKey.publicKey.toString('hex'));
-    //     let addr = keypair.addressFromPublicKey(Buffer.from(this.ethAccountKey.publicKey));
-    //     return bintools.addressToString(avalanche.getHRP(), 'C', addr);
-    // }
-
-    /**
      * Returns the derived private key used by the EVM wallet.
      */
     public getEvmPrivateKeyHex(): string {
