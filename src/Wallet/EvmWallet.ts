@@ -1,5 +1,4 @@
 import { Buffer as BufferAvalanche } from 'avalanche';
-import { privateToPublic } from 'ethereumjs-util';
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import { avalanche } from '@/Network/network';
 import {
@@ -8,14 +7,17 @@ import {
     UnsignedTx as EVMUnsignedTx,
     Tx as EVMTx,
 } from 'avalanche/dist/apis/evm';
-import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
+import { EvmWalletReadonly } from '@/Wallet/EvmWalletReadonly';
 import { bintools } from '@/common';
+import { computePublicKey } from 'ethers/lib/utils';
 
-export default class EvmWallet extends EvmWalletReadonly {
+export class EvmWallet extends EvmWalletReadonly {
     private privateKey: Buffer;
 
     constructor(key: Buffer) {
-        let pubKey = privateToPublic(key);
+        // Compute the uncompressed public key from private key
+        let pubKey = computePublicKey(key);
+
         super(pubKey);
 
         this.privateKey = key;

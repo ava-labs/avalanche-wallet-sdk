@@ -28,7 +28,7 @@ import {
 import { BN, Buffer } from 'avalanche';
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import { activeNetwork, avalanche, cChain, pChain, web3, xChain } from '@/Network/network';
-import EvmWallet from '@/Wallet/EvmWallet';
+import { EvmWallet } from '@/Wallet/EvmWallet';
 
 import {
     avmGetAllUTXOs,
@@ -62,7 +62,7 @@ import { getAssetDescription } from '@/Asset/Assets';
 import { getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
 import { avaxCtoX, bnToLocaleString, getTxFeeP, getTxFeeX, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils';
-import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
+import { EvmWalletReadonly } from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
 import {
     filterDuplicateTransactions,
@@ -122,8 +122,6 @@ export abstract class WalletProvider {
     abstract getAddressX(): string;
     abstract getChangeAddressX(): string;
     abstract getAddressP(): string;
-    abstract getAddressC(): string;
-    abstract getEvmAddressBech(): string;
 
     abstract getExternalAddressesX(): Promise<string[]>;
     abstract getExternalAddressesXSync(): string[];
@@ -196,6 +194,18 @@ export abstract class WalletProvider {
 
     protected emitBalanceChangeC(): void {
         this.emit('balanceChangedC', this.getAvaxBalanceC());
+    }
+
+    /**
+     * Gets the active address on the C chain
+     * @return Hex representation of the EVM address.
+     */
+    public getAddressC() {
+        return this.evmWallet.getAddress();
+    }
+
+    public getEvmAddressBech() {
+        return this.evmWallet.getAddressBech32();
     }
 
     /**

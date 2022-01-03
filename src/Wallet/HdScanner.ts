@@ -30,7 +30,7 @@ type KeyCacheP = {
 };
 
 // Each HD wallet has 2 HdScaners, one for internal chain, one for external
-export default class HdScanner {
+export class HdScanner {
     protected index = 0;
     protected addressCache: AddressCache = {};
     protected keyCacheX: KeyCacheX = {};

@@ -1,18 +1,24 @@
 import { BN, Buffer as BufferAvalanche } from 'avalanche';
 import { avalanche, web3 } from '@/Network/network';
-import { publicToAddress, importPublic } from 'ethereumjs-util';
 import { ethers } from 'ethers';
 import { KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm/keychain';
 import { bintools } from '@/common';
+import { computePublicKey, computeAddress } from 'ethers/lib/utils';
 
-export default class EvmWalletReadonly {
+export class EvmWalletReadonly {
     balance = new BN(0);
     address: string;
-    publicKey: Buffer;
+    publicKey: string;
+    publicKeyBuff: Buffer;
 
-    constructor(publicKey: Buffer) {
+    /**
+     *
+     * @param publicKey 64 byte uncompressed public key. Starts with `0x`.
+     */
+    constructor(publicKey: string) {
         this.publicKey = publicKey;
-        this.address = '0x' + publicToAddress(publicKey).toString('hex');
+        this.publicKeyBuff = Buffer.from(publicKey.substr(2), 'hex');
+        this.address = computeAddress(publicKey);
     }
 
     getBalance(): BN {
@@ -24,8 +30,9 @@ export default class EvmWalletReadonly {
     }
 
     getAddressBech32(): string {
+        const compressedKey = computePublicKey(this.publicKey, true);
         let keypair = new EVMKeyPair(avalanche.getHRP(), 'C');
-        let addr = keypair.addressFromPublicKey(BufferAvalanche.from(this.publicKey));
+        let addr = keypair.addressFromPublicKey(BufferAvalanche.from(compressedKey.substr(2), 'hex'));
         return bintools.addressToString(avalanche.getHRP(), 'C', addr);
     }
 

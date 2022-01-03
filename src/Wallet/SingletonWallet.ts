@@ -9,12 +9,12 @@ import {
 } from 'avalanche/dist/apis/platformvm';
 import { avalanche, pChain, xChain } from '@/Network/network';
 import { Buffer as BufferAvalanche } from 'avalanche';
-import EvmWallet from '@/Wallet/EvmWallet';
+import { EvmWallet } from '@/Wallet/EvmWallet';
 import { UnsignedTx, Tx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import { bintools } from '@/common';
 
-export default class SingletonWallet extends WalletProvider implements UnsafeWallet {
+export class SingletonWallet extends WalletProvider implements UnsafeWallet {
     type: WalletNameType = 'singleton';
     key = '';
     keyBuff: BufferAvalanche;
@@ -68,10 +68,6 @@ export default class SingletonWallet extends WalletProvider implements UnsafeWal
         return this.evmWallet.getPrivateKeyHex();
     }
 
-    getAddressC(): string {
-        return this.evmWallet.getAddress();
-    }
-
     getAddressP(): string {
         let keyChain = this.getKeyChainP();
         return keyChain.getAddressStrings()[0];
@@ -100,12 +96,6 @@ export default class SingletonWallet extends WalletProvider implements UnsafeWal
 
     getChangeAddressX(): string {
         return this.getAddressX();
-    }
-
-    getEvmAddressBech(): string {
-        let keypair = new EVMKeyPair(avalanche.getHRP(), 'C');
-        keypair.importKey(this.keyBuff);
-        return keypair.getAddressString();
     }
 
     async getExternalAddressesP(): Promise<string[]> {

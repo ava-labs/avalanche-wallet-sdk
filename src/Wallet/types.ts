@@ -2,9 +2,9 @@ import { KeyPair as AVMKeyPair } from 'avalanche/dist/apis/avm';
 
 import { BN } from 'avalanche';
 
-import MnemonicWallet from '@/Wallet/MnemonicWallet';
-import SingletonWallet from '@/Wallet/SingletonWallet';
-import LedgerWallet from '@/Wallet/LedgerWallet';
+import { MnemonicWallet } from '@/Wallet/MnemonicWallet';
+import { SingletonWallet } from '@/Wallet/SingletonWallet';
+import { LedgerWallet } from '@/Wallet/Ledger';
 
 import { iAssetDescriptionClean } from '@/Asset/types';
 

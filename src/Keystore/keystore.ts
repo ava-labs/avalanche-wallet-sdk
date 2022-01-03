@@ -26,9 +26,9 @@ import {
 } from './types';
 import { xChain } from '@/Network/network';
 import { Buffer } from 'buffer/';
-import MnemonicWallet from '@/Wallet/MnemonicWallet';
+import { MnemonicWallet } from '@/Wallet/MnemonicWallet';
 import Crypto from './Crypto';
-import SingletonWallet from '@/Wallet/SingletonWallet';
+import { SingletonWallet } from '@/Wallet/SingletonWallet';
 import { AccessWalletMultipleInput } from './types';
 // import { keyToKeypair } from '@/helpers/helper'
 import * as bip39 from 'bip39';
