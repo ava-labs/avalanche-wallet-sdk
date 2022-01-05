@@ -79,6 +79,14 @@ export class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
     }
 
     /**
+     * Validates the given string is a valid mnemonic.
+     * @param mnemonic
+     */
+    static validateMnemonic(mnemonic: string): boolean {
+        return bip39.validateMnemonic(mnemonic);
+    }
+
+    /**
      * Signs an EVM transaction on the C chain.
      * @param tx The unsigned transaction
      */

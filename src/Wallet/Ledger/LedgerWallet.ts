@@ -54,12 +54,12 @@ import { getAccountPathAvalanche, getAccountPathEVM } from '@/Wallet/helpers/der
 import { PublicMnemonicWallet } from '@/Wallet/PublicMnemonicWallet';
 import { getAppAvax, getAppEth, getEthAddressKeyFromAccountKey, getLedgerConfigAvax } from '@/Wallet/Ledger/utils';
 import Transport from '@ledgerhq/hw-transport';
-import { ERR_TransportNotSet } from '@/Wallet/Ledger/errors';
+import { ERR_ConfigNotSet, ERR_TransportNotSet } from '@/Wallet/Ledger/errors';
 
 export class LedgerWallet extends PublicMnemonicWallet {
     type: WalletNameType;
-    config: ILedgerAppConfig;
     static transport: Transport | undefined;
+    static config: ILedgerAppConfig | undefined;
     accountIndex: number;
 
     /**
@@ -69,21 +69,24 @@ export class LedgerWallet extends PublicMnemonicWallet {
      * @param accountIndex The given xpubs must match this index
      * @param config
      */
-    constructor(xpubAVM: string, xpubEVM: string, accountIndex: number, config: ILedgerAppConfig) {
+    constructor(xpubAVM: string, xpubEVM: string, accountIndex: number) {
         super(xpubAVM, xpubEVM);
 
         this.type = 'ledger';
-        this.config = config;
         this.accountIndex = accountIndex;
     }
 
-    static setTransport(transport: Transport) {
+    static async setTransport(transport: Transport) {
         LedgerWallet.transport = transport;
 
         transport.on('disconnect', () => {
             console.log('transport disconnect');
             LedgerWallet.transport = undefined;
         });
+
+        // Update the config
+        const config = await getLedgerConfigAvax(transport);
+        LedgerWallet.config = config;
     }
     /**
      * Create a new ledger wallet instance from the given transport
@@ -103,7 +106,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
         }
         // Use this transport for all ledger instances
         LedgerWallet.setTransport(transport);
-        const wallet = new LedgerWallet(pubAvax, pubEth, accountIndex, config);
+        const wallet = new LedgerWallet(pubAvax, pubEth, accountIndex);
         return wallet;
     }
 
@@ -313,8 +316,10 @@ export class LedgerWallet extends PublicMnemonicWallet {
         let parseableTxs = ParseableAvmTxEnum;
         let { paths, isAvaxOnly } = await this.getTransactionPaths<AVMUnsignedTx>(unsignedTx, chainId);
 
+        if (!LedgerWallet.config) throw ERR_ConfigNotSet;
+
         // If ledger doesnt support parsing, sign hash
-        let canLedgerParse = this.config.version >= '0.3.1';
+        let canLedgerParse = LedgerWallet.config.version >= '0.3.1';
         let isParsableType = txType in parseableTxs && isAvaxOnly;
 
         let signedTx;
@@ -586,8 +591,11 @@ export class LedgerWallet extends PublicMnemonicWallet {
         let parseableTxs = ParseablePlatformEnum;
 
         let { paths, isAvaxOnly } = await this.getTransactionPaths<PlatformUnsignedTx>(unsignedTx, chainId);
+
+        if (!LedgerWallet.config) throw ERR_ConfigNotSet;
+
         // If ledger doesnt support parsing, sign hash
-        let canLedgerParse = this.config.version >= '0.3.1';
+        let canLedgerParse = LedgerWallet.config.version >= '0.3.1';
         let isParsableType = txType in parseableTxs && isAvaxOnly;
 
         // TODO: Remove after ledger is fixed
