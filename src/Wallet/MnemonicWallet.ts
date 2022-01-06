@@ -1,21 +1,22 @@
 import * as bip39 from 'bip39';
 import * as bip32 from 'bip32';
-import EvmWallet from './EvmWallet';
+import { EvmWallet } from './EvmWallet';
 import { UnsafeWallet, WalletNameType } from './types';
 import { Buffer } from 'avalanche';
-import { Transaction } from '@ethereumjs/tx';
+import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import { Tx as AVMTx, UnsignedTx as AVMUnsignedTx } from 'avalanche/dist/apis/avm';
 import { Tx as PlatformTx, UnsignedTx as PlatformUnsignedTx } from 'avalanche/dist/apis/platformvm';
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
 import { KeyChain as PlatformKeyChain } from 'avalanche/dist/apis/platformvm';
 import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
-import { avalanche } from '@/Network/network';
 import { digestMessage } from '@/utils';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
 import { bintools } from '@/common';
 import { getAccountPathAvalanche, getAccountPathEVM } from '@/Wallet/helpers/derivationHelper';
+import { avalanche } from '@/Network/network';
 
-export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
+//TODO: Should extend public mnemonic wallet
+export class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
     evmWallet: EvmWallet;
     type: WalletNameType;
     mnemonic: string;
@@ -44,17 +45,6 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
         this.accountIndex = account;
         this.mnemonic = mnemonic;
         this.evmWallet = evmWallet;
-    }
-
-    /**
-     * Gets the active address on the C chain in Bech32 encoding
-     * @return
-     * Bech32 representation of the EVM address.
-     */
-    public getEvmAddressBech(): string {
-        let keypair = new EVMKeyPair(avalanche.getHRP(), 'C');
-        let addr = keypair.addressFromPublicKey(Buffer.from(this.ethAccountKey.publicKey));
-        return bintools.addressToString(avalanche.getHRP(), 'C', addr);
     }
 
     /**
@@ -89,10 +79,18 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
     }
 
     /**
+     * Validates the given string is a valid mnemonic.
+     * @param mnemonic
+     */
+    static validateMnemonic(mnemonic: string): boolean {
+        return bip39.validateMnemonic(mnemonic);
+    }
+
+    /**
      * Signs an EVM transaction on the C chain.
      * @param tx The unsigned transaction
      */
-    async signEvm(tx: Transaction): Promise<Transaction> {
+    async signEvm(tx: Transaction | FeeMarketEIP1559Transaction): Promise<Transaction | FeeMarketEIP1559Transaction> {
         return this.evmWallet.signEVM(tx);
     }
 
@@ -138,15 +136,6 @@ export default class MnemonicWallet extends HDWalletAbstract implements UnsafeWa
      */
     private getKeyChainP(): PlatformKeyChain {
         return this.externalScan.getKeyChainP();
-    }
-
-    /**
-     * Gets the active address on the C chain
-     * @return
-     * Hex representation of the EVM address.
-     */
-    public getAddressC(): string {
-        return this.evmWallet.getAddress();
     }
 
     // TODO: Support internal address as well

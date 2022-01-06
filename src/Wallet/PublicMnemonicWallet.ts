@@ -4,37 +4,29 @@ import { UnsignedTx as PlatformUnsignedTx, Tx as PlatformTx } from 'avalanche/di
 import { UnsignedTx as AVMUnsignedTx, Tx as AVMTx } from 'avalanche/dist/apis/avm';
 import { Transaction } from '@ethereumjs/tx';
 import { WalletNameType } from '@/Wallet/types';
-import EvmWallet from '@/Wallet/EvmWallet';
-import EvmWalletReadonly from '@/Wallet/EvmWalletReadonly';
+import { EvmWallet } from '@/Wallet/EvmWallet';
+import { EvmWalletReadonly } from '@/Wallet/EvmWalletReadonly';
 import * as bip32 from 'bip32';
 import { importPublic } from 'ethereumjs-util';
+import { computePublicKey } from 'ethers/lib/utils';
 
-export default class PublicMnemonicWallet extends HDWalletAbstract {
+export class PublicMnemonicWallet extends HDWalletAbstract {
     /**
      *
-     * @param xpubAVM of derivation path m/44'/9000'/0'
-     * @param xpubEVM of derivation path m/44'/60'/0'
+     * @param xpubAVM of derivation path m/44'/9000'/n' where `n` is the account index
+     * @param xpubEVM of derivation path m/44'/60'/0'/0/n where `n` is the account index
      */
     constructor(xpubAVM: string, xpubEVM: string) {
         let avmAcct = bip32.fromBase58(xpubAVM);
-        let evmAcct = bip32.fromBase58(xpubEVM).derivePath('0/0');
+        let evmAcct = bip32.fromBase58(xpubEVM);
         super(avmAcct);
-
         this.type = 'xpub';
-
-        this.evmWallet = new EvmWalletReadonly(importPublic(evmAcct.publicKey));
+        const uncompressedKey = computePublicKey(evmAcct.publicKey);
+        this.evmWallet = new EvmWalletReadonly(uncompressedKey);
     }
 
     evmWallet: EvmWallet | EvmWalletReadonly;
     type: WalletNameType;
-
-    getAddressC(): string {
-        return this.evmWallet.getAddress();
-    }
-
-    getEvmAddressBech(): string {
-        return this.evmWallet.getAddressBech32();
-    }
 
     //@ts-ignore
     signC(tx: EVMUnsignedTx): Promise<EVMTx> {

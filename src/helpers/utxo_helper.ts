@@ -2,54 +2,50 @@ import { UTXOSet as AVMUTXOSet } from 'avalanche/dist/apis/avm/utxos';
 import { UTXOSet as PlatformUTXOSet } from 'avalanche/dist/apis/platformvm/utxos';
 import { UTXOSet as EVMUTXOSet } from 'avalanche/dist/apis/evm/utxos';
 import { xChain, cChain, pChain } from '@/Network/network';
-import { AvmImportChainType } from '@/Wallet/types';
-import { GetStakeResponse } from 'avalanche/dist/common';
+import { ExportChainsC, ExportChainsP, ExportChainsX } from '@/Wallet/types';
+import { chainIdFromAlias } from '@/Network/helpers/idFromAlias';
+import { GetStakeResponse } from 'avalanche/dist/apis/platformvm/interfaces';
 
 /**
  *
  * @param addrs an array of X chain addresses to get the atomic utxos of
- * @param chainID Which chain to check agains, either `P` or `C`
+ * @param sourceChain Which chain to check against, either `P` or `C`
  */
-export async function avmGetAtomicUTXOs(addrs: string[], chainID: AvmImportChainType): Promise<AVMUTXOSet> {
+export async function avmGetAtomicUTXOs(addrs: string[], sourceChain: ExportChainsX): Promise<AVMUTXOSet> {
     const selection = addrs.slice(0, 1024);
     const remaining = addrs.slice(1024);
 
-    let utxoSet;
-    if (chainID === 'P') {
-        utxoSet = (await xChain.getUTXOs(selection, pChain.getBlockchainID())).utxos;
-    } else {
-        utxoSet = (await xChain.getUTXOs(selection, cChain.getBlockchainID())).utxos;
-    }
+    const sourceChainId = chainIdFromAlias(sourceChain);
+    let utxoSet = (await xChain.getUTXOs(selection, sourceChainId)).utxos;
 
     if (remaining.length > 0) {
-        const nextSet = await avmGetAtomicUTXOs(remaining, chainID);
+        const nextSet = await avmGetAtomicUTXOs(remaining, sourceChain);
         utxoSet = utxoSet.merge(nextSet);
     }
     return utxoSet;
 }
 
 // todo: Use end index to get ALL utxos
-export async function platformGetAtomicUTXOs(addrs: string[]): Promise<PlatformUTXOSet> {
+export async function platformGetAtomicUTXOs(addrs: string[], sourceChain: ExportChainsP): Promise<PlatformUTXOSet> {
     let selection = addrs.slice(0, 1024);
     let remaining = addrs.slice(1024);
+    const sourceChainId = chainIdFromAlias(sourceChain);
 
-    let utxoSet = (await pChain.getUTXOs(selection, xChain.getBlockchainID())).utxos;
+    let utxoSet = (await pChain.getUTXOs(selection, sourceChainId)).utxos;
     if (remaining.length > 0) {
-        // @ts-ignore
-        let nextSet = await platformGetAtomicUTXOs(remaining);
-        // @ts-ignore
+        let nextSet = await platformGetAtomicUTXOs(remaining, sourceChain);
         utxoSet = utxoSet.merge(nextSet);
     }
     return utxoSet;
 }
 
 // todo: Use end index to get ALL utxos
-export async function evmGetAtomicUTXOs(addrs: string[]): Promise<EVMUTXOSet> {
+export async function evmGetAtomicUTXOs(addrs: string[], sourceChain: ExportChainsC): Promise<EVMUTXOSet> {
     if (addrs.length > 1024) {
         throw new Error('Number of addresses can not be greater than 1024.');
     }
-
-    let result: EVMUTXOSet = (await cChain.getUTXOs(addrs, xChain.getBlockchainID())).utxos;
+    const sourceChainId = chainIdFromAlias(sourceChain);
+    let result: EVMUTXOSet = (await cChain.getUTXOs(addrs, sourceChainId)).utxos;
     return result;
 }
 

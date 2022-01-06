@@ -1,4 +1,4 @@
-import MnemonicWallet from '@/Wallet/MnemonicWallet';
+import { MnemonicWallet } from '@/Wallet/MnemonicWallet';
 import { TEST_MNEMONIC } from './constants';
 
 jest.mock('web3', () => {
@@ -53,5 +53,9 @@ describe('Mnemonic Wallet', () => {
 
     it('can return initial C address', () => {
         expect(wallet.getAddressC()).toEqual('0x6a23c16777a3A194b2773df90FEB8753A8e619Ee');
+    });
+
+    it('can return C chain bech32 address', () => {
+        expect(wallet.getEvmAddressBech()).toEqual('C-avax1t5dhkc4myzvyqsct3dmaue2hc43na8qh3v6xx4');
     });
 });
