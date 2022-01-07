@@ -5,6 +5,7 @@ export * as History from '@/History';
 
 export * from './types';
 export * from './Wallet';
+export * from './Explorer';
 
 import * as NetworkConstants from '@/Network/constants';
 import * as Utils from '@/utils';

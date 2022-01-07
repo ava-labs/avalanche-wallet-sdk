@@ -97,6 +97,7 @@ import {
     estimateImportGasFeeFromMockTx,
     getBaseFeeRecommended,
 } from '@/helpers/gas_helper';
+import { getErc20History, getNormalHistory } from '@/Explorer/snowtrace';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -1180,14 +1181,47 @@ export abstract class WalletProvider {
         return await getAddressHistory(addrs, limit, pChain.getBlockchainID());
     }
 
+    /**
+     * Returns atomic history for this wallet on the C chain.
+     * @remarks Excludes EVM transactions.
+     * @param limit
+     */
     async getHistoryC(limit = 0): Promise<ITransactionData[]> {
         let addrs = [this.getEvmAddressBech(), ...(await this.getAllAddressesX())];
         return await getAddressHistory(addrs, limit, cChain.getBlockchainID());
     }
 
+    /**
+     * Returns history for this wallet on the C chain.
+     * @remarks Excludes atomic C chain import/export transactions.
+     */
     async getHistoryEVM() {
         let addr = this.getAddressC();
-        return await getAddressHistoryEVM(addr);
+
+        const evmHist = await getAddressHistoryEVM(addr);
+
+        return evmHist;
+    }
+
+    /**
+     * Returns the erc 20 activity for this wallet's C chain address. Uses Snowtrace APIs.
+     * @param offset Number of items per page. Optional.
+     * @param page If provided will paginate the results. Optional.
+     * @param contractAddress Filter activity by the ERC20 contract address. Optional.
+     */
+    async getHistoryERC20(page?: number, offset?: number, contractAddress?: string) {
+        const erc20Hist = await getErc20History(this.getAddressC(), activeNetwork, page, offset, contractAddress);
+        return erc20Hist.result;
+    }
+
+    /**
+     * Get a list of 'Normal' Transactions for wallet's C chain address. Uses Snowtrace APIs.
+     * @param offset Number of items per page. Optional.
+     * @param page If provided will paginate the results. Optional.
+     */
+    async getHistoryNormalTx(page?: number, offset?: number) {
+        const normalHist = await getNormalHistory(this.getAddressC(), activeNetwork, page, offset);
+        return normalHist.result;
     }
 
     async getHistory(limit: number = 0): Promise<HistoryItemType[]> {
