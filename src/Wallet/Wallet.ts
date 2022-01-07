@@ -1197,10 +1197,7 @@ export abstract class WalletProvider {
      */
     async getHistoryEVM() {
         let addr = this.getAddressC();
-
-        const evmHist = await getAddressHistoryEVM(addr);
-
-        return evmHist;
+        return await getAddressHistoryEVM(addr);
     }
 
     /**
