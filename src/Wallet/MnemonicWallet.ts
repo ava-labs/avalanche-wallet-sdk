@@ -13,7 +13,6 @@ import { CypherAES, digestMessage } from '@/utils';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
 import { bintools } from '@/common';
 import { getAccountPathAvalanche, getAccountPathEVM } from '@/Wallet/helpers/derivationHelper';
-import { avalanche } from '@/Network/network';
 
 //TODO: Should extend public mnemonic wallet
 export class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
