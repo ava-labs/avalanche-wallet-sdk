@@ -42,7 +42,7 @@ describe('CypherAES', function () {
     });
 
     it('series of mnemonics', () => {
-        const amt = 1000;
+        const amt = 5000;
         for (let i = 0; i < amt; i++) {
             const mnemonic = bip39.generateMnemonic(256);
             const cypher = new CypherAES(mnemonic);
