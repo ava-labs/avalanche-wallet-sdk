@@ -9,7 +9,7 @@ import { Tx as PlatformTx, UnsignedTx as PlatformUnsignedTx } from 'avalanche/di
 import { KeyPair as AVMKeyPair, KeyChain as AVMKeyChain } from 'avalanche/dist/apis/avm/keychain';
 import { KeyChain as PlatformKeyChain } from 'avalanche/dist/apis/platformvm';
 import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
-import { digestMessage } from '@/utils';
+import { CypherAES, digestMessage } from '@/utils';
 import { HDWalletAbstract } from '@/Wallet/HDWalletAbstract';
 import { bintools } from '@/common';
 import { getAccountPathAvalanche, getAccountPathEVM } from '@/Wallet/helpers/derivationHelper';
@@ -19,7 +19,7 @@ import { avalanche } from '@/Network/network';
 export class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
     evmWallet: EvmWallet;
     type: WalletNameType;
-    mnemonic: string;
+    private mnemonicCypher: CypherAES;
     accountIndex: number;
 
     private ethAccountKey: bip32.BIP32Interface;
@@ -43,7 +43,7 @@ export class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
         let evmWallet = new EvmWallet(ethKey!);
 
         this.accountIndex = account;
-        this.mnemonic = mnemonic;
+        this.mnemonicCypher = new CypherAES(mnemonic);
         this.evmWallet = evmWallet;
     }
 
@@ -52,6 +52,13 @@ export class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
      */
     public getEvmPrivateKeyHex(): string {
         return this.evmWallet.getPrivateKeyHex();
+    }
+
+    /**
+     * Return the mnemonic phrase for this wallet.
+     */
+    public getMnemonic(): string {
+        return this.mnemonicCypher.getValue();
     }
 
     /**
