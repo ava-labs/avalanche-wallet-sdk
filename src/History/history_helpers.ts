@@ -1,15 +1,16 @@
 // If any of the outputs has a different chain ID, that's the destination chain
 // else return current chain
-import { iHistoryNftFamilyBalance, ITransactionData, UTXO } from '@/History';
+import { iHistoryNftFamilyBalance } from '@/History';
 import { BN } from 'avalanche';
 import { AVMConstants } from 'avalanche/dist/apis/avm';
 import { parseNftPayload } from '@/utils';
+import { OrteliusAvalancheTx, OrteliusUTXO } from '@/Explorer';
 
 /**
  * Returns the destination chain id.
  * @param tx Tx data from the explorer.
  */
-export function findDestinationChain(tx: ITransactionData): string {
+export function findDestinationChain(tx: OrteliusAvalancheTx): string {
     let baseChain = tx.chainID;
     let outs = tx.outputs || [];
 
@@ -27,7 +28,7 @@ export function findDestinationChain(tx: ITransactionData): string {
  * Returns the source chain id.
  * @param tx Tx data from the explorer.
  */
-export function findSourceChain(tx: ITransactionData): string {
+export function findSourceChain(tx: OrteliusAvalancheTx): string {
     let baseChain = tx.chainID;
     let ins = tx.inputs || [];
 
@@ -44,7 +45,7 @@ export function findSourceChain(tx: ITransactionData): string {
  * @param ownerAddrs Addresses to check against
  * @param output The UTXO
  */
-export function isOutputOwner(ownerAddrs: string[], output: UTXO): boolean {
+export function isOutputOwner(ownerAddrs: string[], output: OrteliusUTXO): boolean {
     let outAddrs = output.addresses;
     if (!outAddrs) return false;
 
@@ -55,7 +56,7 @@ export function isOutputOwner(ownerAddrs: string[], output: UTXO): boolean {
     return totAddrs.length > 0;
 }
 
-export function isOutputOwnerC(ownerAddr: string, output: UTXO): boolean {
+export function isOutputOwnerC(ownerAddr: string, output: OrteliusUTXO): boolean {
     let outAddrs = output.caddresses;
     if (!outAddrs) return false;
     return outAddrs.includes(ownerAddr);
@@ -65,9 +66,9 @@ export function isOutputOwnerC(ownerAddr: string, output: UTXO): boolean {
  * Given an array of transactions from the explorer, filter out duplicate transactions
  * @param txs
  */
-export function filterDuplicateTransactions(txs: ITransactionData[]) {
+export function filterDuplicateTransactions(txs: OrteliusAvalancheTx[]) {
     let txsIds: string[] = [];
-    let filtered: ITransactionData[] = [];
+    let filtered: OrteliusAvalancheTx[] = [];
 
     for (let i = 0; i < txs.length; i++) {
         let tx = txs[i];
@@ -92,7 +93,7 @@ export function filterDuplicateTransactions(txs: ITransactionData[]) {
  * @param isStake Set to `true` if looking for staking utxos.
  */
 export function getAssetBalanceFromUTXOs(
-    utxos: UTXO[],
+    utxos: OrteliusUTXO[],
     addresses: string[],
     assetID: string,
     chainID: string,
@@ -117,7 +118,11 @@ export function getAssetBalanceFromUTXOs(
     return tot;
 }
 
-export function getNFTBalanceFromUTXOs(utxos: UTXO[], addresses: string[], assetID: string): iHistoryNftFamilyBalance {
+export function getNFTBalanceFromUTXOs(
+    utxos: OrteliusUTXO[],
+    addresses: string[],
+    assetID: string
+): iHistoryNftFamilyBalance {
     let nftUTXOs = utxos.filter((utxo) => {
         if (
             utxo.outputType === AVMConstants.NFTXFEROUTPUTID &&
@@ -161,7 +166,7 @@ export function getNFTBalanceFromUTXOs(utxos: UTXO[], addresses: string[], asset
  * @param isStake Set to `true` if looking for staking utxos.
  */
 export function getEvmAssetBalanceFromUTXOs(
-    utxos: UTXO[],
+    utxos: OrteliusUTXO[],
     address: string,
     assetID: string,
     chainID: string,

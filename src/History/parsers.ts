@@ -1,13 +1,4 @@
-import {
-    HistoryItemType,
-    HistoryItemTypeName,
-    iHistoryEVMTx,
-    iHistoryImportExport,
-    iHistoryItem,
-    iHistoryStaking,
-    ITransactionData,
-    ITransactionDataEVM,
-} from '@/History';
+import { HistoryItemType, HistoryItemTypeName, iHistoryImportExport, iHistoryItem, iHistoryStaking } from '@/History';
 import { findSourceChain, getEvmAssetBalanceFromUTXOs, parseMemo } from '@/History/history_helpers';
 import { activeNetwork, xChain } from '@/Network/network';
 import { bnToAvaxC, bnToAvaxP, bnToAvaxX } from '@/utils';
@@ -16,9 +7,10 @@ import { getBaseTxSummary } from '@/History/base_tx_parser';
 import { idToChainAlias } from '@/Network/helpers/aliasFromNetworkID';
 import { getExportSummary, getImportSummary } from '@/History/importExportParser';
 import { getOutputTotals, getOwnedOutputs, getRewardOuts, getStakeAmount } from '@/History/utxo_helpers';
+import { OrteliusAvalancheTx } from '@/Explorer';
 
 export async function getTransactionSummary(
-    tx: ITransactionData,
+    tx: OrteliusAvalancheTx,
     walletAddrs: string[],
     evmAddress: string
 ): Promise<HistoryItemType> {
@@ -45,7 +37,7 @@ export async function getTransactionSummary(
     }
 }
 
-function getUnsupportedSummary(tx: ITransactionData): iHistoryItem {
+function getUnsupportedSummary(tx: OrteliusAvalancheTx): iHistoryItem {
     return {
         id: tx.id,
         type: 'not_supported',
@@ -54,7 +46,7 @@ function getUnsupportedSummary(tx: ITransactionData): iHistoryItem {
     };
 }
 
-function getStakingSummary(tx: ITransactionData, ownerAddrs: string[]): iHistoryStaking {
+function getStakingSummary(tx: OrteliusAvalancheTx, ownerAddrs: string[]): iHistoryStaking {
     let time = new Date(tx.timestamp);
 
     // let pChainID = activeNetwork.pChainID;
@@ -102,7 +94,7 @@ function getStakingSummary(tx: ITransactionData, ownerAddrs: string[]): iHistory
 }
 
 // Returns the summary for a C chain import TX
-function getImportSummaryC(tx: ITransactionData, ownerAddr: string) {
+function getImportSummaryC(tx: OrteliusAvalancheTx, ownerAddr: string) {
     let sourceChain = findSourceChain(tx);
     let chainAliasFrom = idToChainAlias(sourceChain);
     let chainAliasTo = idToChainAlias(tx.chainID);

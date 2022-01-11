@@ -1,6 +1,6 @@
-import { ITransactionData, UTXO } from '@/History/raw_types';
 import { BN } from 'avalanche';
 import { iHistoryBaseTxTokenOwners } from '@/History/parsed_types';
+import { OrteliusAvalancheTx, OrteliusUTXO } from '@/Explorer';
 
 export function filterDuplicateStrings(vals: string[]) {
     return vals.filter((val, i) => vals.indexOf(val) === i);
@@ -12,7 +12,7 @@ export function isArraysOverlap(arr1: any[], arr2: any[]): boolean {
 }
 
 // To get the stake amount, sum the non-reward output utxos.
-export function getStakeAmount(tx: ITransactionData): BN {
+export function getStakeAmount(tx: OrteliusAvalancheTx): BN {
     let outs = tx.outputs || [];
     let nonRewardUtxos = outs.filter((utxo) => !utxo.rewardUtxo && utxo.stake);
 
@@ -25,7 +25,7 @@ export function getStakeAmount(tx: ITransactionData): BN {
  * @param outs UTXOs to filter
  * @param myAddrs Addresses to filter by
  */
-export function getOwnedOutputs(outs: UTXO[], myAddrs: string[]) {
+export function getOwnedOutputs(outs: OrteliusUTXO[], myAddrs: string[]) {
     return outs.filter((out) => {
         let outAddrs = out.addresses || [];
         return isArraysOverlap(myAddrs, outAddrs);
@@ -36,7 +36,7 @@ export function getOwnedOutputs(outs: UTXO[], myAddrs: string[]) {
  * Returns addresses of the given UTXOs
  * @param outs UTXOs to get the addresses of.
  */
-export function getAddresses(outs: UTXO[]): string[] {
+export function getAddresses(outs: OrteliusUTXO[]): string[] {
     let allAddrs: string[] = [];
 
     for (let i = 0; i < outs.length; i++) {
@@ -54,7 +54,7 @@ export function getAddresses(outs: UTXO[]): string[] {
  * @param outs
  * @param assetID
  */
-export function getAssetOutputs(outs: UTXO[], assetID: string) {
+export function getAssetOutputs(outs: OrteliusUTXO[], assetID: string) {
     return outs.filter((out) => out.assetID === assetID);
 }
 
@@ -63,20 +63,20 @@ export function getAssetOutputs(outs: UTXO[], assetID: string) {
  * @param outs UTXOs to filter
  * @param myAddrs Addresses to filter by
  */
-export function getNotOwnedOutputs(outs: UTXO[], myAddrs: string[]) {
+export function getNotOwnedOutputs(outs: OrteliusUTXO[], myAddrs: string[]) {
     return outs.filter((out) => {
         let outAddrs = out.addresses || [];
         return !isArraysOverlap(myAddrs, outAddrs);
     });
 }
 
-export function getOutputTotals(outs: UTXO[]) {
+export function getOutputTotals(outs: OrteliusUTXO[]) {
     return outs.reduce((acc, out) => {
         return acc.add(new BN(out.amount));
     }, new BN(0));
 }
 
-export function getRewardOuts(outs: UTXO[]) {
+export function getRewardOuts(outs: OrteliusUTXO[]) {
     return outs.filter((out) => out.rewardUtxo);
 }
 
@@ -85,7 +85,7 @@ export function getRewardOuts(outs: UTXO[]) {
  * @param outs UTXOs to filter
  * @param chainID Chain ID to filter by
  */
-export function getOutputsOfChain(outs: UTXO[], chainID: string) {
+export function getOutputsOfChain(outs: OrteliusUTXO[], chainID: string) {
     return outs.filter((out) => out.chainID === chainID);
 }
 
@@ -94,7 +94,7 @@ export function getOutputsOfChain(outs: UTXO[], chainID: string) {
  * @param outs UTXOs to filter
  * @param type Output type to filter by
  */
-export function getOutputsOfType(outs: UTXO[], type: number) {
+export function getOutputsOfType(outs: OrteliusUTXO[], type: number) {
     return outs.filter((out) => out.outputType === type);
 }
 
@@ -102,7 +102,7 @@ export function getOutputsOfType(outs: UTXO[], type: number) {
  * Returns an array of Asset IDs from the given UTXOs
  * @param outs Array of UTXOs
  */
-export function getOutputsAssetIDs(outs: UTXO[]): string[] {
+export function getOutputsAssetIDs(outs: OrteliusUTXO[]): string[] {
     let res = [];
 
     for (let i = 0; i < outs.length; i++) {
@@ -116,7 +116,7 @@ export function getOutputsAssetIDs(outs: UTXO[]): string[] {
  * Returns a map of asset id to owner addresses
  * @param outs
  */
-export function getOutputsAssetOwners(outs: UTXO[]): iHistoryBaseTxTokenOwners {
+export function getOutputsAssetOwners(outs: OrteliusUTXO[]): iHistoryBaseTxTokenOwners {
     let assetIDs = getOutputsAssetIDs(outs);
     let res: iHistoryBaseTxTokenOwners = {};
 

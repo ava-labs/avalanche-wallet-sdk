@@ -1,3 +1,5 @@
+export type SnowtraceTx = SnowtraceNormalTx | SnowtraceErc20Tx;
+
 export interface SnowtraceErc20Tx {
     blockNumber: string;
     timeStamp: string;
@@ -39,6 +41,22 @@ export interface SnowtraceNormalTx {
     cumulativeGasUsed: string;
     gasUsed: string;
     confirmations: string;
+}
+
+/**
+ * Type guard for SnowtraceErc20Tx
+ * @param tx
+ */
+export function isSnowtraceErc20Tx(tx: SnowtraceNormalTx | SnowtraceErc20Tx): tx is SnowtraceErc20Tx {
+    return tx.hasOwnProperty('tokenName');
+}
+
+/**
+ * Type guard for SnowtraceNormalTx
+ * @param tx
+ */
+export function isSnowtraceNormalTx(tx: SnowtraceNormalTx | SnowtraceErc20Tx): tx is SnowtraceNormalTx {
+    return !tx.hasOwnProperty('tokenName');
 }
 
 export interface SnowtraceResponse<ResponseType> {

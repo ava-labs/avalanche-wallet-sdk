@@ -66,14 +66,9 @@ import { EvmWalletReadonly } from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
 import {
     filterDuplicateTransactions,
-    getAddressHistory,
-    getAddressHistoryEVM,
     getTransactionSummary,
     getTransactionSummaryEVM,
-    getTx,
-    getTxEvm,
     HistoryItemType,
-    ITransactionData,
 } from '@/History';
 import { bintools } from '@/common';
 import { ChainIdType } from '@/types';
@@ -98,6 +93,7 @@ import {
     getBaseFeeRecommended,
 } from '@/helpers/gas_helper';
 import { getErc20History, getNormalHistory } from '@/Explorer/snowtrace';
+import { getAddressHistory, getAddressHistoryEVM, getTx, getTxEvm, OrteliusAvalancheTx } from '@/Explorer';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -1171,12 +1167,12 @@ export abstract class WalletProvider {
         }
     }
 
-    async getHistoryX(limit = 0): Promise<ITransactionData[]> {
+    async getHistoryX(limit = 0): Promise<OrteliusAvalancheTx[]> {
         let addrs = await this.getAllAddressesX();
         return await getAddressHistory(addrs, limit, xChain.getBlockchainID());
     }
 
-    async getHistoryP(limit = 0): Promise<ITransactionData[]> {
+    async getHistoryP(limit = 0): Promise<OrteliusAvalancheTx[]> {
         let addrs = await this.getAllAddressesP();
         return await getAddressHistory(addrs, limit, pChain.getBlockchainID());
     }
@@ -1186,7 +1182,7 @@ export abstract class WalletProvider {
      * @remarks Excludes EVM transactions.
      * @param limit
      */
-    async getHistoryC(limit = 0): Promise<ITransactionData[]> {
+    async getHistoryC(limit = 0): Promise<OrteliusAvalancheTx[]> {
         let addrs = [this.getEvmAddressBech(), ...(await this.getAllAddressesX())];
         return await getAddressHistory(addrs, limit, cChain.getBlockchainID());
     }
@@ -1208,7 +1204,7 @@ export abstract class WalletProvider {
      */
     async getHistoryERC20(page?: number, offset?: number, contractAddress?: string) {
         const erc20Hist = await getErc20History(this.getAddressC(), activeNetwork, page, offset, contractAddress);
-        return erc20Hist.result;
+        return erc20Hist;
     }
 
     /**
@@ -1218,7 +1214,7 @@ export abstract class WalletProvider {
      */
     async getHistoryNormalTx(page?: number, offset?: number) {
         const normalHist = await getNormalHistory(this.getAddressC(), activeNetwork, page, offset);
-        return normalHist.result;
+        return normalHist;
     }
 
     async getHistory(limit: number = 0): Promise<HistoryItemType[]> {
