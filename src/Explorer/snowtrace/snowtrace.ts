@@ -2,7 +2,7 @@ import axios from 'axios';
 import { SNOWTRACE_MAINNET, SNOWTRACE_TESTNET } from '@/Explorer/snowtrace/constants';
 import { isFujiNetwork, isMainnetNetwork, NetworkConfig } from '@/Network';
 import { SnowtraceErc20Tx, SnowtraceNormalTx, SnowtraceResponse } from '@/Explorer/snowtrace/types';
-import { filterDuplicateTransactions } from '@/Explorer';
+import { filterDuplicateTransactions } from './utils';
 
 /**
  *

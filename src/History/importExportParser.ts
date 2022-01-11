@@ -1,10 +1,10 @@
 import { iHistoryImportExport } from '@/History/parsed_types';
-import { findDestinationChain, findSourceChain, getAssetBalanceFromUTXOs, parseMemo } from '@/History/history_helpers';
+import { parseMemo } from '@/History/history_helpers';
 import { idToChainAlias } from '@/Network/helpers/aliasFromNetworkID';
 import { activeNetwork, xChain } from '@/Network/network';
 import { bnToAvaxX } from '@/utils';
 import { getOutputsOfChain, getOutputTotals, getOwnedOutputs } from '@/History/utxo_helpers';
-import { OrteliusAvalancheTx } from '@/Explorer';
+import { findDestinationChain, findSourceChain, OrteliusAvalancheTx } from '@/Explorer';
 
 export function getImportSummary(tx: OrteliusAvalancheTx, addresses: string[]): iHistoryImportExport {
     let sourceChain = findSourceChain(tx);

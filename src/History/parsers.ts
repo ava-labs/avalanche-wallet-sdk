@@ -1,5 +1,5 @@
 import { HistoryItemType, HistoryItemTypeName, iHistoryImportExport, iHistoryItem, iHistoryStaking } from '@/History';
-import { findSourceChain, getEvmAssetBalanceFromUTXOs, parseMemo } from '@/History/history_helpers';
+import { parseMemo } from '@/History/history_helpers';
 import { activeNetwork, xChain } from '@/Network/network';
 import { bnToAvaxC, bnToAvaxP, bnToAvaxX } from '@/utils';
 import { BN } from 'avalanche';
@@ -7,7 +7,8 @@ import { getBaseTxSummary } from '@/History/base_tx_parser';
 import { idToChainAlias } from '@/Network/helpers/aliasFromNetworkID';
 import { getExportSummary, getImportSummary } from '@/History/importExportParser';
 import { getOutputTotals, getOwnedOutputs, getRewardOuts, getStakeAmount } from '@/History/utxo_helpers';
-import { OrteliusAvalancheTx } from '@/Explorer';
+import { findSourceChain, OrteliusAvalancheTx } from '@/Explorer';
+import { getEvmAssetBalanceFromUTXOs } from '@/Explorer/ortelius/utxoUtils';
 
 export async function getTransactionSummary(
     tx: OrteliusAvalancheTx,

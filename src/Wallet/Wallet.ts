@@ -64,12 +64,7 @@ import { NO_NETWORK } from '@/errors';
 import { avaxCtoX, bnToLocaleString, getTxFeeP, getTxFeeX, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils';
 import { EvmWalletReadonly } from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
-import {
-    filterDuplicateTransactions,
-    getTransactionSummary,
-    getTransactionSummaryEVM,
-    HistoryItemType,
-} from '@/History';
+import { getTransactionSummary, getTransactionSummaryEVM, HistoryItemType } from '@/History';
 import { bintools } from '@/common';
 import { ChainIdType } from '@/types';
 import {
@@ -93,7 +88,14 @@ import {
     getBaseFeeRecommended,
 } from '@/helpers/gas_helper';
 import { getErc20History, getNormalHistory } from '@/Explorer/snowtrace';
-import { getAddressHistory, getAddressHistoryEVM, getTx, getTxEvm, OrteliusAvalancheTx } from '@/Explorer';
+import {
+    filterDuplicateOrtelius,
+    getAddressHistory,
+    getAddressHistoryEVM,
+    getTx,
+    getTxEvm,
+    OrteliusAvalancheTx,
+} from '@/Explorer';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -1224,7 +1226,7 @@ export abstract class WalletProvider {
             this.getHistoryC(limit),
         ]);
 
-        let txsXPC = filterDuplicateTransactions(txsX.concat(txsP, txsC));
+        let txsXPC = filterDuplicateOrtelius(txsX.concat(txsP, txsC));
 
         let txsEVM = await this.getHistoryEVM();
 
@@ -1282,5 +1284,13 @@ export abstract class WalletProvider {
 
         let rawData = await getTxEvm(txHash);
         return getTransactionSummaryEVM(rawData, addrC);
+    }
+
+    async parseOrteliusTx(tx: OrteliusAvalancheTx): Promise<HistoryItemType> {
+        let addrsX = await this.getAllAddressesX();
+        let addrBechC = this.getEvmAddressBech();
+        let addrs = [...addrsX, addrBechC];
+        let addrC = this.getAddressC();
+        return await getTransactionSummary(tx, addrs, addrC);
     }
 }
