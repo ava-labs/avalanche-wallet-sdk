@@ -1,4 +1,6 @@
 import { OrteliusAvalancheTx } from '@/Explorer';
+import { BN } from 'avalanche';
+import { getOutputTotals } from '@/Explorer/ortelius/utxoUtils';
 
 /**
  * Given an array of transactions from the explorer, filter out duplicate transactions
@@ -56,4 +58,13 @@ export function findDestinationChain(tx: OrteliusAvalancheTx): string {
         if (outChainId !== baseChain) return outChainId;
     }
     return baseChain;
+}
+
+// To get the stake amount, sum the non-reward output utxos.
+export function getStakeAmount(tx: OrteliusAvalancheTx): BN {
+    let outs = tx.outputs || [];
+    let nonRewardUtxos = outs.filter((utxo) => !utxo.rewardUtxo && utxo.stake);
+
+    let tot = getOutputTotals(nonRewardUtxos);
+    return tot;
 }

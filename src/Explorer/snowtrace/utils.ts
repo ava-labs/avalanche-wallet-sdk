@@ -1,4 +1,4 @@
-import { SnowtraceErc20Tx, SnowtraceNormalTx, SnowtraceTx } from '@/Explorer';
+import { SnowtraceErc20Tx, SnowtraceNormalTx } from '@/Explorer';
 
 /**
  * Filter duplicate Snowtrace transactions

@@ -6,9 +6,13 @@ import { BN } from 'avalanche';
 import { getBaseTxSummary } from '@/History/base_tx_parser';
 import { idToChainAlias } from '@/Network/helpers/aliasFromNetworkID';
 import { getExportSummary, getImportSummary } from '@/History/importExportParser';
-import { getOutputTotals, getOwnedOutputs, getRewardOuts, getStakeAmount } from '@/History/utxo_helpers';
-import { findSourceChain, OrteliusAvalancheTx } from '@/Explorer';
-import { getEvmAssetBalanceFromUTXOs } from '@/Explorer/ortelius/utxoUtils';
+import { findSourceChain, getStakeAmount, OrteliusAvalancheTx } from '@/Explorer';
+import {
+    getEvmAssetBalanceFromUTXOs,
+    getOutputTotals,
+    getOwnedOutputs,
+    getRewardOuts,
+} from '@/Explorer/ortelius/utxoUtils';
 
 export async function getTransactionSummary(
     tx: OrteliusAvalancheTx,

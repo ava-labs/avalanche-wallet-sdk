@@ -20,7 +20,7 @@ import {
     getOutputsOfType,
     getOutputTotals,
     getOwnedOutputs,
-} from '@/History/utxo_helpers';
+} from '@/Explorer/ortelius/utxoUtils';
 import { getAvaxAssetID } from '@/Network';
 import { OrteliusAvalancheTx, OrteliusUTXO } from '@/Explorer';
 
