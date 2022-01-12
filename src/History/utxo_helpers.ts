@@ -1,5 +1,5 @@
 import { BN } from 'avalanche';
-import { iHistoryBaseTxTokenOwners } from '@/History/parsed_types';
+import { iHistoryBaseTxTokenOwners } from '@/History/types';
 import { OrteliusAvalancheTx, OrteliusUTXO } from '@/Explorer';
 
 export function filterDuplicateStrings(vals: string[]) {

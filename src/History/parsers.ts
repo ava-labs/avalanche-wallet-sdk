@@ -1,7 +1,7 @@
 import { HistoryItemType, HistoryItemTypeName, iHistoryImportExport, iHistoryItem, iHistoryStaking } from '@/History';
 import { parseMemo } from '@/History/history_helpers';
 import { activeNetwork, xChain } from '@/Network/network';
-import { bnToAvaxC, bnToAvaxP, bnToAvaxX } from '@/utils';
+import { bnToAvaxP, bnToAvaxX } from '@/utils';
 import { BN } from 'avalanche';
 import { getBaseTxSummary } from '@/History/base_tx_parser';
 import { idToChainAlias } from '@/Network/helpers/aliasFromNetworkID';

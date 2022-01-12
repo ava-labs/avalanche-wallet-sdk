@@ -1,4 +1,4 @@
-import { iHistoryImportExport } from '@/History/parsed_types';
+import { iHistoryImportExport } from '@/History/types';
 import { parseMemo } from '@/History/history_helpers';
 import { idToChainAlias } from '@/Network/helpers/aliasFromNetworkID';
 import { activeNetwork, xChain } from '@/Network/network';

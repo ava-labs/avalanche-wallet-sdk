@@ -1,4 +1,4 @@
-import { iHistoryEVMTx } from '@/History/parsed_types';
+import { iHistoryEVMTx } from '@/History/types';
 import { bnToAvaxC } from '@/utils';
 import { BN } from 'avalanche';
 import { OrteliusEvmTx } from '@/Explorer';
