@@ -64,17 +64,7 @@ import { NO_NETWORK } from '@/errors';
 import { avaxCtoX, bnToLocaleString, getTxFeeP, getTxFeeX, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils';
 import { EvmWalletReadonly } from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
-import {
-    filterDuplicateTransactions,
-    getAddressHistory,
-    getAddressHistoryEVM,
-    getTransactionSummary,
-    getTransactionSummaryEVM,
-    getTx,
-    getTxEvm,
-    HistoryItemType,
-    ITransactionData,
-} from '@/History';
+import { getTransactionSummary, getTransactionSummaryEVM, HistoryItemType } from '@/History';
 import { bintools } from '@/common';
 import { ChainIdType } from '@/types';
 import {
@@ -97,6 +87,15 @@ import {
     estimateImportGasFeeFromMockTx,
     getBaseFeeRecommended,
 } from '@/helpers/gas_helper';
+import { getErc20History, getNormalHistory } from '@/Explorer/snowtrace';
+import {
+    filterDuplicateOrtelius,
+    getAddressHistory,
+    getAddressHistoryEVM,
+    getTx,
+    getTxEvm,
+    OrteliusAvalancheTx,
+} from '@/Explorer';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -1170,24 +1169,54 @@ export abstract class WalletProvider {
         }
     }
 
-    async getHistoryX(limit = 0): Promise<ITransactionData[]> {
+    async getHistoryX(limit = 0): Promise<OrteliusAvalancheTx[]> {
         let addrs = await this.getAllAddressesX();
         return await getAddressHistory(addrs, limit, xChain.getBlockchainID());
     }
 
-    async getHistoryP(limit = 0): Promise<ITransactionData[]> {
+    async getHistoryP(limit = 0): Promise<OrteliusAvalancheTx[]> {
         let addrs = await this.getAllAddressesP();
         return await getAddressHistory(addrs, limit, pChain.getBlockchainID());
     }
 
-    async getHistoryC(limit = 0): Promise<ITransactionData[]> {
+    /**
+     * Returns atomic history for this wallet on the C chain.
+     * @remarks Excludes EVM transactions.
+     * @param limit
+     */
+    async getHistoryC(limit = 0): Promise<OrteliusAvalancheTx[]> {
         let addrs = [this.getEvmAddressBech(), ...(await this.getAllAddressesX())];
         return await getAddressHistory(addrs, limit, cChain.getBlockchainID());
     }
 
+    /**
+     * Returns history for this wallet on the C chain.
+     * @remarks Excludes atomic C chain import/export transactions.
+     */
     async getHistoryEVM() {
         let addr = this.getAddressC();
         return await getAddressHistoryEVM(addr);
+    }
+
+    /**
+     * Returns the erc 20 activity for this wallet's C chain address. Uses Snowtrace APIs.
+     * @param offset Number of items per page. Optional.
+     * @param page If provided will paginate the results. Optional.
+     * @param contractAddress Filter activity by the ERC20 contract address. Optional.
+     */
+    async getHistoryERC20(page?: number, offset?: number, contractAddress?: string) {
+        const erc20Hist = await getErc20History(this.getAddressC(), activeNetwork, page, offset, contractAddress);
+        return erc20Hist;
+    }
+
+    /**
+     * Get a list of 'Normal' Transactions for wallet's C chain address. Uses Snowtrace APIs.
+     * @param offset Number of items per page. Optional.
+     * @param page If provided will paginate the results. Optional.
+     */
+    async getHistoryNormalTx(page?: number, offset?: number) {
+        const normalHist = await getNormalHistory(this.getAddressC(), activeNetwork, page, offset);
+        return normalHist;
     }
 
     async getHistory(limit: number = 0): Promise<HistoryItemType[]> {
@@ -1197,7 +1226,7 @@ export abstract class WalletProvider {
             this.getHistoryC(limit),
         ]);
 
-        let txsXPC = filterDuplicateTransactions(txsX.concat(txsP, txsC));
+        let txsXPC = filterDuplicateOrtelius(txsX.concat(txsP, txsC));
 
         let txsEVM = await this.getHistoryEVM();
 
@@ -1255,5 +1284,13 @@ export abstract class WalletProvider {
 
         let rawData = await getTxEvm(txHash);
         return getTransactionSummaryEVM(rawData, addrC);
+    }
+
+    async parseOrteliusTx(tx: OrteliusAvalancheTx): Promise<HistoryItemType> {
+        let addrsX = await this.getAllAddressesX();
+        let addrBechC = this.getEvmAddressBech();
+        let addrs = [...addrsX, addrBechC];
+        let addrC = this.getAddressC();
+        return await getTransactionSummary(tx, addrs, addrC);
     }
 }

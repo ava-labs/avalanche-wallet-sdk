@@ -161,6 +161,14 @@ export class LedgerWallet extends PublicMnemonicWallet {
         return hdKey.publicExtendedKey;
     }
 
+    /**
+     * Get information about the AVAX app on the ledger device.
+     * @param transport
+     */
+    static async getAvaxConfig(transport: Transport) {
+        return getLedgerConfigAvax(transport);
+    }
+
     async signEvm(tx: Transaction): Promise<Transaction> {
         if (!LedgerWallet.transport) throw ERR_TransportNotSet;
 

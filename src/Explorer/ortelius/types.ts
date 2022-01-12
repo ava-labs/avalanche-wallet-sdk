@@ -1,7 +1,7 @@
 /**
  * Data coming from explorer for C chain
  */
-export interface ITransactionDataEVM {
+export interface OrteliusEvmTx {
     block: string;
     hash: string;
     createdAt: string;
@@ -36,42 +36,42 @@ export interface ITransactionDataEVM {
 /**
  * Data coming from the explorer for X,P chain
  */
-export interface ITransactionData {
+export interface OrteliusAvalancheTx {
     chainID: string;
     id: string;
     inputTotals: {
         [key: string]: string;
     };
-    inputs: TransactionInput[] | null;
+    inputs: OrteliusTxInput[] | null;
     memo: string;
     outputTotals: {
         [key: string]: string;
     };
-    outputs: UTXO[] | null;
+    outputs: OrteliusUTXO[] | null;
 
     reusedAddressTotals: null;
     rewarded: boolean;
     rewardedTime: string;
     timestamp: string;
     txFee: number;
-    type: TransactionType;
+    type: OrteliusTransactionType;
     validatorStart: number;
     validatorEnd: number;
     validatorNodeID: string;
 }
 
-interface TransactionInput {
-    credentials: TransactionCredential[];
-    output: UTXO;
+interface OrteliusTxInput {
+    credentials: OrteliusTxCredential[];
+    output: OrteliusUTXO;
 }
 
-interface TransactionCredential {
+interface OrteliusTxCredential {
     address: string;
     public_key: string;
     signature: string;
 }
 
-export interface UTXO {
+export interface OrteliusUTXO {
     addresses: string[] | null;
     caddresses?: string[];
     amount: string;
@@ -93,7 +93,7 @@ export interface UTXO {
     rewardUtxo: boolean;
 }
 
-export type TransactionType =
+export type OrteliusTransactionType =
     | 'base'
     | 'create_asset'
     | 'operation'
