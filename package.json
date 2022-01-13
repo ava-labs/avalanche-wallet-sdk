@@ -21,9 +21,6 @@
         "docs": "typedoc src/index.ts",
         "docs:watch": "typedoc --watch src/index.ts"
     },
-    "peerDependencies": {
-        "avalanche": "3.10.*"
-    },
     "lint-staged": {
         "**/*": "prettier --write --ignore-unknown"
     },
@@ -53,7 +50,6 @@
         "@typescript-eslint/eslint-plugin": "^4.22.1",
         "@typescript-eslint/parser": "^4.22.1",
         "@zerollup/ts-transform-paths": "^1.7.18",
-        "avalanche": "3.10.1",
         "babel-jest": "^26.6.3",
         "babel-plugin-module-resolver": "^4.1.0",
         "eslint": "^7.25.0",
@@ -79,6 +75,7 @@
         "@ledgerhq/hw-transport": "^6.19.0",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
         "@openzeppelin/contracts": "4.4.1",
+        "avalanche": "3.10.1",
         "big.js": "^6.1.1",
         "bip32": "^2.0.6",
         "bip32-path": "^0.4.2",
