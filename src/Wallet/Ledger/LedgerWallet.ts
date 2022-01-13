@@ -43,6 +43,7 @@ import {
 } from 'avalanche/dist/apis/platformvm';
 import { activeNetwork, avalanche, web3 } from '@/Network/network';
 import { Buffer } from 'avalanche';
+import { Buffer as BufferNative } from 'buffer';
 import { ChainIdType } from '@/types';
 import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/tx_helper';
 import createHash from 'create-hash';
@@ -105,7 +106,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
             throw new Error(`Unable to connect ledger. You must use ledger version ${MIN_EVM_SUPPORT_V} or above.`);
         }
         // Use this transport for all ledger instances
-        LedgerWallet.setTransport(transport);
+        await LedgerWallet.setTransport(transport);
         const wallet = new LedgerWallet(pubAvax, pubEth, accountIndex);
         return wallet;
     }
@@ -119,10 +120,9 @@ export class LedgerWallet extends PublicMnemonicWallet {
         const ethApp = getAppEth(transport);
         let ethRes = await ethApp.getAddress(ETH_ACCOUNT_PATH, true, true);
         let hdEth = new HDKey();
-        // @ts-ignore
-        hdEth.publicKey = Buffer.from(ethRes.publicKey, 'hex');
-        // @ts-ignore
-        hdEth.chainCode = Buffer.from(ethRes.chainCode, 'hex');
+
+        hdEth.publicKey = BufferNative.from(ethRes.publicKey, 'hex');
+        hdEth.chainCode = BufferNative.from(ethRes.chainCode!, 'hex');
         return hdEth.publicExtendedKey;
     }
 
