@@ -74,7 +74,7 @@
         "@ledgerhq/hw-app-eth": "6.12.2",
         "@ledgerhq/hw-transport": "^6.19.0",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
-        "@openzeppelin/contracts": "4.4.1",
+        "@openzeppelin/contracts": "4.4.2",
         "avalanche": "3.10.1",
         "big.js": "^6.1.1",
         "bip32": "^2.0.6",
