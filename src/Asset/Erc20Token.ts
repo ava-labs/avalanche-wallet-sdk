@@ -5,7 +5,7 @@ import { NO_NETWORK } from '@/errors';
 import { BN } from 'avalanche';
 import { Contract } from 'web3-eth-contract';
 import xss from 'xss';
-export default class Erc20Token {
+export class Erc20Token {
     contract: Contract;
     address: string;
     name: string;

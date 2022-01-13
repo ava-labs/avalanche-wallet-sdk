@@ -1,5 +1,5 @@
 import { BN } from 'avalanche';
-import { ChainIdType } from '@/types';
+import { ChainIdType } from '@/common';
 import {
     UniversalTx,
     UniversalTxActionExport,

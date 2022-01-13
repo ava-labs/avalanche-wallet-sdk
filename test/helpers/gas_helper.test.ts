@@ -19,6 +19,7 @@ jest.mock('@/Network/network', () => {
 
 describe('getGasPrice', () => {
     it('getGasPrice', async () => {
+        //@ts-ignore
         web3.eth.getGasPrice.mockReturnValueOnce('1');
         let gasPrice = await getGasPrice();
         expect(gasPrice).toEqual(new BN(1));
@@ -27,12 +28,14 @@ describe('getGasPrice', () => {
 
 describe('getBaseFee', () => {
     it('0 base fee', async () => {
+        //@ts-ignore
         cChain.getBaseFee.mockReturnValueOnce('0x0');
         let baseFee = await getBaseFee();
         expect(baseFee.toString()).toEqual('0');
     });
 
     it('1 gwei', async () => {
+        //@ts-ignore
         cChain.getBaseFee.mockReturnValueOnce('0x3B9ACA00');
         let baseFee = await getBaseFee();
         expect(baseFee).toEqual(new BN(1_000_000_000));
@@ -41,12 +44,14 @@ describe('getBaseFee', () => {
 
 describe('getMaxPriorityFee', () => {
     it('0 fee', async () => {
+        //@ts-ignore
         cChain.getMaxPriorityFeePerGas.mockReturnValueOnce('0x0');
         let fee = await getMaxPriorityFee();
         expect(fee.toString()).toEqual('0');
     });
 
     it('1 gwei', async () => {
+        //@ts-ignore
         cChain.getMaxPriorityFeePerGas.mockReturnValueOnce('0x3B9ACA00');
         let fee = await getMaxPriorityFee();
         expect(fee.toString()).toEqual('1000000000');
