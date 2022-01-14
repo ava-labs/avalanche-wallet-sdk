@@ -438,6 +438,18 @@ export class LedgerWallet extends PublicMnemonicWallet {
         return signedTx as SignedTx;
     }
 
+    /**
+     *
+     * @param accountPath `m/44'/9000'/0'` For X/P Chains, `m/44'/60'/0'` for C Chain
+     * @param bip32Paths an array of paths to sign with `['0/0','0/1'..]`
+     * @param hash A buffer of the hash to sign
+     * @remarks Never sign untrusted hashes. This can lead to loss of funds.
+     */
+    async signHash(accountPath: any, bip32Paths: any, hash: Buffer): Promise<Map<string, Buffer>> {
+        if (!LedgerWallet.transport) throw ERR_TransportNotSet;
+        const appAvax = getAppAvax(LedgerWallet.transport);
+        return await appAvax.signHash(accountPath, bip32Paths, hash);
+    }
     // Used for non parsable transactions.
     // Ideally we wont use this function at all, but ledger is not ready yet.
     async signTransactionHash<
