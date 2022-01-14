@@ -446,6 +446,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
      * @remarks Never sign untrusted hashes. This can lead to loss of funds.
      */
     async signHash(accountPath: any, bip32Paths: any, hash: Buffer): Promise<Map<string, Buffer>> {
+        if (!LedgerWallet.transport) throw ERR_TransportNotSet;
         const appAvax = getAppAvax(LedgerWallet.transport);
         return await appAvax.signHash(accountPath, bip32Paths, hash);
     }
