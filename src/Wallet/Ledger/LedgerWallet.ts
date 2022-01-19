@@ -43,8 +43,8 @@ import {
 } from 'avalanche/dist/apis/platformvm';
 import { activeNetwork, avalanche, web3 } from '@/Network/network';
 import { Buffer } from 'avalanche';
+import { ChainIdType } from '@/common';
 import { Buffer as BufferNative } from 'buffer';
-import { ChainIdType } from '@/types';
 import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/tx_helper';
 import createHash from 'create-hash';
 //@ts-ignore

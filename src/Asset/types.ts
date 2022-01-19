@@ -1,5 +1,5 @@
 import { Buffer } from 'avalanche';
-import Erc20Token from '@/Asset/Erc20Token';
+import { Erc20Token } from '@/Asset/Erc20Token';
 
 export interface iAssetCache {
     [assetId: string]: iAssetDescriptionClean;

@@ -3,7 +3,7 @@ import { WalletType } from '@/Wallet/types';
 
 const SOCKET_RECONNECT_TIMEOUT = 1000;
 
-export default class EVMWebSocketProvider {
+export class EVMWebSocketProvider {
     provider: ethers.providers.WebSocketProvider;
     wsUrl: string;
     wallets: WalletType[] = [];

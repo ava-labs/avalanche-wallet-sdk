@@ -63,6 +63,7 @@ describe('find index explorer', function () {
         const tenAddrs = TEST_MNEMONIC_ADDRS_EXT.slice(0, 10);
         const dict = addrsToAddressChains(tenAddrs);
 
+        //@ts-ignore
         getAddressChains.mockReturnValue(dict);
 
         const foundIndex = await scanner.resetIndex();
@@ -79,6 +80,7 @@ describe('find index explorer', function () {
         ];
 
         const dict = addrsToAddressChains(addrs);
+        //@ts-ignore
         getAddressChains.mockReturnValue(dict);
 
         const foundIndex = await scanner.resetIndex();
@@ -88,6 +90,7 @@ describe('find index explorer', function () {
     it('Maximum gap of HD_SCAN_GAP_SIZE - 1', async () => {
         const addr = scanner.getAddressForIndex(HD_SCAN_GAP_SIZE - 1);
         const dict = addrsToAddressChains([addr]);
+        //@ts-ignore
         getAddressChains.mockReturnValue(dict);
 
         const foundIndex = await scanner.resetIndex();
@@ -98,6 +101,7 @@ describe('find index explorer', function () {
         const addrs = [scanner.getAddressForIndex(13)];
 
         const dict = addrsToAddressChains(addrs);
+        //@ts-ignore
         getAddressChains.mockReturnValue(dict);
 
         const foundIndex = await scanner.resetIndex();
@@ -108,6 +112,7 @@ describe('find index explorer', function () {
         const addrs = [scanner.getAddressForIndex(13), scanner.getAddressForIndex(28), scanner.getAddressForIndex(43)];
 
         const dict = addrsToAddressChains(addrs);
+        //@ts-ignore
         getAddressChains.mockReturnValue(dict);
 
         const foundIndex = await scanner.resetIndex();
@@ -117,6 +122,7 @@ describe('find index explorer', function () {
     it('Address above HD_SCAN_GAP_SIZE', async () => {
         const addrs = [scanner.getAddressForIndex(15), scanner.getAddressForIndex(15 + HD_SCAN_GAP_SIZE + 1)];
         const dict = addrsToAddressChains(addrs);
+        //@ts-ignore
         getAddressChains.mockReturnValue(dict);
 
         const foundIndex = await scanner.resetIndex();

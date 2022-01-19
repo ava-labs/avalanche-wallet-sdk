@@ -1,5 +1,5 @@
 import { Erc20Store, Erc20TokenData } from '@/Asset/types';
-import Erc20Token from '@/Asset/Erc20Token';
+import { Erc20Token } from '@/Asset/Erc20Token';
 
 export let erc20Cache: Erc20Store = {};
 
