@@ -44,6 +44,7 @@ import {
 import { activeNetwork, avalanche, web3 } from '@/Network/network';
 import { Buffer } from 'avalanche';
 import { ChainIdType } from '@/common';
+import { Buffer as BufferNative } from 'buffer';
 import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/tx_helper';
 import createHash from 'create-hash';
 //@ts-ignore
@@ -105,7 +106,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
             throw new Error(`Unable to connect ledger. You must use ledger version ${MIN_EVM_SUPPORT_V} or above.`);
         }
         // Use this transport for all ledger instances
-        LedgerWallet.setTransport(transport);
+        await LedgerWallet.setTransport(transport);
         const wallet = new LedgerWallet(pubAvax, pubEth, accountIndex);
         return wallet;
     }
@@ -119,10 +120,9 @@ export class LedgerWallet extends PublicMnemonicWallet {
         const ethApp = getAppEth(transport);
         let ethRes = await ethApp.getAddress(ETH_ACCOUNT_PATH, true, true);
         let hdEth = new HDKey();
-        // @ts-ignore
-        hdEth.publicKey = Buffer.from(ethRes.publicKey, 'hex');
-        // @ts-ignore
-        hdEth.chainCode = Buffer.from(ethRes.chainCode, 'hex');
+
+        hdEth.publicKey = BufferNative.from(ethRes.publicKey, 'hex');
+        hdEth.chainCode = BufferNative.from(ethRes.chainCode!, 'hex');
         return hdEth.publicExtendedKey;
     }
 
@@ -438,6 +438,18 @@ export class LedgerWallet extends PublicMnemonicWallet {
         return signedTx as SignedTx;
     }
 
+    /**
+     *
+     * @param accountPath `m/44'/9000'/0'` For X/P Chains, `m/44'/60'/0'` for C Chain
+     * @param bip32Paths an array of paths to sign with `['0/0','0/1'..]`
+     * @param hash A buffer of the hash to sign
+     * @remarks Never sign untrusted hashes. This can lead to loss of funds.
+     */
+    async signHash(accountPath: any, bip32Paths: any, hash: Buffer): Promise<Map<string, Buffer>> {
+        if (!LedgerWallet.transport) throw ERR_TransportNotSet;
+        const appAvax = getAppAvax(LedgerWallet.transport);
+        return await appAvax.signHash(accountPath, bip32Paths, hash);
+    }
     // Used for non parsable transactions.
     // Ideally we wont use this function at all, but ledger is not ready yet.
     async signTransactionHash<
