@@ -34,6 +34,7 @@ describe('validate address', () => {
     });
 
     it('can validate C', () => {
+        //@ts-ignore
         Web3.utils.isAddress.mockReturnValue(true);
         let res = validateAddress(addrC);
         expect(res).toBe(true);
@@ -46,7 +47,7 @@ describe('validate address', () => {
 
     it('should fail for random chain id', () => {
         let address = 'F-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh';
-
+        //@ts-ignore
         Web3.utils.isAddress.mockReturnValue(false);
 
         let res = validateAddress(address);
@@ -90,12 +91,14 @@ describe('Validate address P', () => {
 
 describe('Validate address EVM', () => {
     it('True for correct address', () => {
+        //@ts-ignore
         Web3.utils.isAddress.mockReturnValue(true);
         let res = validateAddressEVM(addrC);
         expect(res).toBe(true);
     });
 
     it('False for valid X address', () => {
+        //@ts-ignore
         Web3.utils.isAddress.mockReturnValue(false);
         let res = validateAddressEVM(addrX);
         expect(res).toBe(false);
@@ -103,6 +106,7 @@ describe('Validate address EVM', () => {
 
     it('False for valid P address', () => {
         let res = validateAddressEVM(addrP);
+        //@ts-ignore
         Web3.utils.isAddress.mockReturnValue(false);
         expect(res).toBe(false);
     });
@@ -120,6 +124,7 @@ describe('get chain', () => {
     });
 
     it('should get address chain C', () => {
+        //@ts-ignore
         Web3.utils.isAddress.mockReturnValue(true);
         let chain = getAddressChain(addrC);
         expect(chain).toBe('C');

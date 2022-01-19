@@ -21,7 +21,7 @@ import {
     getOutputTotals,
     getOwnedOutputs,
 } from '@/Explorer/ortelius/utxoUtils';
-import { getAvaxAssetID } from '@/Network';
+import { getAvaxAssetID } from '@/Network/utils';
 import { OrteliusAvalancheTx, OrteliusUTXO } from '@/Explorer';
 
 export async function getBaseTxSummary(tx: OrteliusAvalancheTx, ownerAddrs: string[]): Promise<iHistoryBaseTx> {

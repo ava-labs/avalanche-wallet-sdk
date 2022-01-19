@@ -1,11 +1,11 @@
-import AVMWebSocketProvider from '@/Network/providers/AVMWebSocketProvider';
-import EVMWebSocketProvider from '@/Network/providers/EVMWebSocketProvider';
+import { AVMWebSocketProvider } from '@/Network/providers/AVMWebSocketProvider';
+import { EVMWebSocketProvider } from '@/Network/providers/EVMWebSocketProvider';
 import { WalletType } from '@/Wallet/types';
 import { NetworkConfig } from '@/Network/types';
 import { wsUrlFromConfigEVM, wsUrlFromConfigX } from '@/helpers/network_helper';
 import { activeNetwork } from '@/Network/network';
 
-export default class WebsocketProvider {
+export class WebsocketProvider {
     avmProvider: AVMWebSocketProvider;
     evmProvider: EVMWebSocketProvider;
 

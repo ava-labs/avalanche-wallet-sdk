@@ -66,7 +66,7 @@ import { EvmWalletReadonly } from '@/Wallet/EvmWalletReadonly';
 import EventEmitter from 'events';
 import { getTransactionSummary, getTransactionSummaryEVM, HistoryItemType } from '@/History';
 import { bintools } from '@/common';
-import { ChainIdType } from '@/types';
+import { ChainIdType } from '@/common';
 import {
     createGraphForC,
     createGraphForP,
