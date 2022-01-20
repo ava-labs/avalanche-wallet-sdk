@@ -89,7 +89,7 @@
         "typescript-transform-paths": "^2.2.3",
         "url": "^0.11.0",
         "web3": "1.6.0",
-        "web3-eth-contract": "1.6.0",
+        "web3-eth-contract": "1.6.1",
         "xss": "^1.0.10"
     }
 }
