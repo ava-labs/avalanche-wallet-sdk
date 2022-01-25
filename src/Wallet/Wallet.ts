@@ -28,7 +28,7 @@ import {
 import { BN, Buffer } from 'avalanche';
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import { activeNetwork, avalanche, cChain, pChain, web3, xChain } from '@/Network/network';
-import { EvmWallet } from '@/Wallet/EvmWallet';
+import { EvmWallet } from '@/Wallet/EVM/EvmWallet';
 
 import {
     avmGetAllUTXOs,
@@ -62,7 +62,7 @@ import { getAssetDescription } from '@/Asset/Assets';
 import { getErc20Token } from '@/Asset/Erc20';
 import { NO_NETWORK } from '@/errors';
 import { avaxCtoX, bnToLocaleString, getTxFeeP, getTxFeeX, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils';
-import { EvmWalletReadonly } from '@/Wallet/EvmWalletReadonly';
+import { EvmWalletReadonly } from '@/Wallet/EVM/EvmWalletReadonly';
 import EventEmitter from 'events';
 import { getTransactionSummary, getTransactionSummaryEVM, HistoryItemType } from '@/History';
 import { bintools } from '@/common';
@@ -96,6 +96,7 @@ import {
     getTxEvm,
     OrteliusAvalancheTx,
 } from '@/Explorer';
+import { TypedDataV1, TypedMessage } from '@metamask/eth-sig-util';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -133,6 +134,11 @@ export abstract class WalletProvider {
     abstract getAllAddressesXSync(): string[];
     abstract getAllAddressesP(): Promise<string[]>;
     abstract getAllAddressesPSync(): string[];
+
+    abstract personalSign(data: string): Promise<string>;
+    abstract signTypedData_V1(data: TypedDataV1): Promise<string>;
+    abstract signTypedData_V3(data: TypedMessage<any>): Promise<string>;
+    abstract signTypedData_V4(data: TypedMessage<any>): Promise<string>;
 
     protected constructor() {
         networkEvents.on('network_change', this.onNetworkChange.bind(this));

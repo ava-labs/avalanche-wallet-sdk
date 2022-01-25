@@ -56,6 +56,7 @@ import { PublicMnemonicWallet } from '@/Wallet/PublicMnemonicWallet';
 import { getAppAvax, getAppEth, getEthAddressKeyFromAccountKey, getLedgerConfigAvax } from '@/Wallet/Ledger/utils';
 import Transport from '@ledgerhq/hw-transport';
 import { ERR_ConfigNotSet, ERR_TransportNotSet } from '@/Wallet/Ledger/errors';
+import { TypedDataV1, TypedMessage, typedSignatureHash } from '@metamask/eth-sig-util';
 
 export class LedgerWallet extends PublicMnemonicWallet {
     type: WalletNameType;
@@ -705,4 +706,58 @@ export class LedgerWallet extends PublicMnemonicWallet {
 
         return txSigned;
     }
+
+    /**
+     * This function is equivalent to the eth_sign Ethereum JSON-RPC method as specified in EIP-1417,
+     * as well as the MetaMask's personal_sign method.
+     * @param data The hex data to sign
+     */
+    async personalSign(data: string): Promise<string> {
+        const ethApp = getAppEth(LedgerWallet.transport);
+        const path = getAccountPathEVM(this.accountIndex).substr(2);
+        console.log(path, data);
+        console.log(BufferNative.from('yo').toString('hex'));
+        const result = await ethApp.signPersonalMessage(path, data.substr(2));
+
+        let v = result['v'] - 27;
+        let vStr = v.toString(16);
+        if (vStr.length < 2) {
+            vStr = '0' + v;
+        }
+        const sig = `0x${result['r'] + result['s'] + vStr}`;
+        return sig;
+    }
+
+    /**
+     * V1 is based upon an early version of EIP-712 that lacked some later security improvements, and should generally be neglected in favor of later versions.
+     * @param data The typed data to sign.
+     * */
+    // async signTypedData_V1(data: TypedDataV1): Promise<string> {
+    //     // const ethApp = getAppEth(LedgerWallet.transport);
+    //     // const path = getAccountPathEVM(this.accountIndex);
+    //     // const hash = typedSignatureHash(data);
+    //     // const result = await ethApp.signEIP712HashedMessage(path, data);
+    //
+    //     return '';
+    //     // return Promise.resolve(this.evmWallet.signTypedData_V1(data));
+    // }
+
+    /**
+     * V3 is based on EIP-712, except that arrays and recursive data structures are not supported.
+     * @param data The typed data to sign.
+     */
+    // signTypedData_V3(data: TypedMessage<any>): Promise<string> {
+    //     return Promise.resolve(this.evmWallet.signTypedData_V3(data));
+    // }
+
+    /**
+     * V4 is based on EIP-712, and includes full support of arrays and recursive data structures.
+     * @param data The typed data to sign.
+     */
+    // signTypedData_V4(data: TypedMessage<any>): Promise<string> {
+    //     return Promise.resolve(this.evmWallet.signTypedData_V4(data));
+    // }
+    // async signTypeData(data: any, version: any): Promise<string> {
+    //     return '';
+    // }
 }
