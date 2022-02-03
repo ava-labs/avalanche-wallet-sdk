@@ -3,7 +3,6 @@ import { SNOWTRACE_MAINNET, SNOWTRACE_TESTNET } from '@/Explorer/snowtrace/const
 import { isFujiNetwork, isMainnetNetwork, NetworkConfig } from '@/Network';
 import { SnowtraceErc20Tx, SnowtraceNormalTx, SnowtraceResponse } from '@/Explorer/snowtrace/types';
 import { filterDuplicateTransactions } from './utils';
-import { URLSearchParams } from 'url';
 
 /**
  *
@@ -67,12 +66,12 @@ export async function getNormalHistory(address: string, networkConfig: NetworkCo
  */
 export async function getABIForContract(address: string, networkConfig: NetworkConfig) {
     const isMainnet = isMainnetNetwork(networkConfig);
-    const isFuji = isMainnetNetwork(networkConfig);
+    const isFuji = isFujiNetwork(networkConfig);
 
     if (!isMainnet && !isFuji) {
         throw new Error('Snow trace is only available for Avalanche Mainnet and Testnet');
     }
 
-    const params = new URLSearchParams({ module: 'contract', action: 'getabi', address });
+    const params = new window.URLSearchParams({ module: 'contract', action: 'getabi', address });
     return await createSnowtraceAPI(isMainnet).get<SnowtraceResponse<string>>(`api?${params.toString()}`);
 }
