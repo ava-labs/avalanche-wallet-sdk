@@ -3,6 +3,7 @@ import { SNOWTRACE_MAINNET, SNOWTRACE_TESTNET } from '@/Explorer/snowtrace/const
 import { isFujiNetwork, isMainnetNetwork, NetworkConfig } from '@/Network';
 import { SnowtraceErc20Tx, SnowtraceNormalTx, SnowtraceResponse } from '@/Explorer/snowtrace/types';
 import { filterDuplicateTransactions } from './utils';
+import { URLSearchParams } from 'url';
 
 /**
  *
@@ -55,4 +56,23 @@ export async function getNormalHistory(address: string, networkConfig: NetworkCo
         throw new Error('Snow trace is only available for Avalanche Mainnet and Testnet');
     }
     return filterDuplicateTransactions<SnowtraceNormalTx>(resp.data.result);
+}
+
+/**
+ * https://docs.etherscan.io/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes
+ *
+ * @param address
+ * @param networkConfig
+ * @returns
+ */
+export async function getABIForContract(address: string, networkConfig: NetworkConfig) {
+    const isMainnet = isMainnetNetwork(networkConfig);
+    const isFuji = isMainnetNetwork(networkConfig);
+
+    if (!isMainnet && !isFuji) {
+        throw new Error('Snow trace is only available for Avalanche Mainnet and Testnet');
+    }
+
+    const params = new URLSearchParams({ module: 'contract', action: 'getabi', address });
+    return await createSnowtraceAPI(isMainnet).get<SnowtraceResponse<SnowtraceNormalTx>>(`api?${params.toString()}`);
 }
