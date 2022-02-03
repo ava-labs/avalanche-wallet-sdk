@@ -63,7 +63,7 @@ export async function getNormalHistory(address: string, networkConfig: NetworkCo
  *
  * @param address
  * @param networkConfig
- * @returns
+ * @returns string array, the first index is the ABI
  */
 export async function getABIForContract(address: string, networkConfig: NetworkConfig) {
     const isMainnet = isMainnetNetwork(networkConfig);
@@ -74,5 +74,5 @@ export async function getABIForContract(address: string, networkConfig: NetworkC
     }
 
     const params = new URLSearchParams({ module: 'contract', action: 'getabi', address });
-    return await createSnowtraceAPI(isMainnet).get<SnowtraceResponse<SnowtraceNormalTx>>(`api?${params.toString()}`);
+    return await createSnowtraceAPI(isMainnet).get<SnowtraceResponse<string>>(`api?${params.toString()}`);
 }
