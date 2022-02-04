@@ -56,3 +56,22 @@ export async function getNormalHistory(address: string, networkConfig: NetworkCo
     }
     return filterDuplicateTransactions<SnowtraceNormalTx>(resp.data.result);
 }
+
+/**
+ * https://docs.etherscan.io/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes
+ *
+ * @param address
+ * @param networkConfig
+ * @returns string array, the first index is the ABI
+ */
+export async function getABIForContract(address: string, networkConfig: NetworkConfig) {
+    const isMainnet = isMainnetNetwork(networkConfig);
+    const isFuji = isFujiNetwork(networkConfig);
+
+    if (!isMainnet && !isFuji) {
+        throw new Error('Snow trace is only available for Avalanche Mainnet and Testnet');
+    }
+
+    const params = new window.URLSearchParams({ module: 'contract', action: 'getabi', address });
+    return await createSnowtraceAPI(isMainnet).get<SnowtraceResponse<string>>(`api?${params.toString()}`);
+}
