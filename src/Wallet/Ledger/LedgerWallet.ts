@@ -713,10 +713,9 @@ export class LedgerWallet extends PublicMnemonicWallet {
      * @param data The hex data to sign
      */
     async personalSign(data: string): Promise<string> {
+        throw new Error('Not implemented.');
         const ethApp = getAppEth(LedgerWallet.transport);
         const path = getAccountPathEVM(this.accountIndex).substr(2);
-        console.log(path, data);
-        console.log(BufferNative.from('yo').toString('hex'));
         const result = await ethApp.signPersonalMessage(path, data.substr(2));
 
         let v = result['v'] - 27;
