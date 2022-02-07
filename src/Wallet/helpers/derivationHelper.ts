@@ -9,6 +9,10 @@ export function getAccountPathAvalanche(accountIndex: number) {
     return `${AVAX_TOKEN_PATH}/${accountIndex}'`;
 }
 
+/**
+ * Returns the string `m/44'/60'/0'/0/n` where `n` is the account index.
+ * @param accountIndex
+ */
 export function getAccountPathEVM(accountIndex: number) {
     if (accountIndex < 0) throw new Error('Account index can not be less than 0.');
     return `${ETH_ACCOUNT_PATH}/0/${accountIndex}`;

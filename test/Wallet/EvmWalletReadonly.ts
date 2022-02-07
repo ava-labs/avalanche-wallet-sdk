@@ -1,4 +1,4 @@
-import { EvmWalletReadonly } from '@/Wallet/EvmWalletReadonly';
+import { EvmWalletReadonly } from '@/Wallet/EVM/EvmWalletReadonly';
 
 describe('EVM Wallet Readonly', () => {
     // let publicKey;

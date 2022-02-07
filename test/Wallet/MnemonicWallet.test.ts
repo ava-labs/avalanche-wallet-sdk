@@ -1,6 +1,6 @@
 import { MnemonicWallet } from '@/Wallet/MnemonicWallet';
 import { TEST_MNEMONIC } from './constants';
-
+import { recoverPersonalSignature } from '@metamask/eth-sig-util';
 jest.mock('web3', () => {
     let web3Mock: any = jest.fn().mockImplementation(() => {});
 
