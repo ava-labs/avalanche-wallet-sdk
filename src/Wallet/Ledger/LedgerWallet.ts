@@ -707,23 +707,23 @@ export class LedgerWallet extends PublicMnemonicWallet {
         return txSigned;
     }
 
-    /**
-     * This function is equivalent to the eth_sign Ethereum JSON-RPC method as specified in EIP-1417,
-     * as well as the MetaMask's personal_sign method.
-     * @param data The hex data to sign
-     */
-    async personalSign(data: string): Promise<string> {
-        throw new Error('Not implemented.');
-        // const ethApp = getAppEth(LedgerWallet.transport);
-        // const path = getAccountPathEVM(this.accountIndex).substr(2);
-        // const result = await ethApp.signPersonalMessage(path, data.substr(2));
-        //
-        // let v = result['v'] - 27;
-        // let vStr = v.toString(16);
-        // if (vStr.length < 2) {
-        //     vStr = '0' + v;
-        // }
-        // const sig = `0x${result['r'] + result['s'] + vStr}`;
-        // return sig;
-    }
+    // /**
+    //  * This function is equivalent to the eth_sign Ethereum JSON-RPC method as specified in EIP-1417,
+    //  * as well as the MetaMask's personal_sign method.
+    //  * @param data The hex data to sign
+    //  */
+    // async personalSign(data: string): Promise<string> {
+    //     throw new Error('Not implemented.');
+    // const ethApp = getAppEth(LedgerWallet.transport);
+    // const path = getAccountPathEVM(this.accountIndex).substr(2);
+    // const result = await ethApp.signPersonalMessage(path, data.substr(2));
+    //
+    // let v = result['v'] - 27;
+    // let vStr = v.toString(16);
+    // if (vStr.length < 2) {
+    //     vStr = '0' + v;
+    // }
+    // const sig = `0x${result['r'] + result['s'] + vStr}`;
+    // return sig;
+    // }
 }
