@@ -27,14 +27,6 @@ describe('EVM Wallet', () => {
 describe('Signing', () => {
     let wallet = new EvmWallet(keyBuf);
 
-    // it('eth_sign', async () => {
-    //     const testMsg = '0x879a053d4800c6354e76c7985a865d2922c82fb5b3f4577b2fe08b998954f2e0\n';
-    //     const sig = wallet.signHash(testMsg);
-    //     expect(sig).toEqual(
-    //         '0x0e1490bb86dc3b03a2c9bf6e99b32a757dcdb1b2660df33762424a47e331bb4858daa676411fa36fa0898e71fac2ea5e9892775fcc847d2de9aad582b9b5ae851b'
-    //     );
-    // });
-
     it('personal sign', async () => {
         const testMsg = 'Example `personal_sign` message';
         const msg = Buffer.from(testMsg, 'utf8');
