@@ -83,7 +83,6 @@
         "bn.js": "5.1.1",
         "create-hash": "1.2.0",
         "crypto-js": "^4.1.1",
-        "eth-sig-util": "^3.0.1",
         "ethereumjs-util": "^7.0.7",
         "ethers": "^5.1.4",
         "randomstring": "^1.2.1",
