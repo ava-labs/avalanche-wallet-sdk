@@ -152,23 +152,23 @@ export class SingletonWallet extends WalletProvider implements UnsafeWallet {
      * V1 is based upon an early version of EIP-712 that lacked some later security improvements, and should generally be neglected in favor of later versions.
      * @param data The typed data to sign.
      * */
-    signTypedData_V1(data: TypedDataV1): Promise<string> {
-        return Promise.resolve(this.evmWallet.signTypedData_V1(data));
+    async signTypedData_V1(data: TypedDataV1): Promise<string> {
+        return this.evmWallet.signTypedData_V1(data);
     }
 
     /**
      * V3 is based on EIP-712, except that arrays and recursive data structures are not supported.
      * @param data The typed data to sign.
      */
-    signTypedData_V3(data: TypedMessage<any>): Promise<string> {
-        return Promise.resolve(this.evmWallet.signTypedData_V3(data));
+    async signTypedData_V3(data: TypedMessage<any>): Promise<string> {
+        return this.evmWallet.signTypedData_V3(data);
     }
 
     /**
      * V4 is based on EIP-712, and includes full support of arrays and recursive data structures.
      * @param data The typed data to sign.
      */
-    signTypedData_V4(data: TypedMessage<any>): Promise<string> {
-        return Promise.resolve(this.evmWallet.signTypedData_V4(data));
+    async signTypedData_V4(data: TypedMessage<any>): Promise<string> {
+        return this.evmWallet.signTypedData_V4(data);
     }
 }
