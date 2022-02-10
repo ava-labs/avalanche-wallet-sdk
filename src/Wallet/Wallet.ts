@@ -214,6 +214,13 @@ export abstract class WalletProvider {
     }
 
     /**
+     * Returns the BTC address of the C-Chain public key.
+     */
+    public getAddressBTC(): string {
+        return this.evmWallet.getAddressBTC();
+    }
+
+    /**
      *
      * @param to - the address funds are being send to.
      * @param amount - amount of AVAX to send in nAVAX

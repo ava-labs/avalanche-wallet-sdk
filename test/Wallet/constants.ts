@@ -55,3 +55,11 @@ export const XPUB_AVAX = `xpub6CvdTKLRh3ehvVLR2f3M1GUTFesrz5zoYFbw32iZqRShmoDnxt
 // m/44'/60'/0'
 export const XPUB_ETH_ACCT = `xpub6CQ5fy7iAochmG1tL2ww2P4BviDRRrcEjG3u1uM6GcyGwzihscWoX9RwiCrZDcpAbYK8reYcy7cT8ZgZWVbReZ44ehVYqi5jZD9NknLx4TS`;
 export const XPUB_ETH_ADDR = `xpub6H6BqGq4LFAeEyDn4VspySZerHZCGFUAe5Y21UQnyd6VdyZmUX6nzjp9FyuyEtPVCfhK7yKy2Yan9S7wziMQxvb2PHHx6kZ4ByaFD76qJ3j`;
+
+/**
+ * Constants below belong to the same singleton wallet
+ */
+
+export const TEST_PK = 'e3d601f2c67a053f26d6286fdf70c4e141d4cff7a96ebfad48a6220f2e35bc0b';
+export const TEST_COMPRESSED_PUB =
+    '0x043c4ddcf464a24a0ee8f94e380a42a883ebd61571b7026e5e48503d2f7de25e18ce7a5ffe1ea8e708b0f2ea7ba1055c0429d0629e2574e19f1a6143afa72a5527';
