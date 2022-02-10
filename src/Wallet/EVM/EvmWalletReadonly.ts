@@ -4,7 +4,8 @@ import { ethers } from 'ethers';
 import { KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm/keychain';
 import { bintools } from '@/common';
 import { computePublicKey, computeAddress } from 'ethers/lib/utils';
-import { payments, ECPair } from 'bitcoinjs-lib';
+import { payments, ECPair, networks } from 'bitcoinjs-lib';
+import { BTCNetworkType } from '@/Wallet';
 
 export class EvmWalletReadonly {
     balance = new BN(0);
@@ -45,10 +46,19 @@ export class EvmWalletReadonly {
      * Returns a native P2WPKH address with the prefix `bc1q`. This bitcoin address is
      * derived from the same public key of the C chain address.
      */
-    getAddressBTC(): string {
+    getAddressBTC(networkType: BTCNetworkType = 'bitcoin'): string {
+        let network;
+        if (networkType === 'bitcoin') {
+            network = networks.bitcoin;
+        } else if (networkType === 'testnet') {
+            network = networks.testnet;
+        } else {
+            network = networks.regtest;
+        }
+
         const compressedBuff = new Buffer(this.getCompressedPublicKey().substr(2), 'hex');
         let ecPair = ECPair.fromPublicKey(compressedBuff);
-        let { address } = payments.p2wpkh({ pubkey: ecPair.publicKey });
+        let { address } = payments.p2wpkh({ pubkey: ecPair.publicKey, network });
         if (!address) throw new Error('Unable to get BTC address.');
         return address;
     }

@@ -11,4 +11,12 @@ describe('EVM Wallet Readonly', () => {
     it('can get BTC address', () => {
         expect(wallet.getAddressBTC()).toBe('bc1q737j4wvylwc0d72y24nj44vev0u4n4y3q2k0mz');
     });
+
+    it('can get BTC testnet address', () => {
+        expect(wallet.getAddressBTC('testnet')).toBe('tb1q737j4wvylwc0d72y24nj44vev0u4n4y32vduq3');
+    });
+
+    it('can get BTC regtest address', () => {
+        expect(wallet.getAddressBTC('regtest')).toBe('bcrt1q737j4wvylwc0d72y24nj44vev0u4n4y3g953hc');
+    });
 });
