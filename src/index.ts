@@ -8,7 +8,7 @@ export * from './History';
 export * from './utils';
 export * from './helpers';
 export * from './UniversalTx';
-export { BN } from 'avalanche';
+export { BN, Buffer } from 'avalanche';
 
 import Big from 'big.js';
 
