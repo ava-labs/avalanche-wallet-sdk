@@ -96,6 +96,8 @@ export interface iHDWalletIndex {
     internal: number;
 }
 
+export type BTCNetworkType = 'bitcoin' | 'testnet' | 'regtest';
+
 /**
  * Used by wallets which can access their private keys
  */

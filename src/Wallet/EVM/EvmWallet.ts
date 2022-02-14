@@ -18,9 +18,10 @@ import {
     TypedDataV1,
     TypedMessage,
 } from '@metamask/eth-sig-util';
-
+import * as bitcoin from 'bitcoinjs-lib';
 export class EvmWallet extends EvmWalletReadonly {
     private privateKey: Buffer;
+    private btcPair: bitcoin.ECPairInterface;
 
     constructor(key: Buffer) {
         // Compute the uncompressed public key from private key
@@ -28,7 +29,12 @@ export class EvmWallet extends EvmWalletReadonly {
 
         super(pubKey);
 
+        this.btcPair = bitcoin.ECPair.fromPrivateKey(key);
         this.privateKey = key;
+    }
+
+    static fromPrivateKey(key: string) {
+        return new EvmWallet(Buffer.from(key, 'hex'));
     }
 
     private getPrivateKeyBech(): string {
@@ -48,6 +54,10 @@ export class EvmWallet extends EvmWalletReadonly {
 
     signEVM(tx: Transaction | FeeMarketEIP1559Transaction) {
         return tx.sign(this.privateKey);
+    }
+
+    signBTCHash(hash: Buffer) {
+        return this.btcPair.sign(hash);
     }
 
     signC(tx: EVMUnsignedTx): EVMTx {
