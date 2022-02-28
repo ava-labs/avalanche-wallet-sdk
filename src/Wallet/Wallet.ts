@@ -2,6 +2,7 @@ import {
     AssetBalanceP,
     AssetBalanceRawX,
     AssetBalanceX,
+    BTCNetworkType,
     ERC20Balance,
     ExportChainsC,
     ExportChainsP,
@@ -216,8 +217,8 @@ export abstract class WalletProvider {
     /**
      * Returns the BTC address of the C-Chain public key.
      */
-    public getAddressBTC(): string {
-        return this.evmWallet.getAddressBTC();
+    public getAddressBTC(type: BTCNetworkType): string {
+        return this.evmWallet.getAddressBTC(type);
     }
 
     /**
