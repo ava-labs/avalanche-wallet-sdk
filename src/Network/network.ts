@@ -15,6 +15,7 @@ import {
     createExplorerApi,
     getNetworkIdFromURL,
 } from '@/helpers/network_helper';
+import { getEthersJsonRpcProvider } from '@/Network/getEthersProvider';
 
 export const avalanche: Avalanche = createAvalancheProvider(DefaultConfig);
 
@@ -31,8 +32,10 @@ function getProviderFromUrl(url: string, credentials = false) {
 }
 
 const rpcUrl = getRpcC(DefaultConfig);
+// Web3 Provider
 export const web3 = new Web3(getProviderFromUrl(rpcUrl, true));
-
+// JSON RPC Ethers provider
+export let ethersProvider = getEthersJsonRpcProvider(DefaultConfig);
 export let explorer_api: AxiosInstance | null = null;
 export let activeNetwork: NetworkConfig = DefaultConfig;
 
@@ -88,8 +91,10 @@ export function setRpcNetwork(conf: NetworkConfig, credentials = true): void {
     }
 
     let rpcUrl = getRpcC(conf);
+    // Update web3 provider
     web3.setProvider(getProviderFromUrl(rpcUrl, credentials));
-
+    // Update ethers provider
+    ethersProvider = getEthersJsonRpcProvider(conf);
     activeNetwork = conf;
 }
 

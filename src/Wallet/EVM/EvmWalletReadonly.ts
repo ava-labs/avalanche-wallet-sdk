@@ -6,6 +6,7 @@ import { bintools } from '@/common';
 import { computePublicKey, computeAddress } from 'ethers/lib/utils';
 import { payments, ECPair, networks } from 'bitcoinjs-lib';
 import { BTCNetworkType } from '@/Wallet';
+import { buildEvmTransferErc721Tx, estimateErc721TransferGas } from '@/helpers/tx_helper';
 
 export class EvmWalletReadonly {
     balance = new BN(0);
@@ -67,5 +68,21 @@ export class EvmWalletReadonly {
         let bal = await web3.eth.getBalance(this.address);
         this.balance = new BN(bal);
         return this.balance;
+    }
+
+    /**
+     * Builds an unsigned ERC721 transfer transaction from this wallet.
+     * @param contract The ERC721 Contract address
+     * @param tokenID Token ID
+     * @param to Recipient hex address.
+     * @param gasPrice Gas price in `BN`
+     * @param gasLimit Gas limit
+     */
+    buildErc721TransferTx(contract: string, tokenID: number, to: string, gasPrice: BN, gasLimit: number) {
+        return buildEvmTransferErc721Tx(this.getAddress(), to, gasPrice, gasLimit, contract, tokenID);
+    }
+
+    async estimateErc721TransferGasLimit(contract: string, to: string, tokenID: number) {
+        return estimateErc721TransferGas(contract, this.getAddress(), to, tokenID);
     }
 }

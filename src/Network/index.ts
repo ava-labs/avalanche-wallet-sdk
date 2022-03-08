@@ -8,6 +8,7 @@ export * from './network';
 export * from './setNetwork';
 export * from './types';
 export * from './utils';
+export * from './getEthersProvider';
 
 // Default connection is Mainnet
 setNetwork(MainnetConfig);
