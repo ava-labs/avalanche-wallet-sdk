@@ -1,5 +1,5 @@
 import { EvmWallet } from '@/Wallet/EVM/EvmWallet';
-import { recoverPersonalSignature, SignTypedDataVersion } from '@metamask/eth-sig-util';
+import { recoverPersonalSignature } from '@metamask/eth-sig-util';
 
 let PK_HEX = `8985df5f35f11ad2b2f5e8bebd28e738fd731949ce43fde88634704b4026366e`;
 let keyBuf = Buffer.from(PK_HEX, 'hex');
