@@ -1,10 +1,13 @@
 import axios from 'axios';
 import { CoinGeckoPriceHistoryResponse } from '@/Explorer/coingecko/types';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fetchAdapter = require('@vespaiach/axios-fetch-adapter').default;
 
 const AVAX_COIN_ID = 'avalanche-2';
 const coingeckoApi = axios.create({
     baseURL: 'https://api.coingecko.com/api/v3',
     timeout: 10000,
+    adapter: fetchAdapter,
 });
 
 /**

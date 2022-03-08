@@ -2,6 +2,9 @@ import { NetworkConfig } from '@/Network/types';
 import axios from 'axios';
 import { Avalanche } from 'avalanche';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fetchAdapter = require('@vespaiach/axios-fetch-adapter').default;
+
 export function wsUrlFromConfigX(config: NetworkConfig): string {
     let protocol = config.apiProtocol === 'http' ? 'ws' : 'wss';
     return `${protocol}://${config.apiIp}:${config.apiPort}/ext/bc/X/events`;
@@ -18,11 +21,15 @@ export function wsUrlFromConfigEVM(config: NetworkConfig): string {
  */
 export async function getNetworkIdFromURL(url: string): Promise<number> {
     // TODO: Not be the best to assume /ext/info but Avalanchejs complicates things
-    let res = await axios.post(url + '/ext/info', {
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'info.getNetworkID',
-    });
+    let res = await axios.post(
+        url + '/ext/info',
+        {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'info.getNetworkID',
+        },
+        { adapter: fetchAdapter }
+    );
     return parseInt(res.data.result.networkID);
 }
 
@@ -43,6 +50,7 @@ export function createExplorerApi(networkConfig: NetworkConfig) {
         headers: {
             'Content-Type': 'application/json',
         },
+        adapter: fetchAdapter,
     });
 }
 

@@ -3,6 +3,8 @@ import { SNOWTRACE_MAINNET, SNOWTRACE_TESTNET } from '@/Explorer/snowtrace/const
 import { isFujiNetwork, isMainnetNetwork, NetworkConfig } from '@/Network';
 import { SnowtraceErc20Tx, SnowtraceNormalTx, SnowtraceResponse } from '@/Explorer/snowtrace/types';
 import { filterDuplicateTransactions } from './utils';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fetchAdapter = require('@vespaiach/axios-fetch-adapter').default;
 
 /**
  *
@@ -16,6 +18,7 @@ function createSnowtraceAPI(isMainnet = true) {
         headers: {
             'Content-Type': 'application/json',
         },
+        adapter: fetchAdapter,
     });
 }
 
