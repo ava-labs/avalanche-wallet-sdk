@@ -53,8 +53,6 @@ export class FetchHttpProvider {
             .then((response: any) => response?.json())
             .then((result) => {
                 this.connected = true;
-                console.log('payload', payload);
-                console.log('result', result);
                 callback(null, result);
             })
             .catch((e) => {
