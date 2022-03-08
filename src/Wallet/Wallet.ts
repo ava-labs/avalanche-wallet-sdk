@@ -20,6 +20,7 @@ import {
     buildEvmExportTransaction,
     buildEvmTransferEIP1559Tx,
     buildEvmTransferErc20Tx,
+    buildEvmTransferErc721Tx,
     buildEvmTransferNativeTx,
     buildMintNftTx,
     buildPlatformExportTransaction,
@@ -321,6 +322,19 @@ export abstract class WalletProvider {
     }
 
     /**
+     * Makes a `safeTransferFrom` call on a ERC721 contract.
+     * @param to Hex address to transfer the NFT to.
+     * @param tokenID ID of the token to transfer inside the ERC71 family.
+     * @param gasPrice Gas price in WEI format
+     * @param gasLimit Gas limit
+     * @param contractAddress Contract address of the ERC721 token
+     */
+    async sendErc721(contractAddress: string, to: string, tokenID: number, gasPrice: BN, gasLimit: number) {
+        const tx = await buildEvmTransferErc721Tx(this.getAddressC(), to, gasPrice, gasLimit, contractAddress, tokenID);
+        return await this.issueEvmTx(tx);
+    }
+
+    /**
      * Estimate the gas needed for an ERC20 Transfer transaction
      * @param contractAddress The ERC20 contract address
      * @param to Address receiving the tokens
@@ -329,6 +343,16 @@ export abstract class WalletProvider {
     async estimateErc20Gas(contractAddress: string, to: string, amount: BN): Promise<number> {
         let from = this.getAddressC();
         return await estimateErc20Gas(contractAddress, from, to, amount);
+    }
+
+    /**
+     * Estimate the gas needed for an ERC721 `safeTransferFrom` transaction
+     * @param contractAddress The ERC20 contract address
+     * @param to Address receiving the tokens
+     * @param tokenID ID of the token to transfer inside the ERC71 family.
+     */
+    async estimateErc721TransferGasLimit(contractAddress: string, to: string, tokenID: number) {
+        return this.evmWallet.estimateErc721TransferGasLimit(contractAddress, to, tokenID);
     }
 
     /**
