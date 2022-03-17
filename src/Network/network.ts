@@ -17,6 +17,8 @@ import {
 } from '@/helpers/network_helper';
 
 import { FetchHttpProvider } from '@/utils/FetchHTTPProvider';
+import { getEthersJsonRpcProvider } from '@/Network/getEthersProvider';
+import { ethers } from 'ethers';
 
 export const avalanche: Avalanche = createAvalancheProvider(DefaultConfig);
 
@@ -34,7 +36,8 @@ function getProviderFromUrl(url: string, credentials = false) {
 
 const rpcUrl = getRpcC(DefaultConfig);
 export const web3 = new Web3(getProviderFromUrl(rpcUrl, true) as any);
-
+// JSON RPC Ethers provider
+export let ethersProvider: ethers.providers.JsonRpcProvider = getEthersJsonRpcProvider(DefaultConfig);
 export let explorer_api: AxiosInstance | null = null;
 export let activeNetwork: NetworkConfig = DefaultConfig;
 
