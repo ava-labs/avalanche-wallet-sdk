@@ -118,7 +118,7 @@ export async function getConfigFromUrl(url: string): Promise<NetworkConfig> {
 
     let connection = new Avalanche(urlObj.hostname, parseInt(portStr), protocol, netID);
     // TODO: Use a helper for this
-    let connectionEvm = new Web3(urlObj.href + 'ext/bc/C/rpc');
+    let connectionEvm = new Web3(getProviderFromUrl(urlObj.href + 'ext/bc/C/rpc') as any);
 
     let infoApi = connection.Info();
     let xApi = connection.XChain();

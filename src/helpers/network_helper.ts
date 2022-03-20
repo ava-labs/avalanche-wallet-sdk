@@ -37,7 +37,7 @@ export function createAvalancheProvider(config: NetworkConfig) {
 }
 
 /**
- * Given a network configuration returns an Axios instance connected to the explorer
+ * Given a network configuration returns an HttpClient instance connected to the explorer
  */
 export function createExplorerApi(networkConfig: NetworkConfig) {
     if (!networkConfig.explorerURL) {
