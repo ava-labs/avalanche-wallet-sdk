@@ -1,25 +1,12 @@
-import axios from 'axios';
 import { SNOWTRACE_MAINNET, SNOWTRACE_TESTNET } from '@/Explorer/snowtrace/constants';
 import { isFujiNetwork, isMainnetNetwork, NetworkConfig } from '@/Network';
 import { SnowtraceErc20Tx, SnowtraceNormalTx, SnowtraceResponse } from '@/Explorer/snowtrace/types';
 import { filterDuplicateTransactions } from './utils';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetchAdapter = require('@vespaiach/axios-fetch-adapter').default;
 
-/**
- *
- * @param isMainnet
- */
-function createSnowtraceAPI(isMainnet = true) {
+async function fetchSnowtraceAPI<T>(query: string, isMainnet = true): Promise<T> {
     const baseUrl = isMainnet ? SNOWTRACE_MAINNET : SNOWTRACE_TESTNET;
-    return axios.create({
-        baseURL: baseUrl,
-        withCredentials: false,
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        adapter: fetchAdapter,
-    });
+    const response = await fetch(`${baseUrl}/${query}`);
+    return response.json();
 }
 
 export async function getErc20History(
@@ -35,14 +22,14 @@ export async function getErc20History(
 
     let resp;
     if (isMainnetNetwork(networkConfig)) {
-        resp = await createSnowtraceAPI().get<SnowtraceResponse<SnowtraceErc20Tx>>(query);
+        resp = await fetchSnowtraceAPI<SnowtraceResponse<SnowtraceErc20Tx>>(query);
     } else if (isFujiNetwork(networkConfig)) {
-        resp = await createSnowtraceAPI(false).get<SnowtraceResponse<SnowtraceErc20Tx>>(query);
+        resp = await fetchSnowtraceAPI<SnowtraceResponse<SnowtraceErc20Tx>>(query, false);
     } else {
         throw new Error('Snow trace is only available for Avalanche Mainnet and Testnet');
     }
 
-    return filterDuplicateTransactions<SnowtraceErc20Tx>(resp.data.result);
+    return filterDuplicateTransactions<SnowtraceErc20Tx>(resp.result);
 }
 
 export async function getNormalHistory(address: string, networkConfig: NetworkConfig, page = 0, offset = 0) {
@@ -51,13 +38,13 @@ export async function getNormalHistory(address: string, networkConfig: NetworkCo
 
     let resp;
     if (isMainnetNetwork(networkConfig)) {
-        resp = await createSnowtraceAPI().get<SnowtraceResponse<SnowtraceNormalTx>>(query);
+        resp = await fetchSnowtraceAPI<SnowtraceResponse<SnowtraceNormalTx>>(query);
     } else if (isFujiNetwork(networkConfig)) {
-        resp = await createSnowtraceAPI(false).get<SnowtraceResponse<SnowtraceNormalTx>>(query);
+        resp = await fetchSnowtraceAPI<SnowtraceResponse<SnowtraceNormalTx>>(query, false);
     } else {
         throw new Error('Snow trace is only available for Avalanche Mainnet and Testnet');
     }
-    return filterDuplicateTransactions<SnowtraceNormalTx>(resp.data.result);
+    return filterDuplicateTransactions<SnowtraceNormalTx>(resp.result);
 }
 
 /**
@@ -67,7 +54,10 @@ export async function getNormalHistory(address: string, networkConfig: NetworkCo
  * @param networkConfig
  * @returns string array, the first index is the ABI
  */
-export async function getABIForContract(address: string, networkConfig: NetworkConfig) {
+export async function getABIForContract(
+    address: string,
+    networkConfig: NetworkConfig
+): Promise<SnowtraceResponse<string>> {
     const isMainnet = isMainnetNetwork(networkConfig);
     const isFuji = isFujiNetwork(networkConfig);
 
@@ -76,5 +66,5 @@ export async function getABIForContract(address: string, networkConfig: NetworkC
     }
 
     const params = new window.URLSearchParams({ module: 'contract', action: 'getabi', address });
-    return await createSnowtraceAPI(isMainnet).get<SnowtraceResponse<string>>(`api?${params.toString()}`);
+    return await fetchSnowtraceAPI<SnowtraceResponse<string>>(`api?${params.toString()}`, isMainnet);
 }

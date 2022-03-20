@@ -5,7 +5,6 @@ import { EVMAPI } from 'avalanche/dist/apis/evm';
 import Web3 from 'web3';
 import { DefaultConfig } from './constants';
 import { NetworkConfig, NetworkConfigRpc, NetworkProtocolType } from './types';
-import { AxiosInstance } from 'axios';
 import { getRpcC, getRpcP, getRpcX } from './helpers/rpcFromConfig';
 import URL from 'url';
 import { bintools } from '@/common';
@@ -19,6 +18,7 @@ import {
 import { FetchHttpProvider } from '@/utils/FetchHTTPProvider';
 import { getEthersJsonRpcProvider } from '@/Network/getEthersProvider';
 import { ethers } from 'ethers';
+import { HttpClient } from '@/helpers/http_client';
 
 export const avalanche: Avalanche = createAvalancheProvider(DefaultConfig);
 
@@ -38,7 +38,7 @@ const rpcUrl = getRpcC(DefaultConfig);
 export const web3 = new Web3(getProviderFromUrl(rpcUrl, true) as any);
 // JSON RPC Ethers provider
 export let ethersProvider: ethers.providers.JsonRpcProvider = getEthersJsonRpcProvider(DefaultConfig);
-export let explorer_api: AxiosInstance | null = null;
+export let explorer_api: HttpClient | null = null;
 export let activeNetwork: NetworkConfig = DefaultConfig;
 
 /**

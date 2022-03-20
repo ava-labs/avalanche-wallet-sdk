@@ -2373,11 +2373,6 @@
     "@typescript-eslint/types" "4.28.1"
     eslint-visitor-keys "^2.0.0"
 
-"@vespaiach/axios-fetch-adapter@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@vespaiach/axios-fetch-adapter/-/axios-fetch-adapter-0.1.1.tgz#2da3fe5e5284aee776aebb01f4e5140cb7fbf988"
-  integrity sha512-XdXHkMNpHuHmVGy2Ly4PKT99MLDeLa9/Ucj07Ba561SroL11P7WkPlnhZ5YkjjH072cSKpp/hsKuYjul11SJ2w==
-
 "@zerollup/ts-helpers@^1.7.18":
   version "1.7.18"
   resolved "https://registry.yarnpkg.com/@zerollup/ts-helpers/-/ts-helpers-1.7.18.tgz#747177f6d5abc06c3a0f5dffe7362d365cf0391d"
