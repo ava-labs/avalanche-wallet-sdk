@@ -38,9 +38,7 @@ export class EvmWalletReadonly {
 
     getAddressBech32(): string {
         const compressedKey = this.getCompressedPublicKey();
-        let keypair = new EVMKeyPair(avalanche.getHRP(), 'C');
-        keypair.importKey(BufferAvalanche.from(compressedKey.substr(2), 'hex'));
-        let addr = keypair.getAddress();
+        let addr = EVMKeyPair.addressFromPublicKey(BufferAvalanche.from(compressedKey.substring(2), 'hex'));
         return bintools.addressToString(avalanche.getHRP(), 'C', addr);
     }
 
@@ -58,7 +56,7 @@ export class EvmWalletReadonly {
             network = networks.regtest;
         }
 
-        const compressedBuff = new Buffer(this.getCompressedPublicKey().substr(2), 'hex');
+        const compressedBuff = Buffer.from(this.getCompressedPublicKey().substring(2), 'hex');
         let ecPair = ECPair.fromPublicKey(compressedBuff);
         let { address } = payments.p2wpkh({ pubkey: ecPair.publicKey, network });
         if (!address) throw new Error('Unable to get BTC address.');

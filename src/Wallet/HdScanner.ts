@@ -190,8 +190,7 @@ export class HdScanner {
 
         let hrp = getPreferredHRP(avalanche.getNetworkID());
 
-        this.avmAddrFactory.importKey(publicKeyBuff);
-        let addrBuf = this.avmAddrFactory.getAddress();
+        let addrBuf = AVMKeyPair.addressFromPublicKey(publicKeyBuff);
         let addr = bintools.addressToString(hrp, chainId, addrBuf);
 
         return addr;
