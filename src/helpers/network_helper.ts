@@ -1,6 +1,7 @@
 import { NetworkConfig } from '@/Network/types';
-import axios from 'axios';
+
 import { Avalanche } from 'avalanche';
+import { HttpClient } from './http_client';
 
 export function wsUrlFromConfigX(config: NetworkConfig): string {
     let protocol = config.apiProtocol === 'http' ? 'ws' : 'wss';
@@ -18,32 +19,32 @@ export function wsUrlFromConfigEVM(config: NetworkConfig): string {
  */
 export async function getNetworkIdFromURL(url: string): Promise<number> {
     // TODO: Not be the best to assume /ext/info but Avalanchejs complicates things
-    let res = await axios.post(url + '/ext/info', {
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'info.getNetworkID',
+    let res = await fetch(url + '/ext/info', {
+        method: 'POST',
+        body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'info.getNetworkID',
+        }),
     });
-    return parseInt(res.data.result.networkID);
+    const data = await res.json();
+
+    return parseInt(data.result.networkID);
 }
 
 export function createAvalancheProvider(config: NetworkConfig) {
     return new Avalanche(config.apiIp, config.apiPort, config.apiProtocol, config.networkID);
 }
+
 /**
- * Given a network configuration returns an Axios instance connected to the explorer
+ * Given a network configuration returns an HttpClient instance connected to the explorer
  */
 export function createExplorerApi(networkConfig: NetworkConfig) {
     if (!networkConfig.explorerURL) {
         throw new Error('Network configuration does not specify an explorer API.');
     }
 
-    return axios.create({
-        baseURL: networkConfig.explorerURL,
-        withCredentials: false,
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
+    return new HttpClient(networkConfig.explorerURL);
 }
 
 /**
