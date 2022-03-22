@@ -11,8 +11,8 @@ export async function getAddressHistoryEVM(addr: string): Promise<OrteliusEvmTx[
         throw NO_EXPLORER_API;
     }
 
-    let endpoint = `v2/ctransactions?address=${addr}`;
-    let data: OrteliusEvmTx[] = (await explorer_api.get(endpoint)).data.Transactions;
+    let endpoint = `/v2/ctransactions?address=${addr}`;
+    let data = (await explorer_api.get<{ Transactions: OrteliusEvmTx[] }>(endpoint)).Transactions;
 
     data.sort((a, b) => {
         let dateA = new Date(a.createdAt);
@@ -33,9 +33,8 @@ export async function getTx(txID: string): Promise<OrteliusAvalancheTx> {
         throw NO_EXPLORER_API;
     }
 
-    let url = `v2/transactions/${txID}`;
-    let res = await explorer_api.get(url);
-    return res.data;
+    let url = `/v2/transactions/${txID}`;
+    return await explorer_api.get<OrteliusAvalancheTx>(url);
 }
 
 /**
@@ -47,8 +46,8 @@ export async function getTxEvm(txHash: string): Promise<OrteliusEvmTx> {
         throw NO_EXPLORER_API;
     }
 
-    let endpoint = `v2/ctransactions?hash=${txHash}`;
-    let data: OrteliusEvmTx = (await explorer_api.get(endpoint)).data.Transactions[0];
+    let endpoint = `/v2/ctransactions?hash=${txHash}`;
+    let data = (await explorer_api.get<{ Transactions: OrteliusEvmTx[] }>(endpoint)).Transactions[0];
 
     return data;
 }
@@ -77,7 +76,7 @@ async function getTransactionsAvalanche(
         return addr.split('-')[1];
     });
 
-    const rootUrl = 'v2/transactions';
+    const rootUrl = '/v2/transactions';
 
     const req = {
         address: addrsRaw,
@@ -99,9 +98,9 @@ async function getTransactionsAvalanche(
         req.endTime = [endTime];
     }
 
-    const res = await explorer_api.post(rootUrl, req);
-    const resTxs = res.data.transactions;
-    const next: string | undefined = res.data.next;
+    const res = await explorer_api.post<{ transactions: OrteliusAvalancheTx[]; next?: string }>(rootUrl, req);
+    const resTxs = res.transactions;
+    const next: string | undefined = res.next;
 
     let allTxs = resTxs === null ? [] : resTxs;
 
@@ -167,12 +166,12 @@ export async function getAddressChains(addrs: string[]) {
 
     let urlRoot = `/v2/addressChains`;
 
-    let res = await explorer_api.post(urlRoot, {
+    let res = await explorer_api.post<any>(urlRoot, {
         address: rawAddrs,
         disableCount: ['1'],
     });
 
-    return res.data.addressChains;
+    return res.addressChains;
 }
 
 export async function getAddressDetailX(addr: string) {
@@ -183,6 +182,5 @@ export async function getAddressDetailX(addr: string) {
     let addrRaw = addr.split('-')[1];
     let url = `/x/addresses/${addrRaw}`;
 
-    let res = await explorer_api.get(url);
-    return res.data;
+    return await explorer_api.get<any>(url);
 }
