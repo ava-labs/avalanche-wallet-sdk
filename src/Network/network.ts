@@ -94,6 +94,8 @@ export function setRpcNetwork(conf: NetworkConfig, credentials = true): void {
 
     let rpcUrl = getRpcC(conf);
     web3.setProvider(getProviderFromUrl(rpcUrl, credentials) as any);
+    // Update ethers provider
+    ethersProvider = getEthersJsonRpcProvider(conf);
 
     activeNetwork = conf;
 }
