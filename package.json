@@ -65,7 +65,7 @@
         "tslib": "^2.2.0",
         "ttypescript": "^1.5.12",
         "typedoc": "^0.21.2",
-        "typescript": "^4.2.4"
+        "typescript": "4.6.3"
     },
     "dependencies": {
         "@ethereumjs/common": "2.6.0",
@@ -75,7 +75,7 @@
         "@metamask/eth-sig-util": "^4.0.0",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
         "@openzeppelin/contracts": "4.5.0",
-        "avalanche": "3.13.1",
+        "avalanche": "3.13.3",
         "big.js": "^6.1.1",
         "bip32": "^2.0.6",
         "bip32-path": "^0.4.2",

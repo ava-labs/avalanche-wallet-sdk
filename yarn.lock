@@ -2947,10 +2947,10 @@ available-typed-arrays@^1.0.2:
   resolved "https://registry.yarnpkg.com/available-typed-arrays/-/available-typed-arrays-1.0.4.tgz#9e0ae84ecff20caae6a94a1c3bc39b955649b7a9"
   integrity sha512-SA5mXJWrId1TaQjfxUYghbqQ/hYioKmLJvPJyDuYRtXXenFNMjj4hSSt1Cf1xsuXSXrtxrVC5Ot4eU6cOtBDdA==
 
-avalanche@3.13.1:
-  version "3.13.1"
-  resolved "https://registry.yarnpkg.com/avalanche/-/avalanche-3.13.1.tgz#17169441b6bacb7aef818a777a6f06b055afeff1"
-  integrity sha512-tOxDzbMh4hoim1VyZF1giR4wJ1Aoz3XWaRqEEhs2opGk02j5eIEHH40yw6ezKxXaYesKmg54ZmaAatRwETY/6A==
+avalanche@3.13.3:
+  version "3.13.3"
+  resolved "https://registry.yarnpkg.com/avalanche/-/avalanche-3.13.3.tgz#b28d7b10c7e2f62da29cfd60a77e7814b5150b05"
+  integrity sha512-zogDk+3w90CQNXe+nlQvN3pdRytH+PIwjk17/1IlMKn/AzRBjNXAdCVc6552pEJH53/SSFM6flrVZ4eg6kL5IA==
   dependencies:
     assert "2.0.0"
     axios "0.26.1"
@@ -8667,10 +8667,10 @@ typescript-transform-paths@^2.2.3:
   dependencies:
     minimatch "^3.0.4"
 
-typescript@^4.2.4:
-  version "4.3.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.3.4.tgz#3f85b986945bcf31071decdd96cf8bfa65f9dcbc"
-  integrity sha512-uauPG7XZn9F/mo+7MrsRjyvbxFpzemRjKEZXS4AK83oP2KKOJPvb+9cO/gmnv8arWZvhnjVOXz7B49m1l0e9Ew==
+typescript@4.6.3:
+  version "4.6.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.6.3.tgz#eefeafa6afdd31d725584c67a0eaba80f6fc6c6c"
+  integrity sha512-yNIatDa5iaofVozS/uQJEl3JRWLKKGJKh6Yaiv0GLGSuhpFJe7P3SbHZ8/yjAHRQwKRoA6YZqlfjXWmVzoVSMw==
 
 uglify-js@^3.1.4:
   version "3.13.10"
