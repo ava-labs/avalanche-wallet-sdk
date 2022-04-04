@@ -11,15 +11,15 @@
         "node": ">=15"
     },
     "scripts": {
-        "start": "rollup -c --watch",
-        "build": "rollup -c",
         "build:prod": "rollup -c --environment BUILD:production",
-        "test": "jest",
-        "test:watch": "jest --watch",
+        "build": "rollup -c",
+        "docs:watch": "typedoc --watch",
+        "docs": "typedoc",
         "lint": "eslint .",
         "prepare": "husky install && yarn build:prod",
-        "docs": "typedoc",
-        "docs:watch": "typedoc --watch"
+        "start": "rollup -c --watch",
+        "test:watch": "jest --watch",
+        "test": "jest"
     },
     "lint-staged": {
         "**/*": "prettier --write --ignore-unknown"
