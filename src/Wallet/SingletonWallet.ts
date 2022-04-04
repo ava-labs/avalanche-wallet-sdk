@@ -7,10 +7,10 @@ import {
     UnsignedTx as PlatformUnsignedTx,
     Tx as PlatformTx,
 } from 'avalanche/dist/apis/platformvm';
-import { avalanche, pChain, xChain } from '@/Network/network';
+import { pChain, xChain } from '@/Network/network';
 import { Buffer as BufferAvalanche } from 'avalanche';
 import { EvmWallet } from '@/Wallet/EVM/EvmWallet';
-import { UnsignedTx, Tx, KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm';
+import { UnsignedTx, Tx } from 'avalanche/dist/apis/evm';
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import { bintools } from '@/common';
 import { TypedDataV1, TypedMessage } from '@metamask/eth-sig-util';
