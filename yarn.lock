@@ -5813,7 +5813,7 @@ human-signals@^1.1.1:
   resolved "https://registry.yarnpkg.com/human-signals/-/human-signals-1.1.1.tgz#c5b1cd14f50aeae09ab6c59fe63ba3395fe4dfa3"
   integrity sha512-SEQu7vl8KjNL2eoGBLF3+wAjpsNfA9XMlXAYj/3EdaNfAlxKthD1xjEQfGOUhllCGGJVNY34bRr6lPINhNjyZw==
 
-husky@^6.0.0:
+husky@6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/husky/-/husky-6.0.0.tgz#810f11869adf51604c32ea577edbc377d7f9319e"
   integrity sha512-SQS2gDTB7tBN486QSoKPKQItZw97BMOd+Kdb6ghfpBc0yXyzrddI0oDV5MkDAbuB4X2mO3/nj60TRMcYxwzZeQ==
@@ -8189,14 +8189,14 @@ rlp@^2.2.4:
   dependencies:
     bn.js "^4.11.1"
 
-rollup-plugin-delete@^2.0.0:
+rollup-plugin-delete@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/rollup-plugin-delete/-/rollup-plugin-delete-2.0.0.tgz#262acf80660d48c3b167fb0baabd0c3ab985c153"
   integrity sha512-/VpLMtDy+8wwRlDANuYmDa9ss/knGsAgrDhM+tEwB1npHwNu4DYNmDfUL55csse/GHs9Q+SMT/rw9uiaZ3pnzA==
   dependencies:
     del "^5.1.0"
 
-rollup-plugin-typescript2@^0.30.0:
+rollup-plugin-typescript2@0.30.0:
   version "0.30.0"
   resolved "https://registry.yarnpkg.com/rollup-plugin-typescript2/-/rollup-plugin-typescript2-0.30.0.tgz#1cc99ac2309bf4b9d0a3ebdbc2002aecd56083d3"
   integrity sha512-NUFszIQyhgDdhRS9ya/VEmsnpTe+GERDMmFo0Y+kf8ds51Xy57nPNGglJY+W6x1vcouA7Au7nsTgsLFj2I0PxQ==
