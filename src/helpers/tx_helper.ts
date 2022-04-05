@@ -19,7 +19,6 @@ import { EVMConstants } from 'avalanche/dist/apis/evm';
 
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx';
 import EthereumjsCommon from '@ethereumjs/common';
-import Common, { Chain } from '@ethereumjs/common';
 
 import ERC20Abi from '@openzeppelin/contracts/build/contracts/ERC20.json';
 import ERC721Abi from '@openzeppelin/contracts/build/contracts/ERC721.json';
@@ -174,7 +173,7 @@ export async function buildEvmTransferEIP1559Tx(
     const chainId = await web3.eth.getChainId();
     const networkId = await web3.eth.net.getId();
 
-    const common = Common.custom({ networkId, chainId });
+    const common = EthereumjsCommon.custom({ networkId, chainId });
 
     const tx = FeeMarketEIP1559Transaction.fromTxData(
         {
@@ -202,7 +201,7 @@ export async function buildEvmTransferNativeTx(
     const chainId = await web3.eth.getChainId();
     const networkId = await web3.eth.net.getId();
 
-    const common = Common.custom({ networkId, chainId });
+    const common = EthereumjsCommon.custom({ networkId, chainId });
 
     const tx = Transaction.fromTxData(
         {
