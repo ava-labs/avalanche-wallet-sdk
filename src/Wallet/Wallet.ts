@@ -869,6 +869,30 @@ export abstract class WalletProvider {
     }
 
     /**
+     * Fetches X-Chain atomic utxos from all source networks and returns them as one set.
+     */
+    async getAllAtomicUTXOsX() {
+        const utxos = await Promise.all([this.getAtomicUTXOsX('P'), this.getAtomicUTXOsX('C')]);
+        return utxos[0].merge(utxos[1]);
+    }
+
+    /**
+     * Fetches P-Chain atomic utxos from all source networks and returns them as one set.
+     */
+    async getAllAtomicUTXOsP() {
+        const utxos = await Promise.all([this.getAtomicUTXOsP('X'), this.getAtomicUTXOsP('C')]);
+        return utxos[0].merge(utxos[1]);
+    }
+
+    /**
+     * Fetches C-Chain atomic utxos from all source networks and returns them as one set.
+     */
+    async getAllAtomicUTXOsC() {
+        const utxos = await Promise.all([this.getAtomicUTXOsC('X'), this.getAtomicUTXOsC('P')]);
+        return utxos[0].merge(utxos[1]);
+    }
+
+    /**
      * Imports atomic X chain UTXOs to the current active X chain address
      * @param sourceChain The chain to import from, either `P` or `C`
      */
