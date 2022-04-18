@@ -11,7 +11,7 @@ export async function getAddressHistoryEVM(addr: string): Promise<OrteliusEvmTx[
         throw NO_EXPLORER_API;
     }
 
-    let endpoint = `/v2/ctransactions?address=${addr}`;
+    let endpoint = `v2/ctransactions?address=${addr}`;
     let data = (await explorer_api.get<{ Transactions: OrteliusEvmTx[] }>(endpoint)).Transactions;
 
     data.sort((a, b) => {
@@ -33,7 +33,7 @@ export async function getTx(txID: string): Promise<OrteliusAvalancheTx> {
         throw NO_EXPLORER_API;
     }
 
-    let url = `/v2/transactions/${txID}`;
+    let url = `v2/transactions/${txID}`;
     return await explorer_api.get<OrteliusAvalancheTx>(url);
 }
 
@@ -46,7 +46,7 @@ export async function getTxEvm(txHash: string): Promise<OrteliusEvmTx> {
         throw NO_EXPLORER_API;
     }
 
-    let endpoint = `/v2/ctransactions?hash=${txHash}`;
+    let endpoint = `v2/ctransactions?hash=${txHash}`;
     let data = (await explorer_api.get<{ Transactions: OrteliusEvmTx[] }>(endpoint)).Transactions[0];
 
     return data;
@@ -76,7 +76,7 @@ async function getTransactionsAvalanche(
         return addr.split('-')[1];
     });
 
-    const rootUrl = '/v2/transactions';
+    const rootUrl = 'v2/transactions';
 
     const req = {
         address: addrsRaw,
@@ -164,7 +164,7 @@ export async function getAddressChains(addrs: string[]) {
         return addr.split('-')[1];
     });
 
-    let urlRoot = `/v2/addressChains`;
+    let urlRoot = `v2/addressChains`;
 
     let res = await explorer_api.post<any>(urlRoot, {
         address: rawAddrs,
@@ -180,7 +180,7 @@ export async function getAddressDetailX(addr: string) {
     }
 
     let addrRaw = addr.split('-')[1];
-    let url = `/x/addresses/${addrRaw}`;
+    let url = `x/addresses/${addrRaw}`;
 
     return await explorer_api.get<any>(url);
 }
