@@ -29,5 +29,6 @@ export function getTransactionSummaryEVM(tx: OrteliusEvmTx, walletAddress: strin
         to: tx.toAddr,
         timestamp: date,
         input: tx.input,
+        tx,
     };
 }
