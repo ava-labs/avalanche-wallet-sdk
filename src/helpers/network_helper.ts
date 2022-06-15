@@ -1,6 +1,6 @@
 import { NetworkConfig } from '@/Network/types';
 
-import { Avalanche, AvalancheCore } from 'avalanche';
+import { Avalanche } from 'avalanche';
 import { HttpClient } from './http_client';
 
 export function wsUrlFromConfigX(config: NetworkConfig): string {
