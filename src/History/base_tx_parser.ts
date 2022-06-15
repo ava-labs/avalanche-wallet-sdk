@@ -39,7 +39,6 @@ export async function getBaseTxSummary(tx: OrteliusAvalancheTx, ownerAddrs: stri
     let tos = getOutputsAssetOwners(nowOwnedOuts);
 
     let tokens = await getBaseTxTokensSummary(gains, losses, froms, tos);
-
     return {
         id: tx.id,
         fee: getTxFeeX(),
@@ -47,6 +46,7 @@ export async function getBaseTxSummary(tx: OrteliusAvalancheTx, ownerAddrs: stri
         timestamp: new Date(tx.timestamp),
         memo: parseMemo(tx.memo),
         tokens: tokens,
+        tx: tx,
     };
 }
 

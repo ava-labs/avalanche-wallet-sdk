@@ -48,6 +48,7 @@ function getUnsupportedSummary(tx: OrteliusAvalancheTx): iHistoryItem {
         type: 'not_supported',
         timestamp: new Date(tx.timestamp),
         fee: new BN(0),
+        tx,
     };
 }
 
@@ -95,6 +96,7 @@ function getStakingSummary(tx: OrteliusAvalancheTx, ownerAddrs: string[]): iHist
         isRewarded: tx.rewarded,
         rewardAmount: rewardAmount,
         rewardAmountDisplayValue: rewardAmountClean,
+        tx,
     };
 }
 
@@ -122,6 +124,7 @@ function getImportSummaryC(tx: OrteliusAvalancheTx, ownerAddr: string) {
         type: 'import',
         fee: fee,
         memo: parseMemo(tx.memo),
+        tx,
     };
 
     return res;

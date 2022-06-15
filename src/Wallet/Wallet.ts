@@ -99,6 +99,7 @@ import {
     OrteliusAvalancheTx,
 } from '@/Explorer';
 import { TypedDataV1, TypedMessage } from '@metamask/eth-sig-util';
+import { getHistoryForOwnedAddresses } from '@/History/getHistoryForOwnedAddresses';
 
 export abstract class WalletProvider {
     abstract type: WalletNameType;
@@ -1282,47 +1283,13 @@ export abstract class WalletProvider {
     }
 
     async getHistory(limit: number = 0): Promise<HistoryItemType[]> {
-        let [txsX, txsP, txsC] = await Promise.all([
-            this.getHistoryX(limit),
-            this.getHistoryP(limit),
-            this.getHistoryC(limit),
-        ]);
-
-        let txsXPC = filterDuplicateOrtelius(txsX.concat(txsP, txsC));
-
-        let txsEVM = await this.getHistoryEVM();
-
-        let addrsX = await this.getAllAddressesX();
-        let addrBechC = this.getEvmAddressBech();
-        let addrs = [...addrsX, addrBechC];
-
-        let addrC = this.getAddressC();
-
-        // Parse X,P,C transactions
-        // Have to loop because of the asynchronous call
-        let parsedXPC = [];
-        for (let i = 0; i < txsXPC.length; i++) {
-            let tx = txsXPC[i];
-            try {
-                let summary = await getTransactionSummary(tx, addrs, addrC);
-                parsedXPC.push(summary);
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        // Parse EVM Transactions
-        let parsedEVM = txsEVM.map((tx) => getTransactionSummaryEVM(tx, addrC));
-
-        // Sort and join X,P,C transactions
-        let parsedAll = [...parsedXPC, ...parsedEVM];
-        let txsSorted = parsedAll.sort((x, y) => (x.timestamp.getTime() < y.timestamp.getTime() ? 1 : -1));
-
-        // If there is a limit only return that much
-        if (limit > 0) {
-            return txsSorted.slice(0, limit);
-        }
-        return txsSorted;
+        return getHistoryForOwnedAddresses(
+            await this.getAllAddressesX(),
+            await this.getAllAddressesP(),
+            this.getEvmAddressBech(),
+            this.getAddressC(),
+            limit
+        );
     }
 
     /**

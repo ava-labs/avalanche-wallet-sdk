@@ -28,6 +28,7 @@ export function getImportSummary(tx: OrteliusAvalancheTx, addresses: string[]): 
         timestamp: time,
         type: 'import',
         fee: fee,
+        tx,
     };
 
     return res;
@@ -58,6 +59,7 @@ export function getExportSummary(tx: OrteliusAvalancheTx, addresses: string[]): 
         timestamp: time,
         type: 'export',
         fee: fee,
+        tx,
     };
 
     return res;

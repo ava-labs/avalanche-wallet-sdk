@@ -21,12 +21,16 @@ export async function getNetworkIdFromURL(url: string): Promise<number> {
     // TODO: Not be the best to assume /ext/info but Avalanchejs complicates things
     let res = await fetch(url + '/ext/info', {
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
             jsonrpc: '2.0',
             id: 1,
             method: 'info.getNetworkID',
         }),
     });
+
     const data = await res.json();
 
     return parseInt(data.result.networkID);
