@@ -107,7 +107,6 @@ export function setRpcNetwork(conf: NetworkConfig, credentials = true): void {
 export async function getConfigFromUrl(url: string): Promise<NetworkConfig> {
     let urlObj = URL.parse(url);
     let portStr = urlObj.port;
-
     if (!urlObj.hostname || !urlObj.protocol) throw new Error('Invalid url.');
 
     if (!portStr) {
