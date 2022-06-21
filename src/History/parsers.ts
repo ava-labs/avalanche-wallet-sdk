@@ -24,7 +24,8 @@ export async function getTransactionSummary(
     switch (tx.type) {
         case 'import':
         case 'pvm_import':
-            return getImportSummary(tx, cleanAddressesXP);
+        case 'atomic_import_tx':
+            return getImportSummary(tx, cleanAddressesXP, evmAddress);
         case 'export':
         case 'pvm_export':
         case 'atomic_export_tx':
@@ -32,8 +33,6 @@ export async function getTransactionSummary(
         case 'add_validator':
         case 'add_delegator':
             return getStakingSummary(tx, cleanAddressesXP);
-        case 'atomic_import_tx':
-            return getImportSummaryC(tx, evmAddress);
         case 'operation':
         case 'base':
             return await getBaseTxSummary(tx, cleanAddressesXP);

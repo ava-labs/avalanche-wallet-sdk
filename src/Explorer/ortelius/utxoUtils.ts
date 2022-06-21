@@ -1,6 +1,7 @@
 import { OrteliusUTXO } from '@/Explorer';
 import { BN } from 'avalanche';
 import { iHistoryBaseTxTokenOwners } from '@/History';
+import { strip0x } from '@/utils';
 
 export function filterDuplicateStrings(vals: string[]) {
     return vals.filter((val, i) => vals.indexOf(val) === i);
@@ -109,7 +110,14 @@ export function getEvmAssetBalanceFromUTXOs(
 export function getOwnedOutputs(outs: OrteliusUTXO[], myAddrs: string[]) {
     return outs.filter((out) => {
         let outAddrs = out.addresses || [];
-        return isArraysOverlap(myAddrs, outAddrs);
+        let cAddrs = out.caddresses || [];
+
+        // Strip 0x and normalize C addresses
+        const cAddrsClean = cAddrs.map((addr) => {
+            return strip0x(addr.toLowerCase());
+        });
+
+        return isArraysOverlap(myAddrs, [...outAddrs, ...cAddrsClean]);
     });
 }
 
