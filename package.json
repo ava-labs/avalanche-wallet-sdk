@@ -75,7 +75,6 @@
         "@metamask/eth-sig-util": "4.0.0",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
         "@openzeppelin/contracts": "4.5.0",
-        "avalanche": "3.15.2",
         "big.js": "^6.1.1",
         "bip32": "2.0.6",
         "bip32-path": "0.4.2",
@@ -94,5 +93,8 @@
         "web3": "1.7.3",
         "web3-eth-contract": "1.7.1",
         "xss": "1.0.11"
+    },
+    "peerDependencies": {
+        "avalanche": "3.15.2"
     }
 }
