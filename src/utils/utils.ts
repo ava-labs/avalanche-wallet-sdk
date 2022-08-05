@@ -1,7 +1,7 @@
 import { Buffer as BufferAvalanche } from 'avalanche';
 import { validateAddress } from '@/helpers/address_helper';
-import createHash from 'create-hash';
 import { PayloadBase, PayloadTypes } from 'avalanche/dist/utils';
+import { sha256 } from '@noble/hashes/sha256';
 
 /**
  * Checks if address is valid.
@@ -18,7 +18,7 @@ export function digestMessage(msgStr: string): Buffer {
     let msgSize = Buffer.alloc(4);
     msgSize.writeUInt32BE(mBuf.length, 0);
     let msgBuf = Buffer.from(`\x1AAvalanche Signed Message:\n${msgSize}${msgStr}`, 'utf8');
-    return createHash('sha256').update(msgBuf).digest();
+    return Buffer.from(sha256(msgBuf));
 }
 
 let payloadtypes = PayloadTypes.getInstance();

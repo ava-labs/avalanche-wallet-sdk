@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer/';
-import createHash from 'create-hash';
+import { sha256 } from '@noble/hashes/sha256';
 
 /**
  * @ignore
@@ -75,7 +75,7 @@ export default class CryptoHelpers {
         } else {
             buff = Buffer.from(message);
         }
-        return Buffer.from(createHash('sha256').update(buff).digest()); // ensures correct Buffer class is used
+        return Buffer.from(sha256(buff)); // ensures correct Buffer class is used
     }
 
     /**

@@ -46,7 +46,7 @@ import { Buffer } from 'avalanche';
 import { ChainIdType } from '@/common';
 import { Buffer as BufferNative } from 'buffer';
 import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/tx_helper';
-import createHash from 'create-hash';
+import { sha256 } from '@noble/hashes/sha256';
 //@ts-ignore
 import bippath from 'bip32-path';
 import { bintools } from '@/common';
@@ -459,7 +459,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
     >(unsignedTx: UnsignedTx, paths: string[], chainId: ChainIdType): Promise<SignedTx> {
         if (!LedgerWallet.transport) throw ERR_TransportNotSet;
         let txbuff = unsignedTx.toBuffer();
-        const msg: Buffer = Buffer.from(createHash('sha256').update(txbuff).digest());
+        const msg: Buffer = Buffer.from(sha256(txbuff));
 
         let bip32Paths = this.pathsToUniqueBipPaths(paths);
 
