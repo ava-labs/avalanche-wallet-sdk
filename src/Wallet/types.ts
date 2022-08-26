@@ -49,8 +49,16 @@ export interface iAvaxBalance {
 }
 
 export interface AssetBalanceRawX {
+    /**
+     * UTXOs with locktime in the future
+     */
     locked: BN;
     unlocked: BN;
+
+    /**
+     * UTXOs with threshold > 1
+     */
+    multisig: BN;
 }
 
 export interface AssetBalanceX extends AssetBalanceRawX {
@@ -60,6 +68,7 @@ export interface AssetBalanceX extends AssetBalanceRawX {
 export interface AssetBalanceP {
     locked: BN;
     unlocked: BN;
+    multisig: BN;
     lockedStakeable: BN;
 }
 
