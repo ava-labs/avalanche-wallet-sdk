@@ -1,7 +1,8 @@
 //@ts-ignore
 import Eth from '@ledgerhq/hw-app-eth';
 // @ts-ignore
-import AppAvax from '@obsidiansystems/hw-app-avalanche';
+// import AppAvax, { ResponseAppInfo } from '@obsidiansystems/hw-app-avalanche';
+import AppAvax, { ResponseAppInfo } from '@zondax/ledger-avalanche-app';
 import EthereumjsCommon from '@ethereumjs/common';
 import { importPublic, bnToRlp, rlp, BN as EthBN } from 'ethereumjs-util';
 import {
@@ -61,7 +62,7 @@ import { TypedDataV1, TypedMessage, typedSignatureHash } from '@metamask/eth-sig
 export class LedgerWallet extends PublicMnemonicWallet {
     type: WalletNameType;
     static transport: Transport | undefined;
-    static config: ILedgerAppConfig | undefined;
+    static config: ResponseAppInfo | undefined;
     accountIndex: number;
 
     /**
@@ -143,13 +144,18 @@ export class LedgerWallet extends PublicMnemonicWallet {
      * @remarks Returns the extended public key for path `m/44'/90000'/n'` where `n` is the account index.
      * @param transport
      * @param accountIndex Which account's public key to derive
+     * @param show Prompt the user?
      */
-    static async getExtendedPublicKeyAvaxAccount(transport: Transport, accountIndex = 0): Promise<string> {
+    static async getExtendedPublicKeyAvaxAccount(
+        transport: Transport,
+        accountIndex = 0,
+        show = false
+    ): Promise<string> {
         const app = getAppAvax(transport);
 
-        let res = await app.getWalletExtendedPublicKey(getAccountPathAvalanche(accountIndex));
+        let res = await app.getExtendedPubKey(getAccountPathAvalanche(accountIndex), show);
 
-        let pubKey = res.public_key;
+        let pubKey = res.publicKey;
         let chainCode = res.chain_code;
 
         // Get the base58 publick key from the HDKey instance
@@ -418,7 +424,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
         let txbuff = unsignedTx.toBuffer();
         let changePath = this.getChangeBipPath(unsignedTx, chainId);
 
-        let ledgerSignedTx = await appAvax.signTransaction(accountPath, bip32Paths, txbuff, changePath);
+        let ledgerSignedTx = await appAvax.sign(accountPath, bip32Paths, txbuff, changePath);
 
         let sigMap = ledgerSignedTx.signatures;
         let creds = this.getCredentials<UnsignedTx>(unsignedTx, paths, sigMap, chainId);

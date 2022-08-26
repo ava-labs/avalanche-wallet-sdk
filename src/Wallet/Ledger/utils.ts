@@ -1,7 +1,7 @@
 import * as bip32 from 'bip32';
 import Eth from '@ledgerhq/hw-app-eth';
-// @ts-ignore
-import AppAvax from '@obsidiansystems/hw-app-avalanche';
+import AppAvax from '@zondax/ledger-avalanche-app';
+// import AppAvax from '@obsidiansystems/hw-app-avalanche';
 import { MIN_EVM_SUPPORT_V } from '@/Wallet/constants';
 import { ILedgerAppConfig } from '@/Wallet/types';
 
@@ -17,16 +17,16 @@ export function getEthAddressKeyFromAccountKey(xpub: string, index: number) {
 }
 
 export function getAppAvax(transport: any): AppAvax {
-    return new AppAvax(transport, 'w0w');
+    return new AppAvax(transport);
 }
 
 export function getAppEth(transport: any): Eth {
     return new Eth(transport, 'w0w');
 }
 
-export async function getLedgerConfigAvax(transport: any): Promise<ILedgerAppConfig> {
+export async function getLedgerConfigAvax(transport: any) {
     const app = getAppAvax(transport);
-    let config = await app.getAppConfiguration();
+    let config = await app.getAppInfo();
 
     if (!config) {
         throw new Error(`Unable to connect ledger. You must use ledger version ${MIN_EVM_SUPPORT_V} or above.`);
