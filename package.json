@@ -86,6 +86,7 @@
         "crypto-js": "4.1.1",
         "ethereumjs-util": "^7.0.7",
         "ethers": "5.6.8",
+        "hdkey": "2.0.1",
         "moment": "2.29.4",
         "randomstring": "1.2.2",
         "sockette": "2.0.6",
