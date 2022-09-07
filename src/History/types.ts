@@ -27,6 +27,7 @@ export interface iHistoryItem {
     fee: BN;
     memo?: string;
     tx: OrteliusEvmTx | OrteliusAvalancheTx;
+    avaxPrice?: number;
 }
 
 /**
