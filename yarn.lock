@@ -2543,12 +2543,12 @@
     rxjs "6"
     semver "^7.3.5"
 
-"@ledgerhq/devices@^6.19.0":
-  version "6.19.0"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/devices/-/devices-6.19.0.tgz#dfda26bdc1e75e4ede2eac5fcef79807ffc57afa"
-  integrity sha512-xk/6JGrFP/c8aMK4O2fKZFJGH3STynwnIRy6si/400r5p3kJmoyR6h16U954EYcCbyScrVdtDYnZKLTUCbtAIQ==
+"@ledgerhq/devices@^7.0.1":
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/devices/-/devices-7.0.1.tgz#c014fbb806ba3d48efb2fd757e8588c9300f54fc"
+  integrity sha512-LlAyDU5+GH0w+J1wscLU+Ga4z5a5ACKmMGQKILj5XscCtp63NjbtVdVt4oc/xrmoUdRqVehIw2Ui+e9nIF52yA==
   dependencies:
-    "@ledgerhq/errors" "^6.10.0"
+    "@ledgerhq/errors" "^6.10.2"
     "@ledgerhq/logs" "^6.10.0"
     rxjs "6"
     semver "^7.3.5"
@@ -2563,6 +2563,11 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-6.10.0.tgz#dda9127b65f653fbb2f74a55e8f0e550d69de6e4"
   integrity sha512-fQFnl2VIXh9Yd41lGjReCeK+Q2hwxQJvLZfqHnKqWapTz68NHOv5QcI0OHuZVNEbv0xhgdLhi5b65kgYeQSUVg==
 
+"@ledgerhq/errors@^6.10.2":
+  version "6.10.2"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-6.10.2.tgz#ba104d495eae5ee91264de91a9ba8e3dcaa1a4ea"
+  integrity sha512-iMfEJPWaan8QaZw87WMUnFFRJqveE3FpU2ObTE0ydTJLPJNOUJjjurGBklqdWM/j5BIQvpi3byGKFChfNg8CaQ==
+
 "@ledgerhq/hw-app-eth@6.12.2":
   version "6.12.2"
   resolved "https://registry.yarnpkg.com/@ledgerhq/hw-app-eth/-/hw-app-eth-6.12.2.tgz#053927766da373f51b4d53872a4a3f73e1f33b22"
@@ -2576,13 +2581,13 @@
     bignumber.js "^9.0.1"
     ethers "^5.5.1"
 
-"@ledgerhq/hw-transport@6.19.0":
-  version "6.19.0"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.19.0.tgz#416744f584287d1b0efe445fc9d8e9b4d6a91b78"
-  integrity sha512-B16iNtLb3BS+PlqKU1b6eLzOa8Os03SdeUQUYJrqc8XCqNMHJvpQxSvWVbqZFvRS5Cu991usVsCTFrPtOqaCeQ==
+"@ledgerhq/hw-transport@6.27.4":
+  version "6.27.4"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.27.4.tgz#a06853fabb1795f728b5989078e58cad44146cc4"
+  integrity sha512-i3RYKfSIZ7PHM2sFljAU443qOYMTlghx8l5AZqsNKsXbawHkuOr7EtISW3zqbC0Wh3uws7u63qQ/50TLmylr7g==
   dependencies:
-    "@ledgerhq/devices" "^6.19.0"
-    "@ledgerhq/errors" "^6.10.0"
+    "@ledgerhq/devices" "^7.0.1"
+    "@ledgerhq/errors" "^6.10.2"
     events "^3.3.0"
 
 "@ledgerhq/hw-transport@^5.9.0":
