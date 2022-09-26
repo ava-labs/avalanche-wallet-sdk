@@ -236,16 +236,16 @@ export abstract class HDWalletAbstract extends WalletProvider {
 
     public getAddressAtIndexExternalX(index: number): string {
         if (index < 0) throw new Error('Index must be >= 0');
-        return this.externalScan.getKeyForIndexX(index).getAddressString();
+        return this.externalScan.getAddressForIndex(index, 'X');
     }
 
     public getAddressAtIndexInternalX(index: number): string {
         if (index < 0) throw new Error('Index must be >= 0');
-        return this.internalScan.getKeyForIndexX(index).getAddressString();
+        return this.internalScan.getAddressForIndex(index, 'X');
     }
 
     public getAddressAtIndexExternalP(index: number): string {
         if (index < 0) throw new Error('Index must be >= 0');
-        return this.externalScan.getKeyForIndexP(index).getAddressString();
+        return this.externalScan.getAddressForIndex(index, 'P');
     }
 }

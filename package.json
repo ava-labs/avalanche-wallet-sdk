@@ -72,7 +72,7 @@
         "@ethereumjs/common": "2.6.0",
         "@ethereumjs/tx": "3.4.0",
         "@ledgerhq/hw-app-eth": "6.12.2",
-        "@ledgerhq/hw-transport": "6.19.0",
+        "@ledgerhq/hw-transport": "6.27.4",
         "@metamask/eth-sig-util": "4.0.0",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
         "@openzeppelin/contracts": "4.7.3",
