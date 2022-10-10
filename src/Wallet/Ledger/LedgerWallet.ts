@@ -345,45 +345,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
         return await this.signTransactionParsable<AVMUnsignedTx, AVMTx>(unsignedTx, paths, chainId);
     }
 
-    // getChangePath(chainId?: ChainAlias): string {
-    //     switch (chainId) {
-    //         case 'P':
-    //             return 'm/0';
-    //         case 'X':
-    //         default:
-    //             return 'm/1';
-    //     }
-    // }
-
-    // getChangeIndex(chainId?: ChainAlias): number {
-    //     switch (chainId) {
-    //         case 'P':
-    //             // return this.platformHelper.hdIndex
-    //             return this.externalScan.getIndex();
-    //         case 'X':
-    //         default:
-    //             // return this.internalHelper.hdIndex
-    //             return this.internalScan.getIndex();
-    //     }
-    // }
-
-    // getChangeBipPath<UnsignedTx extends AVMUnsignedTx | PlatformUnsignedTx | EVMUnsignedTx>(
-    //     unsignedTx: UnsignedTx,
-    //     chainId: ChainIdType
-    // ): bippath.Bip32Path | null {
-    //     if (chainId === 'C') {
-    //         return null;
-    //     }
-    //
-    //     // let tx = unsignedTx.getTransaction();
-    //     // let txType = tx.getTxType();
-    //
-    //     const chainChangePath = this.getChangePath(chainId).split('m/')[1];
-    //     let changeIdx = this.getChangeIndex(chainId);
-    //
-    //     return bippath.fromString(`${chainChangePath}/${changeIdx}`);
-    // }
-
     // Used for signing transactions that are parsable
     async signTransactionParsable<
         UnsignedTx extends AVMUnsignedTx | PlatformUnsignedTx | EVMUnsignedTx,
