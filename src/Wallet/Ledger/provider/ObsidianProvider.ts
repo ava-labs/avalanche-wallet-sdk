@@ -2,7 +2,7 @@ import Transport from '@ledgerhq/hw-transport';
 import AppObsidian from '@obsidiansystems/hw-app-avalanche';
 import bip32 from 'bip32';
 import { LedgerProvider } from '@/Wallet/Ledger/provider/models';
-import bip32Path from 'bip32-path';
+import bip32Path, { Bip32Path } from 'bip32-path';
 
 export const ObsidianProvider: LedgerProvider = {
     type: 'obsidian',
@@ -31,6 +31,15 @@ export const ObsidianProvider: LedgerProvider = {
         return {
             signatures: signed,
             hash: hash,
+        };
+    },
+
+    async getAddress(t, path, config = { show: true, hrp: 'avax' }) {
+        const app = this.getApp(t) as AppObsidian;
+
+        const res = await app.getWalletAddress(path.toString(), config.hrp);
+        return {
+            publicKey: res,
         };
     },
 

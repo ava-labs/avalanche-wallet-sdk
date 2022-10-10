@@ -1,19 +1,10 @@
 //@ts-ignore
 import Eth from '@ledgerhq/hw-app-eth';
-// @ts-ignore
-// import AppAvax, { ResponseAppInfo } from '@obsidiansystems/hw-app-avalanche';
-import AppAvax, { ResponseAppInfo } from '@zondax/ledger-avalanche-app';
 import EthereumjsCommon from '@ethereumjs/common';
-import { importPublic, bnToRlp, rlp, BN as EthBN } from 'ethereumjs-util';
-import {
-    AVAX_ACCOUNT_PATH,
-    ETH_ACCOUNT_PATH,
-    LEDGER_ETH_ACCOUNT_PATH,
-    LEDGER_EXCHANGE_TIMEOUT,
-    MIN_EVM_SUPPORT_V,
-} from '@/Wallet/constants';
+import { bnToRlp, rlp, BN as EthBN } from 'ethereumjs-util';
+import { ETH_ACCOUNT_PATH, LEDGER_EXCHANGE_TIMEOUT } from '@/Wallet/constants';
 import HDKey from 'hdkey';
-import { ChainAlias, ILedgerAppConfig, WalletNameType } from '@/Wallet/types';
+import { WalletNameType } from '@/Wallet/types';
 import { Transaction, TxOptions } from '@ethereumjs/tx';
 import {
     UnsignedTx as AVMUnsignedTx,
@@ -38,21 +29,16 @@ import {
     UnsignedTx as PlatformUnsignedTx,
     Tx as PlatformTx,
     PlatformVMConstants,
-    ExportTx as PlatformExportTx,
     ImportTx as PlatformImportTx,
     SelectCredentialClass as PlatformSelectCredentialClass,
-    AddValidatorTx,
-    AddDelegatorTx,
 } from 'avalanche/dist/apis/platformvm';
 import { activeNetwork, avalanche, web3 } from '@/Network/network';
 import { Buffer } from 'avalanche';
 import { ChainIdType } from '@/common';
 import { Buffer as BufferNative } from 'buffer';
-import { ParseableAvmTxEnum, ParseablePlatformEnum, ParseableEvmTxEnum } from '@/helpers/tx_helper';
 import createHash from 'create-hash';
 import bippath from 'bip32-path';
 import { bintools } from '@/common';
-import { idToChainAlias } from '@/Network';
 import { getAccountPathAvalanche, getAccountPathEVM } from '@/Wallet/helpers/derivationHelper';
 import { PublicMnemonicWallet } from '@/Wallet/PublicMnemonicWallet';
 import {
@@ -60,18 +46,14 @@ import {
     getAppEth,
     getEthAddressKeyFromAccountKey,
     getLedgerProvider,
-    getOutputAddresses,
-    getStakeOutAddresses,
     getTxOutputAddresses,
 } from '@/Wallet/Ledger/utils';
 import Transport from '@ledgerhq/hw-transport';
 import { ERR_ConfigNotSet, ERR_ProviderNotSet, ERR_TransportNotSet, ERR_VersionNotSet } from '@/Wallet/Ledger/errors';
-import { TypedDataV1, TypedMessage, typedSignatureHash } from '@metamask/eth-sig-util';
 import { ZondaxProvider, ObsidianProvider, LedgerProviderType } from './provider';
 export class LedgerWallet extends PublicMnemonicWallet {
     type: WalletNameType;
     static transport: Transport | undefined;
-    // static config: ResponseAppInfo | undefined;
     static version: string | undefined;
     static provider: LedgerProviderType | undefined;
 
@@ -82,7 +64,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
      * @param xpubAVM of derivation path m/44'/9000'/n' where `n` is the account index
      * @param xpubEVM of derivation path m/44'/60'/0'/0/n where `n` is the account index
      * @param accountIndex The given xpubs must match this index
-     * @param config
      */
     constructor(xpubAVM: string, xpubEVM: string, accountIndex: number) {
         super(xpubAVM, xpubEVM);
@@ -92,19 +73,21 @@ export class LedgerWallet extends PublicMnemonicWallet {
     }
 
     static async setTransport(transport: Transport) {
-        LedgerWallet.transport = transport;
+        const prov = await getLedgerProvider(transport);
 
+        if (prov.type === 'obsidian') {
+            throw new Error('Only ledger apps >= 0.6.0 are supported');
+        }
+
+        LedgerWallet.transport = transport;
         transport.on('disconnect', () => {
             console.log('transport disconnect');
             LedgerWallet.transport = undefined;
         });
 
-        const prov = await getLedgerProvider(transport);
-
         // Update the version
-        // const config = await getLedgerConfigAvax(transport);
-        // LedgerWallet.config = config;
         const v = await prov.getVersion(transport);
+
         LedgerWallet.version = v;
         LedgerWallet.provider = prov.type;
     }
@@ -118,13 +101,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
 
         const pubAvax = await LedgerWallet.getExtendedPublicKeyAvaxAccount(transport, accountIndex);
         const pubEth = await LedgerWallet.getExtendedPublicKeyEthAddress(transport, accountIndex);
-
-        // let config = await getLedgerConfigAvax(transport);
-        // console.log(config);
-        //TODO: Add version check
-        // if (config.appVersion < MIN_EVM_SUPPORT_V) {
-        //     throw new Error(`Unable to connect ledger. You must use ledger version ${MIN_EVM_SUPPORT_V} or above.`);
-        // }
 
         // Use this transport for all ledger instances
         await LedgerWallet.setTransport(transport);
@@ -163,14 +139,10 @@ export class LedgerWallet extends PublicMnemonicWallet {
      * @remarks Returns the extended public key for path `m/44'/90000'/n'` where `n` is the account index.
      * @param transport
      * @param accountIndex Which account's public key to derive
-     * @param show Prompt the user?
      */
     static async getExtendedPublicKeyAvaxAccount(transport: Transport, accountIndex = 0): Promise<string> {
-        const prov = await getLedgerProvider(transport);
-        // const app = getAppAvax(transport);
-
+        const prov = this.getProvider();
         const res = await prov.getXPUB(transport, getAccountPathAvalanche(accountIndex));
-        // let res = await app.getExtendedPubKey(getAccountPathAvalanche(accountIndex), show, 'avax');
 
         let pubKey = res.pubKey;
         let chainCode = res.chainCode;
@@ -189,14 +161,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
         if (!LedgerWallet.provider) throw new Error('Provider is not set.');
         return LedgerWallet.provider === 'obsidian' ? ObsidianProvider : ZondaxProvider;
     }
-
-    /**
-     * Get information about the AVAX app on the ledger device.
-     * @param transport
-     */
-    // static async getAvaxConfig(transport: Transport) {
-    //     return getLedgerConfigAvax(transport);
-    // }
 
     async signEvm(tx: Transaction): Promise<Transaction> {
         if (!LedgerWallet.transport) throw ERR_TransportNotSet;
@@ -371,89 +335,54 @@ export class LedgerWallet extends PublicMnemonicWallet {
     }
 
     async signX(unsignedTx: AVMUnsignedTx): Promise<AVMTx> {
-        let tx = unsignedTx.getTransaction();
-        let txType = tx.getTxType();
         let chainId: ChainIdType = 'X';
 
-        let parseableTxs = ParseableAvmTxEnum;
-        let { paths, isAvaxOnly } = await this.getTransactionPaths<AVMUnsignedTx>(unsignedTx, chainId);
+        let { paths } = await this.getTransactionPaths<AVMUnsignedTx>(unsignedTx, chainId);
 
         if (!LedgerWallet.version) throw ERR_ConfigNotSet;
         if (!LedgerWallet.provider) throw ERR_ProviderNotSet;
 
-        // If ledger doesnt support parsing, sign hash
-        let canLedgerParse = LedgerWallet.version >= '0.3.1';
-        let isParsableType = txType in parseableTxs && isAvaxOnly;
-
-        canLedgerParse = true;
-        isParsableType = true;
-        // console.log(canLedgerParse, isParsableType);
-
-        let signedTx;
-        if (canLedgerParse && isParsableType) {
-            signedTx = await this.signTransactionParsable<AVMUnsignedTx, AVMTx>(unsignedTx, paths, chainId);
-        } else {
-            signedTx = await this.signTransactionHash<AVMUnsignedTx, AVMTx>(unsignedTx, paths, chainId);
-        }
-
-        return signedTx;
+        return await this.signTransactionParsable<AVMUnsignedTx, AVMTx>(unsignedTx, paths, chainId);
     }
 
-    getChangePath(chainId?: ChainAlias): string {
-        switch (chainId) {
-            case 'P':
-                return 'm/0';
-            case 'X':
-            default:
-                return 'm/1';
-        }
-    }
+    // getChangePath(chainId?: ChainAlias): string {
+    //     switch (chainId) {
+    //         case 'P':
+    //             return 'm/0';
+    //         case 'X':
+    //         default:
+    //             return 'm/1';
+    //     }
+    // }
 
-    getChangeIndex(chainId?: ChainAlias): number {
-        switch (chainId) {
-            case 'P':
-                // return this.platformHelper.hdIndex
-                return this.externalScan.getIndex();
-            case 'X':
-            default:
-                // return this.internalHelper.hdIndex
-                return this.internalScan.getIndex();
-        }
-    }
+    // getChangeIndex(chainId?: ChainAlias): number {
+    //     switch (chainId) {
+    //         case 'P':
+    //             // return this.platformHelper.hdIndex
+    //             return this.externalScan.getIndex();
+    //         case 'X':
+    //         default:
+    //             // return this.internalHelper.hdIndex
+    //             return this.internalScan.getIndex();
+    //     }
+    // }
 
-    getChangeBipPath<UnsignedTx extends AVMUnsignedTx | PlatformUnsignedTx | EVMUnsignedTx>(
-        unsignedTx: UnsignedTx,
-        chainId: ChainIdType
-    ): bippath.Bip32Path | null {
-        if (chainId === 'C') {
-            return null;
-        }
-
-        let tx = unsignedTx.getTransaction();
-        let txType = tx.getTxType();
-
-        const chainChangePath = this.getChangePath(chainId).split('m/')[1];
-        let changeIdx = this.getChangeIndex(chainId);
-
-        // Get indices for output addresses
-
-        // If change and destination paths are the same
-        // it can cause ledger to not display the destination amt.
-        // Since platform helper does not have internal/external
-        // path for change (it uses the external index)
-        // there will be address collisions. So return null.
-        // if (
-        //     txType === PlatformVMConstants.IMPORTTX ||
-        //     txType === PlatformVMConstants.EXPORTTX ||
-        //     txType === PlatformVMConstants.ADDVALIDATORTX ||
-        //     txType === PlatformVMConstants.ADDDELEGATORTX
-        // ) {
-        //     return null;
-        // }
-
-        // return bippath.fromString(`${AVAX_ACCOUNT_PATH}/${chainChangePath}/${changeIdx}`);
-        return bippath.fromString(`${chainChangePath}/${changeIdx}`);
-    }
+    // getChangeBipPath<UnsignedTx extends AVMUnsignedTx | PlatformUnsignedTx | EVMUnsignedTx>(
+    //     unsignedTx: UnsignedTx,
+    //     chainId: ChainIdType
+    // ): bippath.Bip32Path | null {
+    //     if (chainId === 'C') {
+    //         return null;
+    //     }
+    //
+    //     // let tx = unsignedTx.getTransaction();
+    //     // let txType = tx.getTxType();
+    //
+    //     const chainChangePath = this.getChangePath(chainId).split('m/')[1];
+    //     let changeIdx = this.getChangeIndex(chainId);
+    //
+    //     return bippath.fromString(`${chainChangePath}/${changeIdx}`);
+    // }
 
     // Used for signing transactions that are parsable
     async signTransactionParsable<
@@ -462,52 +391,23 @@ export class LedgerWallet extends PublicMnemonicWallet {
     >(unsignedTx: UnsignedTx, paths: string[], chainId: ChainIdType): Promise<SignedTx> {
         // There must be an active transport connection
         if (!LedgerWallet.transport) throw ERR_TransportNotSet;
-        let tx = unsignedTx.getTransaction();
-        let txType = tx.getTxType();
-        let parseableTxs = {
-            X: ParseableAvmTxEnum,
-            P: ParseablePlatformEnum,
-            C: ParseableEvmTxEnum,
-        }[chainId];
 
         let bip32Paths = this.pathsToUniqueBipPaths(paths);
 
-        // const appAvax = getAppAvax(LedgerWallet.transport);
         const accountPath: bippath.Bip32Path =
             chainId === 'C'
                 ? bippath.fromString(`${ETH_ACCOUNT_PATH}`)
                 : bippath.fromString(getAccountPathAvalanche(this.accountIndex));
         let txbuff = BufferNative.from(unsignedTx.toBuffer());
-        // let changePath = this.getChangeBipPath(unsignedTx, chainId);
 
         // Get output addresses
         const changeAddrs = getTxOutputAddresses(unsignedTx);
         // Get their paths, for owned ones
-        const changePaths2 = this.getAddressPaths(changeAddrs);
-        console.log('changeAddrs', changeAddrs, changeAddrs.length);
-        console.log('changePaths', changePaths2, changePaths2.length);
-
-        // const changePaths = changePath ? [changePath] : [];
-        //TODO: Use correct paths
-        // console.log(accountPath);
-        // console.log(bip32Paths);
-        // console.log(changePath);
-
-        // const acctTest = accountPath.toString();
-        // const signersTest = bip32Paths.map((path) => path.toString(true));
-        // const changeTest = changePath.toString(true);
-        // console.log(acctTest, signersTest, changeTest);
+        const changePaths = this.getAddressPaths(changeAddrs);
 
         const prov = LedgerWallet.getProvider();
-        console.log(tx.serialize('display'));
-        let ledgerSignedTx = await prov.signTx(LedgerWallet.transport, txbuff, accountPath, bip32Paths, changePaths2);
-
+        let ledgerSignedTx = await prov.signTx(LedgerWallet.transport, txbuff, accountPath, bip32Paths, changePaths);
         let sigMap = ledgerSignedTx.signatures;
-        sigMap.forEach((v, k) => {
-            console.log(k);
-            console.log(v.toString('hex'));
-        });
-        // throw new Error('test');
 
         if (!sigMap) throw new Error('Unable to sign transaction.');
 
@@ -554,7 +454,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
 
         let bip32Paths = this.pathsToUniqueBipPaths(paths);
 
-        // const appAvax = getAppAvax(LedgerWallet.transport);
         // Sign the msg with ledger
         //TODO: Update when ledger supports Accounts
         const accountPathSource = chainId === 'C' ? ETH_ACCOUNT_PATH : getAccountPathAvalanche(this.accountIndex);
@@ -605,8 +504,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
         let tx = unsignedTx.getTransaction();
         let txType = tx.getTxType();
 
-        // console.log(sigMap);
-
         // @ts-ignore
         let ins = tx.getIns ? tx.getIns() : [];
         let operations: TransferableOperation[] = [];
@@ -656,7 +553,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
                 // TODO: Maybe throw an error instead?
                 if (!sigRaw) continue;
                 let sigBuff = Buffer.from(sigRaw);
-                // console.log(`sig ${i}`, sigBuff);
                 const sig: Signature = new Signature();
                 sig.fromBuffer(sigBuff);
                 cred.addSignature(sig);
@@ -710,61 +606,13 @@ export class LedgerWallet extends PublicMnemonicWallet {
     async signP(unsignedTx: PlatformUnsignedTx): Promise<PlatformTx> {
         if (!LedgerWallet.transport) throw ERR_TransportNotSet;
 
-        let tx = unsignedTx.getTransaction();
-        let txType = tx.getTxType();
         let chainId: ChainIdType = 'P';
-        let parseableTxs = ParseablePlatformEnum;
 
-        let { paths, isAvaxOnly } = await this.getTransactionPaths<PlatformUnsignedTx>(unsignedTx, chainId);
+        let { paths } = await this.getTransactionPaths<PlatformUnsignedTx>(unsignedTx, chainId);
 
         if (!LedgerWallet.version) throw ERR_VersionNotSet;
 
-        // If ledger doesnt support parsing, sign hash
-        let canLedgerParse = LedgerWallet.version >= '0.3.1';
-        let isParsableType = txType in parseableTxs && isAvaxOnly;
-
-        // TODO: Remove after ledger is fixed
-        // If UTXOS contain lockedStakeable funds always use sign hash
-        let txIns = unsignedTx.getTransaction().getIns();
-        for (let i = 0; i < txIns.length; i++) {
-            let typeID = txIns[i].getInput().getTypeID();
-            if (typeID === PlatformVMConstants.STAKEABLELOCKINID) {
-                canLedgerParse = false;
-                break;
-            }
-        }
-
-        // TODO: Remove after ledger update
-        // Ledger is not able to parse P/C atomic transactions
-        if (txType === PlatformVMConstants.EXPORTTX) {
-            const destChainBuff = (tx as PlatformExportTx).getDestinationChain();
-            // If destination chain is C chain, sign hash
-            const destChain = idToChainAlias(bintools.cb58Encode(destChainBuff));
-            if (destChain === 'C') {
-                canLedgerParse = false;
-            }
-        }
-        // TODO: Remove after ledger update
-        // Ledger is not able to parse P/C atomic transactions
-        if (txType === PlatformVMConstants.IMPORTTX) {
-            const sourceChainBuff = (tx as PlatformImportTx).getSourceChain();
-            // If destination chain is C chain, sign hash
-            const sourceChain = idToChainAlias(bintools.cb58Encode(sourceChainBuff));
-            if (sourceChain === 'C') {
-                canLedgerParse = false;
-            }
-        }
-
-        canLedgerParse = true;
-        // console.log(canLedgerParse, isParsableType);
-
-        let signedTx;
-        if (canLedgerParse && isParsableType) {
-            signedTx = await this.signTransactionParsable<PlatformUnsignedTx, PlatformTx>(unsignedTx, paths, chainId);
-        } else {
-            signedTx = await this.signTransactionHash<PlatformUnsignedTx, PlatformTx>(unsignedTx, paths, chainId);
-        }
-        return signedTx;
+        return await this.signTransactionParsable<PlatformUnsignedTx, PlatformTx>(unsignedTx, paths, chainId);
     }
 
     async signC(unsignedTx: EVMUnsignedTx): Promise<EVMTx> {
@@ -782,56 +630,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
             paths = ins.map(() => `0/${this.accountIndex}`);
         }
 
-        let canLedgerParse = true;
-
-        // TODO: Remove after ledger update
-        // Ledger is not able to parse P/C atomic transactions
-        if (typeId === EVMConstants.EXPORTTX) {
-            const destChainBuff = (tx as EVMExportTx).getDestinationChain();
-            // If destination chain is C chain, sign hash
-            const destChain = idToChainAlias(bintools.cb58Encode(destChainBuff));
-            if (destChain === 'P') {
-                canLedgerParse = false;
-            }
-        }
-        // TODO: Remove after ledger update
-        if (typeId === EVMConstants.IMPORTTX) {
-            const sourceChainBuff = (tx as EVMImportTx).getSourceChain();
-            // If destination chain is C chain, sign hash
-            const sourceChain = idToChainAlias(bintools.cb58Encode(sourceChainBuff));
-            if (sourceChain === 'P') {
-                canLedgerParse = false;
-            }
-        }
-
-        let txSigned;
-        // canLedgerParse = true;
-        if (canLedgerParse) {
-            txSigned = (await this.signTransactionParsable(unsignedTx, paths, 'C')) as EVMTx;
-        } else {
-            txSigned = (await this.signTransactionHash(unsignedTx, paths, 'C')) as EVMTx;
-        }
-
-        return txSigned;
+        return (await this.signTransactionParsable(unsignedTx, paths, 'C')) as EVMTx;
     }
-
-    // /**
-    //  * This function is equivalent to the eth_sign Ethereum JSON-RPC method as specified in EIP-1417,
-    //  * as well as the MetaMask's personal_sign method.
-    //  * @param data The hex data to sign
-    //  */
-    // async personalSign(data: string): Promise<string> {
-    //     throw new Error('Not implemented.');
-    // const ethApp = getAppEth(LedgerWallet.transport);
-    // const path = getAccountPathEVM(this.accountIndex).substr(2);
-    // const result = await ethApp.signPersonalMessage(path, data.substr(2));
-    //
-    // let v = result['v'] - 27;
-    // let vStr = v.toString(16);
-    // if (vStr.length < 2) {
-    //     vStr = '0' + v;
-    // }
-    // const sig = `0x${result['r'] + result['s'] + vStr}`;
-    // return sig;
-    // }
 }

@@ -1,13 +1,23 @@
-import bip32 from 'bip32';
 import { Bip32Path } from 'bip32-path';
 import Transport from '@ledgerhq/hw-transport';
 
 import AppObsidian from '@obsidiansystems/hw-app-avalanche';
-import AppZondax from '@zondax/ledger-avalanche-app';
+import AppZondax from '@avalabs/hw-app-avalanche';
 
 export interface LedgerProvider {
     type: LedgerProviderType;
     getApp(t: Transport): AppObsidian | AppZondax;
+    getAddress(
+        t: Transport,
+        path: Bip32Path,
+        config: {
+            show: boolean;
+            hrp: string;
+        }
+    ): Promise<{
+        publicKey: Buffer;
+    }>;
+
     getXPUB(
         t: Transport,
         path: string
@@ -15,6 +25,7 @@ export interface LedgerProvider {
         pubKey: Buffer;
         chainCode: Buffer;
     }>;
+
     signHash(
         t: Transport,
         hash: Buffer,

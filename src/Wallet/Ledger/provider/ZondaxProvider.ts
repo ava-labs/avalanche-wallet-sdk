@@ -1,6 +1,5 @@
 import Transport from '@ledgerhq/hw-transport';
-import AppZondax from '@zondax/ledger-avalanche-app';
-import bip32 from 'bip32';
+import AppZondax from '@avalabs/hw-app-avalanche';
 import { Bip32Path } from 'bip32-path';
 import { LedgerProvider } from '@/Wallet/Ledger/provider/models';
 
@@ -14,6 +13,23 @@ export const ZondaxProvider: LedgerProvider = {
     async getVersion(t: Transport): Promise<string> {
         const app = this.getApp(t) as AppZondax;
         return (await app.getAppInfo()).appVersion;
+    },
+
+    //TODO: Wrap up return type
+    async getAddress(
+        t: Transport,
+        path: Bip32Path,
+        config = {
+            show: false,
+            hrp: 'avax',
+        }
+    ) {
+        const app = this.getApp(t) as AppZondax;
+        const resp = await app.getAddressAndPubKey(path.toString(), config.show, config.hrp);
+        console.log(resp);
+        return {
+            publicKey: resp.publicKey,
+        };
     },
 
     async getXPUB(t: Transport, path: string) {

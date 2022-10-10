@@ -494,7 +494,7 @@ export abstract class WalletProvider {
         this.utxosX = await avmGetAllUTXOs(addresses);
 
         await this.updateUnknownAssetsX();
-        this.updateBalanceX();
+        await this.updateBalanceX();
 
         return this.utxosX;
     }

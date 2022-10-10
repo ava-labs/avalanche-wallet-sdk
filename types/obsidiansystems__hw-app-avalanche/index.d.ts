@@ -40,6 +40,19 @@ declare module '@obsidiansystems/hw-app-avalanche' {
             commit: string;
             name: 'Avalanche';
         }>;
+
+        getWalletAddress(derivation_path: string, hrp: string): Promise<Buffer>;
+
+        /**
+         * Get the wallet identifier for the Ledger wallet
+         *
+         * @return a byte string
+         * @example
+         * console.log((await avalanche.getWalletId()).toString("hex"));
+         *
+         * 79c46bc3
+         */
+        getWalletId(): Promise<Buffer>;
     }
 
     export = Avalanche;
