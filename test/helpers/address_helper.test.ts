@@ -2,13 +2,15 @@ import {
     getAddressChain,
     getAddressHRP,
     validateAddress,
+    validateAddressC,
     validateAddressEVM,
     validateAddressP,
     validateAddressX,
 } from '@/helpers/address_helper';
 
 import Web3 from 'web3';
-const addrC = '0x6a23c16777a3A194b2773df90FEB8753A8e619Ee';
+const addrEVM = '0x6a23c16777a3A194b2773df90FEB8753A8e619Ee';
+const addrC = 'C-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh';
 const addrP = 'P-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh';
 const addrX = 'X-avax19v8flm9qt2gv2tctztjjerlgs4k3vgjsfw8udh';
 
@@ -89,11 +91,33 @@ describe('Validate address P', () => {
     });
 });
 
+describe('Validate address C', () => {
+    it('True for correct address', () => {
+        let res = validateAddressC(addrC);
+        expect(res).toBe(true);
+    });
+
+    it('False for valid X address', () => {
+        let res = validateAddressC(addrX);
+        expect(res).toBe(false);
+    });
+
+    it('False for valid P address', () => {
+        let res = validateAddressC(addrP);
+        expect(res).toBe(false);
+    });
+
+    it('False for valid EVM address', () => {
+        let res = validateAddressC(addrEVM);
+        expect(res).toBe(false);
+    });
+});
+
 describe('Validate address EVM', () => {
     it('True for correct address', () => {
         //@ts-ignore
         Web3.utils.isAddress.mockReturnValue(true);
-        let res = validateAddressEVM(addrC);
+        let res = validateAddressEVM(addrEVM);
         expect(res).toBe(true);
     });
 
