@@ -3,12 +3,27 @@ import Web3 from 'web3';
 import { bintools } from '@/common';
 
 export const validateAddress = (address: string): boolean | string => {
-    return validateAddressX(address) || validateAddressP(address) || validateAddressEVM(address);
+    return (
+        validateAddressX(address) ||
+        validateAddressP(address) ||
+        validateAddressC(address) ||
+        validateAddressEVM(address)
+    );
 };
 
 export function validateAddressX(address: string) {
     try {
         let buff = bintools.parseAddress(address, 'X');
+        if (!buff) return false;
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+export function validateAddressC(address: string) {
+    try {
+        let buff = bintools.parseAddress(address, 'C');
         if (!buff) return false;
         return true;
     } catch (error) {
