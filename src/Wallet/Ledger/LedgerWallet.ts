@@ -141,7 +141,7 @@ export class LedgerWallet extends PublicMnemonicWallet {
      * @param accountIndex Which account's public key to derive
      */
     static async getExtendedPublicKeyAvaxAccount(transport: Transport, accountIndex = 0): Promise<string> {
-        const prov = this.getProvider();
+        const prov = await getLedgerProvider(transport);
         const res = await prov.getXPUB(transport, getAccountPathAvalanche(accountIndex));
 
         let pubKey = res.pubKey;
