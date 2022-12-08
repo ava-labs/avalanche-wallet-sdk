@@ -13,6 +13,7 @@ export interface LedgerProvider {
         config: {
             show: boolean;
             hrp: string;
+            chainId?: string;
         }
     ): Promise<{
         publicKey: Buffer;

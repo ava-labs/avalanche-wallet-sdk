@@ -15,7 +15,6 @@ export const ZondaxProvider: LedgerProvider = {
         return (await app.getAppInfo()).appVersion;
     },
 
-    //TODO: Wrap up return type
     async getAddress(
         t: Transport,
         path: Bip32Path,
@@ -25,8 +24,7 @@ export const ZondaxProvider: LedgerProvider = {
         }
     ) {
         const app = this.getApp(t) as AppZondax;
-        const resp = await app.getAddressAndPubKey(path.toString(), config.show, config.hrp);
-        console.log(resp);
+        const resp = await app.getAddressAndPubKey(path.toString(), config.show, config.hrp, config.chainId);
         return {
             publicKey: resp.publicKey,
         };
