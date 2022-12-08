@@ -46,8 +46,6 @@ export const ObsidianProvider: LedgerProvider = {
     async signTx(t: Transport, tx, accountPath, signers, change) {
         const app = this.getApp(t) as AppObsidian;
 
-        console.log(tx.toString('hex'));
-
         let changePath = undefined;
         if (change && change.length > 0) {
             const newPath = `${accountPath.toString()}/${change[0].toString(true)}`;

@@ -44,8 +44,6 @@ export const ZondaxProvider: LedgerProvider = {
         const signerPaths = signers.map((sig) => sig.toString(true));
         const resp = await app.signHash(account.toString(), signerPaths, hash);
 
-        console.log('Signing hash');
-        console.log(hash.toString('hex'));
         const sigs = resp.signatures || new Map();
         const hashMsg = resp.hash || Buffer.from('');
 
@@ -60,18 +58,8 @@ export const ZondaxProvider: LedgerProvider = {
         const signerPaths = signers.map((path) => path.toString(true));
         const changeArr = changePaths.map((path) => path.toString(true));
 
-        // console.log(signerPaths);
-        console.log('account path:', accountPath.toString());
-        console.log('Signers: ', signerPaths);
-        console.log('change paths:', changeArr);
-        console.log(tx.toString('hex'));
-
         const signed = await app.sign(accountPath.toString(), signerPaths, tx, changeArr);
-
         const sigs = signed.signatures || new Map();
-
-        // console.warn(signed);
-        console.log('signed parsable');
 
         return {
             signatures: sigs,
