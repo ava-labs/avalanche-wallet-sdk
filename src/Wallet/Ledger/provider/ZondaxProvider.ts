@@ -3,6 +3,8 @@ import AppZondax from '@avalabs/hw-app-avalanche';
 import { Bip32Path } from 'bip32-path';
 import { LedgerProvider } from '@/Wallet/Ledger/provider/models';
 
+const RETURN_CODE_SUCCESS = 0x9000;
+
 export const ZondaxProvider: LedgerProvider = {
     type: 'zondax',
 
@@ -33,6 +35,8 @@ export const ZondaxProvider: LedgerProvider = {
     async getXPUB(t: Transport, path: string) {
         const app = this.getApp(t) as AppZondax;
         const keys = await app.getExtendedPubKey(path, false);
+        if (keys.returnCode !== RETURN_CODE_SUCCESS) throw new Error(keys.errorMessage);
+
         return {
             pubKey: keys.publicKey,
             chainCode: keys.chain_code,
@@ -43,6 +47,7 @@ export const ZondaxProvider: LedgerProvider = {
         const app = this.getApp(t) as AppZondax;
         const signerPaths = signers.map((sig) => sig.toString(true));
         const resp = await app.signHash(account.toString(), signerPaths, hash);
+        if (resp.returnCode !== RETURN_CODE_SUCCESS) throw new Error(resp.errorMessage);
 
         const sigs = resp.signatures || new Map();
         const hashMsg = resp.hash || Buffer.from('');
@@ -59,6 +64,8 @@ export const ZondaxProvider: LedgerProvider = {
         const changeArr = changePaths.map((path) => path.toString(true));
 
         const signed = await app.sign(accountPath.toString(), signerPaths, tx, changeArr);
+        if (signed.returnCode !== RETURN_CODE_SUCCESS) throw new Error(signed.errorMessage);
+
         const sigs = signed.signatures || new Map();
 
         return {
