@@ -59,6 +59,13 @@ export const ZondaxProvider: LedgerProvider = {
     },
 
     async signTx(t: Transport, tx: Buffer, accountPath: Bip32Path, signers: Bip32Path[], changePaths: Bip32Path[]) {
+        const ledgerMsgSize = (signers.length + changePaths.length) * 9 + tx.length;
+        const ledgerLimit = 8 * 1024; // Maximum limit we can send to ledger.
+        if (ledgerMsgSize >= ledgerLimit)
+            throw new Error(
+                `Transaction size too big. Parsed transactions can not be greater than ${ledgerLimit} bytes, received ${ledgerMsgSize} bytes.`
+            );
+
         const app = this.getApp(t) as AppZondax;
         const signerPaths = signers.map((path) => path.toString(true));
         const changeArr = changePaths.map((path) => path.toString(true));
