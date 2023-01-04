@@ -58,4 +58,11 @@ export const ObsidianProvider: LedgerProvider = {
             signatures: signed.signatures,
         };
     },
+
+    /**
+     * This method is not supported on the Obsidian provider
+     */
+    canParseTx(): boolean {
+        return false;
+    },
 };

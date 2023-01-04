@@ -56,7 +56,7 @@ export interface LedgerProvider {
 
     getVersion(t: Transport): Promise<string>;
 
-    // canParseTx(tx: Buffer): boolean;
+    canParseTx(txSize: number, signersSize: number, changePathsSize: number): boolean;
 }
 
 export type LedgerProviderType = 'obsidian' | 'zondax';
