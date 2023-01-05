@@ -399,10 +399,10 @@ export class LedgerWallet extends PublicMnemonicWallet {
      */
     async signHash(accountPath: any, bip32Paths: any, hash: globalThis.Buffer) {
         if (!LedgerWallet.transport) throw ERR_TransportNotSet;
-        //TODO: support zondax
-        const appAvax = getAppAvax(LedgerWallet.transport, 'obsidian');
-        return await appAvax.signHash(accountPath, bip32Paths, hash);
+        const prov = LedgerWallet.getProvider();
+        return await prov.signHash(LedgerWallet.transport, hash, accountPath, bip32Paths);
     }
+
     // Used for non parsable transactions.
     // Ideally we wont use this function at all, but ledger is not ready yet.
     async signTransactionHash<
