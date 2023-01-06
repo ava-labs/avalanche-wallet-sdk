@@ -42,7 +42,6 @@ import { bintools } from '@/common';
 import { getAccountPathAvalanche, getAccountPathEVM } from '@/Wallet/helpers/derivationHelper';
 import { PublicMnemonicWallet } from '@/Wallet/PublicMnemonicWallet';
 import {
-    getAppAvax,
     getAppEth,
     getEthAddressKeyFromAccountKey,
     getLedgerProvider,
@@ -74,10 +73,6 @@ export class LedgerWallet extends PublicMnemonicWallet {
 
     static async setTransport(transport: Transport) {
         const prov = await getLedgerProvider(transport);
-
-        if (prov.type === 'obsidian') {
-            throw new Error('Only ledger apps >= 0.6.0 are supported');
-        }
 
         LedgerWallet.transport = transport;
         transport.on('disconnect', () => {

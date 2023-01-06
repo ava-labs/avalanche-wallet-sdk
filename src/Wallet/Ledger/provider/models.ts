@@ -21,7 +21,12 @@ export interface LedgerProvider {
 
     getXPUB(
         t: Transport,
-        path: string
+        path: string,
+        config?: {
+            show?: boolean;
+            hrp?: string;
+            chainId?: string;
+        }
     ): Promise<{
         pubKey: Buffer;
         chainCode: Buffer;

@@ -1,6 +1,5 @@
 import Transport from '@ledgerhq/hw-transport';
 import AppObsidian from '@obsidiansystems/hw-app-avalanche';
-import bip32 from 'bip32';
 import { LedgerProvider } from '@/Wallet/Ledger/provider/models';
 import bip32Path, { Bip32Path } from 'bip32-path';
 

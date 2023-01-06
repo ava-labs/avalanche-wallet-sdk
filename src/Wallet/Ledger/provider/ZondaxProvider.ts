@@ -32,9 +32,10 @@ export const ZondaxProvider: LedgerProvider = {
         };
     },
 
-    async getXPUB(t: Transport, path: string) {
+    async getXPUB(t: Transport, path: string, config) {
         const app = this.getApp(t) as AppZondax;
-        const keys = await app.getExtendedPubKey(path, false);
+        const isShow = !!config?.show;
+        const keys = await app.getExtendedPubKey(path, isShow, config?.hrp, config?.chainId);
         if (keys.returnCode !== RETURN_CODE_SUCCESS) throw new Error(keys.errorMessage);
 
         return {
