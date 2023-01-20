@@ -18,6 +18,11 @@ export function isArraysOverlap(arr1: any[], arr2: any[]): boolean {
  * @param output The UTXO
  */
 export function isOutputOwner(ownerAddrs: string[], output: OrteliusUTXO): boolean {
+    // Remove prefix from owner addresses
+    ownerAddrs = ownerAddrs.map((addr) => {
+        const split = addr.split('-');
+        return split[1] || split[0];
+    });
     let outAddrs = output.addresses;
     if (!outAddrs) return false;
 

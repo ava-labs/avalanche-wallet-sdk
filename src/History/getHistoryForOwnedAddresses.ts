@@ -51,6 +51,7 @@ export async function getHistoryForOwnedAddresses(
     ]);
 
     let txsXPC = filterDuplicateOrtelius(txsX.concat(txsP, txsC));
+
     let txsEVM = await getHistoryEVM(evmAddress);
 
     let addrs = [...xAddresses, cAddress];
@@ -74,6 +75,39 @@ export async function getHistoryForOwnedAddresses(
     // Sort and join X,P,C transactions
     let parsedAll = [...parsedXPC, ...parsedEVM];
     let txsSorted = parsedAll.sort((x, y) => (x.timestamp.getTime() < y.timestamp.getTime() ? 1 : -1));
+
+    // If there is a limit only return that much
+    if (limit > 0) {
+        return txsSorted.slice(0, limit);
+    }
+    return txsSorted;
+}
+
+/**
+ * Returns sorted history data from Ortelius for X, P, and C chains.
+ * @param xAddresses A list of owned X chain addresses
+ * @param pAddresses A list of owned P chain addresses
+ * @param cAddress Bech32 C chain address
+ * @param limit Number of transactions to fetch, undefined or 0 for all history
+ */
+export async function getHistoryForOwnedAddressesRaw(
+    xAddresses: string[],
+    pAddresses: string[],
+    cAddress: string,
+    limit = 0
+) {
+    let [txsX, txsP, txsC] = await Promise.all([
+        getHistoryX(xAddresses, limit),
+        getHistoryP(pAddresses, limit),
+        getHistoryC(cAddress, xAddresses, limit),
+    ]);
+
+    let txsXPC = filterDuplicateOrtelius(txsX.concat(txsP, txsC));
+    let txsSorted = txsXPC.sort((x, y) => {
+        const dateX = new Date(x.timestamp);
+        const dateY = new Date(y.timestamp);
+        return dateX.getTime() < dateY.getTime() ? 1 : -1;
+    });
 
     // If there is a limit only return that much
     if (limit > 0) {

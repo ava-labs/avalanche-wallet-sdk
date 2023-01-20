@@ -66,7 +66,12 @@ import { NO_NETWORK } from '@/errors';
 import { avaxCtoX, bnToLocaleString, getTxFeeP, getTxFeeX, waitTxC, waitTxEvm, waitTxP, waitTxX } from '@/utils';
 import { EvmWalletReadonly } from '@/Wallet/EVM/EvmWalletReadonly';
 import EventEmitter from 'events';
-import { getTransactionSummary, getTransactionSummaryEVM, HistoryItemType } from '@/History';
+import {
+    getHistoryForOwnedAddressesRaw,
+    getTransactionSummary,
+    getTransactionSummaryEVM,
+    HistoryItemType,
+} from '@/History';
 import { bintools } from '@/common';
 import { ChainIdType } from '@/common';
 import {
@@ -1304,6 +1309,19 @@ export abstract class WalletProvider {
             await this.getAllAddressesP(),
             this.getEvmAddressBech(),
             this.getAddressC(),
+            limit
+        );
+    }
+
+    /**
+     * Return sorted history from Ortelius.
+     * @param limit
+     */
+    async getHistoryRaw(limit = 0) {
+        return getHistoryForOwnedAddressesRaw(
+            await this.getAllAddressesX(),
+            await this.getAllAddressesP(),
+            this.getEvmAddressBech(),
             limit
         );
     }
