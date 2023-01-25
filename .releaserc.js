@@ -59,12 +59,7 @@ const changelogGen = ['@semantic-release/changelog', {}];
 
 const releaseNotesGen = ['@semantic-release/release-notes-generator', {}];
 
-let plugins;
-if (process.env && process.env.RELEASE_BRANCH === 'master') {
-    plugins = [commitAnalyzerSetting, changelogGen, releaseNotesGen, npmRelease, gitSetting];
-} else {
-    plugins = [changelogGen, releaseNotesGen, npmRelease, gitSetting];
-}
+const plugins = [commitAnalyzerSetting, changelogGen, releaseNotesGen, npmRelease, gitSetting];
 
 module.exports = {
     branches: [
