@@ -1,4 +1,3 @@
-import * as bip32 from 'bip32';
 import Eth from '@ledgerhq/hw-app-eth';
 import Transport from '@ledgerhq/hw-transport';
 import { LedgerProviderType, ObsidianProvider, ZondaxProvider } from '@/Wallet/Ledger/provider';
@@ -13,6 +12,7 @@ import { UnsignedTx as AVMUnsignedTx } from 'avalanche/dist/apis/avm/tx';
 import { UnsignedTx as PlatformUnsignedTx } from 'avalanche/dist/apis/platformvm/tx';
 import { UnsignedTx as EVMUnsignedTx } from 'avalanche/dist/apis/evm/tx';
 
+import bip32 from '@/utils/bip32';
 import AppObsidian from '@obsidiansystems/hw-app-avalanche';
 import AppZondax from '@avalabs/hw-app-avalanche';
 
