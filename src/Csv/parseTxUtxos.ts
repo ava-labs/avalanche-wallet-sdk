@@ -131,7 +131,7 @@ export function createCsvFileOrtelius(txs: OrteliusAvalancheTx[], ownedAddresses
             tx.isOwner ? 'TRUE' : 'FALSE',
             `"${tx.amount}"`,
             tx.assetID,
-            tx.owners.join('-'),
+            `"${tx.owners.join('\n')}"`,
             tx.locktime.toString(),
             tx.threshold.toString(),
         ]);
