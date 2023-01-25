@@ -9,7 +9,7 @@ import { isOutputOwner } from '@/Explorer/ortelius/utxoUtils';
  * @param raw
  */
 export function parseMemo(raw: string): string {
-    const memoText = new Buffer(raw, 'base64').toString('utf8');
+    const memoText = Buffer.from(raw, 'base64').toString('utf8');
 
     // Bug that sets memo to empty string (AAAAAA==) for some tx types
     if (!memoText.length || raw === 'AAAAAA==') return '';
