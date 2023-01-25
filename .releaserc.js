@@ -51,7 +51,7 @@ const npmRelease = [
     '@semantic-release/npm',
     {
         npmPublish: true,
-        pkgRoot: 'dist',
+        pkgRoot: '.',
     },
 ];
 
