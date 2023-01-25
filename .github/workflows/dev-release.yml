@@ -1,0 +1,30 @@
+name: Release dev branch (alpha)
+on:
+    push:
+        branches:
+            - dev
+jobs:
+    release:
+        name: Release Dev Branch
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0
+            - name: Setup Node.js
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 18.x
+            - name: Install dependencies
+              run: yarn install
+            - name: Build library
+              run: yarn build:prod
+            - name: Release
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  RELEASE_BRANCH: master
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  PUBLISH_EMAIL: ${{ secrets.PUBLISH_EMAIL }}
+                  PUBLISH_USERNAME: ${{ secrets.PUBLISH_USERNAME }}
+              run: yarn run semantic-release
