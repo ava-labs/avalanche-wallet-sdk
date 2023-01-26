@@ -21,7 +21,7 @@ jobs:
             - name: Release
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  RELEASE_BRANCH: master
+                  RELEASE_BRANCH: dev
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
                   PUBLISH_EMAIL: ${{ secrets.PUBLISH_EMAIL }}
                   PUBLISH_USERNAME: ${{ secrets.PUBLISH_USERNAME }}

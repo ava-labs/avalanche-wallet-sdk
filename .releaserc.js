@@ -36,6 +36,17 @@ const commitAnalyzerSetting = [
     },
 ];
 
+const githubSetting = [
+    '@semantic-release/github',
+    {
+        assets: [],
+        failTitle: false,
+        successComment: false,
+        failComment: false,
+        labels: false,
+    },
+];
+
 const gitSetting = [
     '@semantic-release/git',
     {
@@ -59,7 +70,12 @@ const changelogGen = ['@semantic-release/changelog', {}];
 
 const releaseNotesGen = ['@semantic-release/release-notes-generator', {}];
 
-const plugins = [commitAnalyzerSetting, changelogGen, releaseNotesGen, npmRelease, gitSetting];
+let plugins;
+if (process.env && process.env.RELEASE_BRANCH === 'master') {
+    plugins = [commitAnalyzerSetting, githubSetting, changelogGen, releaseNotesGen, npmRelease, gitSetting];
+} else {
+    plugins = [githubSetting, npmRelease, gitSetting];
+}
 
 module.exports = {
     branches: [
