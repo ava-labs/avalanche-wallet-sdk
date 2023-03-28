@@ -5,7 +5,7 @@
 
 # Avalanche Wallet SDK (Beta)
 
-Avalanche wallet SDK is a typescript library for creating and managing decentralized wallets.
+Avalanche Wallet SDK is a typescript library for creating and managing decentralized wallets.
 
 It provides high level methods to transact on Avalanche's primary networks: X, P and C.
 
