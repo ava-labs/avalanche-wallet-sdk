@@ -25,7 +25,7 @@
         "**/*": "prettier --write --ignore-unknown"
     },
     "name": "@avalabs/avalanche-wallet-sdk",
-    "author": "AVA Labs",
+    "author": "Ava Labs",
     "repository": {
         "type": "git",
         "url": "https://github.com/ava-labs/avalanche-wallet-sdk"
