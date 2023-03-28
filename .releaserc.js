@@ -83,7 +83,7 @@ module.exports = {
             name: 'master',
         },
         {
-            name: 'alpha',
+            name: 'dev',
             prerelease: 'alpha',
         },
     ],
