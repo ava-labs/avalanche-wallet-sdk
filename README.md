@@ -44,3 +44,7 @@ or yarn
 ## Webpack
 
 For Webpack version 5 and above you must use this plugin with it. https://www.npmjs.com/package/node-polyfill-webpack-plugin
+
+## Docs
+
+Can generate documentation with `yarn docs` and open `docs/index.html` in a browser.
