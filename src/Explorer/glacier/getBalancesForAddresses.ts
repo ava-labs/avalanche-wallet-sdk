@@ -18,7 +18,6 @@ export async function getBalancesForAddresses(config: GetBalancesParams) {
             ...config,
             addresses: bucketAddrs.join(','),
         });
-        // return GlacierService.getBalances({ ...config, addresses: bucketAddrs })
     });
 
     const res = await Promise.all(promises);
