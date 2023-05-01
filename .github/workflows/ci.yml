@@ -20,6 +20,9 @@ jobs:
               with:
                   cache: yarn
                   node-version: ${{ matrix.node-version }}
+            - name: Create .npmrc
+              run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN }}' >> .npmrc
+            - name: Install with yarn
             - run: yarn --frozen-lockfile --network-timeout 1000000
             - run: yarn test --ci --coverage --maxWorkers=2
     Lint:
@@ -34,5 +37,8 @@ jobs:
               with:
                   cache: yarn
                   node-version: ${{ matrix.node-version }}
+            - name: Create .npmrc
+              run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN }}' >> .npmrc
+            - name: Install with yarn
             - run: yarn --frozen-lockfile
             - run: yarn lint
