@@ -76,6 +76,7 @@
         "typescript": "4.6.3"
     },
     "dependencies": {
+        "@avalabs/glacier-sdk": "2.8.0-alpha.92",
         "@avalabs/hw-app-avalanche": "0.6.6",
         "@ethereumjs/common": "2.6.0",
         "@ethereumjs/tx": "3.4.0",
@@ -83,7 +84,7 @@
         "@ledgerhq/hw-transport": "6.27.5",
         "@metamask/eth-sig-util": "4.0.0",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
-        "@openzeppelin/contracts": "4.7.3",
+        "@openzeppelin/contracts": "4.8.3",
         "big.js": "^6.1.1",
         "bip32": "4.0.0",
         "bip32-path": "0.4.2",
