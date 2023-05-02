@@ -11,7 +11,7 @@ jobs:
     Test:
         runs-on: ${{ matrix.os }}
         env:
-            NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+            NPM_TOKEN: ${{ secrets.NPM_TOKEN_READONLY }}
         strategy:
             matrix:
                 os: [ubuntu-latest, windows-latest, macOS-latest]
@@ -22,13 +22,13 @@ jobs:
               with:
                   cache: yarn
                   node-version: ${{ matrix.node-version }}
-            - run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN }}' >> .npmrc
+            - run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN_READONLY }}' >> .npmrc
             - run: yarn --frozen-lockfile --network-timeout 1000000
             - run: yarn test --ci --coverage --maxWorkers=2
     Lint:
         runs-on: ubuntu-latest
         env:
-            NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+            NPM_TOKEN: ${{ secrets.NPM_TOKEN_READONLY }}
         strategy:
             matrix:
                 os: [ubuntu-latest, windows-latest, macOS-latest]
