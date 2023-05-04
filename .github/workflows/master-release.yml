@@ -19,7 +19,7 @@ jobs:
               with:
                   node-version: 18.x
             - name: add .npmrc
-              run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN }}' >> .npmrc
+              run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN_READONLY }}' >> .npmrc
             - name: Install dependencies
               run: yarn install
             - name: Release
