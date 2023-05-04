@@ -12,7 +12,7 @@ import {
     SCAN_RANGE,
     SCAN_SIZE,
 } from './constants';
-import { getAddressChains } from '@/Explorer';
+import { listChainsForAddresses } from '@/Explorer';
 import { NO_NETWORK } from '@/errors';
 import { bintools } from '@/common';
 import { sleep } from '@/utils';
@@ -214,7 +214,8 @@ export class HdScanner {
     // explorer API.
     private async findAvailableIndexExplorer(startIndex = 0): Promise<number> {
         let addrs = await this.getAddressesInRange(startIndex, startIndex + HD_SCAN_LOOK_UP_WINDOW);
-        let addrChains = await getAddressChains(addrs);
+        const addrChainsGlacier = await listChainsForAddresses(addrs, activeNetwork.networkID);
+        const seenAddrs = addrChainsGlacier.map((addrData) => addrData.address);
 
         for (let i = 0; i < addrs.length - HD_SCAN_GAP_SIZE; i++) {
             let gapSize: number = 0;
@@ -224,9 +225,9 @@ export class HdScanner {
                 let scanAddr = addrs[scanIndex];
 
                 let rawAddr = scanAddr.split('-')[1];
-                let chains: string[] = addrChains[rawAddr];
+                const isSeen = seenAddrs.includes(rawAddr);
 
-                if (!chains) {
+                if (!isSeen) {
                     // If doesnt exist on any chain
                     gapSize++;
                 } else {
