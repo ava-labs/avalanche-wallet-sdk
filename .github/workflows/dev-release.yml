@@ -23,6 +23,8 @@ jobs:
               run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN_READONLY }}' >> .npmrc
             - name: Install dependencies
               run: yarn install
+            - name: add publishing .npmrc
+              run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN }}' >> .npmrc
             - name: Release
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
