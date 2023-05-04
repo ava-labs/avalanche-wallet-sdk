@@ -18,8 +18,8 @@
         "lint": "eslint .",
         "prepare": "husky install && yarn build:prod",
         "start": "rollup -c --watch",
-        "test:watch": "jest --watch",
-        "test": "jest"
+        "test:watch": "export NODE_OPTIONS=--openssl-legacy-provider && jest --watch",
+        "test": "export NODE_OPTIONS=--openssl-legacy-provider && jest"
     },
     "lint-staged": {
         "**/*": "prettier --write --ignore-unknown"

@@ -12,7 +12,7 @@ import {
     SCAN_RANGE,
     SCAN_SIZE,
 } from './constants';
-import { getAddressChains, listChainsForAddresses } from '@/Explorer';
+import { listChainsForAddresses } from '@/Explorer';
 import { NO_NETWORK } from '@/errors';
 import { bintools } from '@/common';
 import { sleep } from '@/utils';
@@ -214,7 +214,6 @@ export class HdScanner {
     // explorer API.
     private async findAvailableIndexExplorer(startIndex = 0): Promise<number> {
         let addrs = await this.getAddressesInRange(startIndex, startIndex + HD_SCAN_LOOK_UP_WINDOW);
-        // let addrChains = await getAddressChains(addrs);
         const addrChainsGlacier = await listChainsForAddresses(addrs, activeNetwork.networkID);
         const seenAddrs = addrChainsGlacier.map((addrData) => addrData.address);
 
