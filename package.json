@@ -1,5 +1,5 @@
 {
-    "version": "0.20.0-alpha.7",
+    "version": "0.20.0-alpha.8",
     "license": "BSD-3",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
@@ -53,6 +53,7 @@
         "@types/hdkey": "2.0.1",
         "@types/jest": "29.4.0",
         "@types/randomstring": "1.1.8",
+        "@types/tiny-secp256k1": "1.0.0",
         "@typescript-eslint/eslint-plugin": "5.17.0",
         "@typescript-eslint/parser": "5.17.0",
         "@zerollup/ts-transform-paths": "1.7.18",
@@ -99,7 +100,7 @@
         "moment": "2.29.4",
         "randomstring": "1.2.2",
         "sockette": "2.0.6",
-        "tiny-secp256k1": "^2.2.1",
+        "tiny-secp256k1": "1.1.6",
         "typescript-transform-paths": "2.2.3",
         "url": "0.11.0",
         "web3": "1.8.1",
