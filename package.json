@@ -85,7 +85,7 @@
         "@ledgerhq/hw-transport": "6.27.5",
         "@metamask/eth-sig-util": "4.0.0",
         "@obsidiansystems/hw-app-avalanche": "0.2.2",
-        "@openzeppelin/contracts": "4.8.3",
+        "@openzeppelin/contracts": "4.9.2",
         "big.js": "^6.1.1",
         "bip32": "4.0.0",
         "bip32-path": "0.4.2",
