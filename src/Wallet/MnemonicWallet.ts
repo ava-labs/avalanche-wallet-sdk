@@ -1,5 +1,7 @@
 import * as bip39 from 'bip39';
-import * as bip32 from 'bip32';
+import { BIP32Interface } from 'bip32';
+import bip32 from '@/utils/bip32';
+
 import { EvmWallet } from './EVM/EvmWallet';
 import { UnsafeWallet, WalletNameType } from './types';
 import { Buffer } from 'avalanche';
@@ -22,7 +24,7 @@ export class MnemonicWallet extends HDWalletAbstract implements UnsafeWallet {
     private mnemonicCypher: CypherAES;
     accountIndex: number;
 
-    private ethAccountKey: bip32.BIP32Interface;
+    private ethAccountKey: BIP32Interface;
 
     constructor(mnemonic: string, account = 0) {
         let seed: globalThis.Buffer = bip39.mnemonicToSeedSync(mnemonic);

@@ -1,0 +1,35 @@
+name: Release master branch
+on:
+    push:
+        branches:
+            - master
+jobs:
+    release:
+        name: Release Master Branch
+        runs-on: ubuntu-latest
+        env:
+            NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0
+            - name: Setup Node.js
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 18.x
+            - name: add .npmrc
+              run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN_READONLY }}' >> .npmrc
+            - name: Install dependencies
+              run: yarn install
+            - name: Release
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  RELEASE_BRANCH: master
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: yarn run semantic-release
+            - name: Rebase dev branch
+              run: |
+                  git checkout dev &&
+                  git rebase master &&
+                  git push origin dev

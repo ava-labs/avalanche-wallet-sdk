@@ -1,0 +1,33 @@
+name: Release dev branch (alpha)
+on:
+    push:
+        branches:
+            - dev
+jobs:
+    release:
+        name: Release Dev Branch
+        runs-on: ubuntu-latest
+        env:
+            NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0
+            - name: Setup Node.js
+              uses: actions/setup-node@v2
+              with:
+                  cache: yarn
+                  node-version: 18.x
+            - name: add .npmrc
+              run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN_READONLY }}' >> .npmrc
+            - name: Install dependencies
+              run: yarn install
+            - name: add publishing .npmrc
+              run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN }}' >> .npmrc
+            - name: Release
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  RELEASE_BRANCH: dev
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: yarn run semantic-release

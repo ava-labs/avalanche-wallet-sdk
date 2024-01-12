@@ -5,9 +5,9 @@
 
 # Avalanche Wallet SDK (Beta)
 
-Avalanche wallet SDK is a typescript library for creating and managing decentralized wallets.
+Avalanche Wallet SDK is a Typescript library for creating and managing decentralized wallets.
 
-It provides high level methods to transact on Avalanche's primary networks: X, P and C.
+It provides high level methods to transact on Avalanche's primary networks: X, P and C chain.
 
 Wallet types supported:
 
@@ -44,3 +44,7 @@ or yarn
 ## Webpack
 
 For Webpack version 5 and above you must use this plugin with it. https://www.npmjs.com/package/node-polyfill-webpack-plugin
+
+## Docs
+
+Can generate documentation with `yarn docs` and open `docs/index.html` in a browser.

@@ -1,12 +1,12 @@
 import * as bip39 from 'bip39';
-import * as bip32 from 'bip32';
+import bip32 from '@/utils/bip32';
+
 import { getAccountPathAvalanche } from '@/Wallet/helpers/derivationHelper';
 import { TEST_MNEMONIC, TEST_MNEMONIC_ADDRS_EXT, TEST_MNEMONIC_ADDRS_INT } from './constants';
 import { HdScanner } from '@/Wallet/HdScanner';
-import { activeNetwork, avalanche, explorer_api } from '@/Network/network';
-import { getAddressChains } from '@/Explorer';
+import { listChainsForAddresses } from '@/Explorer';
 import { HD_SCAN_GAP_SIZE } from '@/Wallet/constants';
-import { add } from 'husky';
+import { ChainAddressChainIdMap, BlockchainId } from '@avalabs/glacier-sdk';
 
 const seed = bip39.mnemonicToSeedSync(TEST_MNEMONIC);
 let masterHdKey = bip32.fromSeed(seed);
@@ -26,7 +26,7 @@ jest.mock('@/Network/network', () => {
 
 jest.mock('@/Explorer', () => {
     return {
-        getAddressChains: jest.fn(),
+        listChainsForAddresses: jest.fn(),
     };
 });
 
@@ -47,13 +47,21 @@ describe('hd scanner', () => {
     });
 });
 
-function addrsToAddressChains(addrs: string[]) {
+/**
+ * Mock a AddressChains response with the given addresses
+ * @param addrs
+ */
+function addrsToAddressChains(addrs: string[]): ChainAddressChainIdMap[] {
     const addrsSplit = addrs.map((addr) => addr.split('-')[1]);
-    let res: { [addr: string]: any } = {};
+    const results: ChainAddressChainIdMap[] = [];
     for (let i = 0; i < addrsSplit.length; i++) {
-        res[addrsSplit[i]] = {};
+        results.push({
+            address: addrsSplit[i],
+            //@ts-ignore
+            blockchainIds: [BlockchainId.X_CHAIN],
+        });
     }
-    return res;
+    return results;
 }
 
 describe('find index explorer', function () {
@@ -64,7 +72,7 @@ describe('find index explorer', function () {
         const dict = addrsToAddressChains(tenAddrs);
 
         //@ts-ignore
-        getAddressChains.mockReturnValue(dict);
+        listChainsForAddresses.mockReturnValue(dict);
 
         const foundIndex = await scanner.resetIndex();
         expect(foundIndex).toEqual(10);
@@ -81,7 +89,7 @@ describe('find index explorer', function () {
 
         const dict = addrsToAddressChains(addrs);
         //@ts-ignore
-        getAddressChains.mockReturnValue(dict);
+        listChainsForAddresses.mockReturnValue(dict);
 
         const foundIndex = await scanner.resetIndex();
         expect(foundIndex).toEqual(20);
@@ -91,7 +99,7 @@ describe('find index explorer', function () {
         const addr = scanner.getAddressForIndex(HD_SCAN_GAP_SIZE - 1);
         const dict = addrsToAddressChains([addr]);
         //@ts-ignore
-        getAddressChains.mockReturnValue(dict);
+        listChainsForAddresses.mockReturnValue(dict);
 
         const foundIndex = await scanner.resetIndex();
         expect(foundIndex).toEqual(HD_SCAN_GAP_SIZE);
@@ -102,7 +110,7 @@ describe('find index explorer', function () {
 
         const dict = addrsToAddressChains(addrs);
         //@ts-ignore
-        getAddressChains.mockReturnValue(dict);
+        listChainsForAddresses.mockReturnValue(dict);
 
         const foundIndex = await scanner.resetIndex();
         expect(foundIndex).toEqual(14);
@@ -113,7 +121,7 @@ describe('find index explorer', function () {
 
         const dict = addrsToAddressChains(addrs);
         //@ts-ignore
-        getAddressChains.mockReturnValue(dict);
+        listChainsForAddresses.mockReturnValue(dict);
 
         const foundIndex = await scanner.resetIndex();
         expect(foundIndex).toEqual(44);
@@ -123,7 +131,7 @@ describe('find index explorer', function () {
         const addrs = [scanner.getAddressForIndex(15), scanner.getAddressForIndex(15 + HD_SCAN_GAP_SIZE + 1)];
         const dict = addrsToAddressChains(addrs);
         //@ts-ignore
-        getAddressChains.mockReturnValue(dict);
+        listChainsForAddresses.mockReturnValue(dict);
 
         const foundIndex = await scanner.resetIndex();
         expect(foundIndex).toEqual(16);

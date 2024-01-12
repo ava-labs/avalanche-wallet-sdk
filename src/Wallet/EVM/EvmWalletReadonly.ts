@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import { KeyPair as EVMKeyPair } from 'avalanche/dist/apis/evm/keychain';
 import { bintools } from '@/common';
 import { computePublicKey, computeAddress } from 'ethers/lib/utils';
-import { payments, ECPair, networks } from 'bitcoinjs-lib';
+import { payments, networks, ECPair } from 'bitcoinjs-lib';
 import { BTCNetworkType } from '@/Wallet';
 import { buildEvmTransferErc721Tx, estimateErc721TransferGas } from '@/helpers/tx_helper';
 
