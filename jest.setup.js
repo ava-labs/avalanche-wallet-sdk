@@ -9,4 +9,4 @@ if (nodeVersion < 20) {
         // Ignore assignment errors
     }
 }
-// For Node 20+, global.crypto is already available and read-only, so no assignment needed
+// For Node 20+, global.crypto is already available and read-only, so no assignment needed 
