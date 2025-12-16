@@ -2,6 +2,9 @@ name: Publish Package
 
 on:
   push:
+    branches:
+      - master
+      - dev
     tags:
       - 'v*'
   pull_request:
