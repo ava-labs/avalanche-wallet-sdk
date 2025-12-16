@@ -10,6 +10,9 @@ on:
 jobs:
     Test:
         runs-on: ${{ matrix.os }}
+        permissions:
+            id-token: write
+            contents: read
         env:
             NPM_TOKEN: ${{ secrets.NPM_TOKEN_READONLY }}
         strategy:
@@ -27,6 +30,9 @@ jobs:
             - run: yarn test --ci --coverage --maxWorkers=2
     Lint:
         runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+            contents: read
         env:
             NPM_TOKEN: ${{ secrets.NPM_TOKEN_READONLY }}
         strategy:
