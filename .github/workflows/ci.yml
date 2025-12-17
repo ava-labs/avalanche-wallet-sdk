@@ -10,6 +10,8 @@ on:
 jobs:
     Test:
         runs-on: ${{ matrix.os }}
+        permissions:
+            contents: read
         env:
             NPM_TOKEN: ${{ secrets.NPM_TOKEN_READONLY }}
         strategy:
@@ -17,8 +19,8 @@ jobs:
                 os: [ubuntu-latest]
                 node-version: [18.x]
         steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   cache: yarn
                   node-version: ${{ matrix.node-version }}
@@ -27,6 +29,8 @@ jobs:
             - run: yarn test --ci --coverage --maxWorkers=2
     Lint:
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
         env:
             NPM_TOKEN: ${{ secrets.NPM_TOKEN_READONLY }}
         strategy:
@@ -34,8 +38,8 @@ jobs:
                 os: [ubuntu-latest]
                 node-version: [18.x]
         steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   cache: yarn
                   node-version: ${{ matrix.node-version }}
