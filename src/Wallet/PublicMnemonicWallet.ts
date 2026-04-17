@@ -6,8 +6,7 @@ import { Transaction } from '@ethereumjs/tx';
 import { WalletNameType } from '@/Wallet/types';
 import { EvmWallet } from '@/Wallet/EVM/EvmWallet';
 import { EvmWalletReadonly } from '@/Wallet/EVM/EvmWalletReadonly';
-import * as bip32 from 'bip32';
-import { importPublic } from 'ethereumjs-util';
+import bip32 from '@/utils/bip32';
 import { computePublicKey } from 'ethers/lib/utils';
 import { TypedDataV1, TypedMessage } from '@metamask/eth-sig-util';
 

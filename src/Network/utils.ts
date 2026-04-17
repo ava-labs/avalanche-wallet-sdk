@@ -6,8 +6,16 @@ export function isFujiNetwork(activeNetwork: NetworkConfig) {
     return activeNetwork.networkID === TestnetConfig.networkID;
 }
 
+export function isFujiNetworkId(id: number) {
+    return id === TestnetConfig.networkID;
+}
+
 export function isMainnetNetwork(activeNetwork: NetworkConfig) {
     return activeNetwork.networkID === MainnetConfig.networkID;
+}
+
+export function isMainnetNetworkId(id: number) {
+    return id === MainnetConfig.networkID;
 }
 
 export function isLocalNetwork(activeNetwork: NetworkConfig) {

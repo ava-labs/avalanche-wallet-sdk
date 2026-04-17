@@ -19,6 +19,7 @@ import {
     TypedMessage,
 } from '@metamask/eth-sig-util';
 import * as bitcoin from 'bitcoinjs-lib';
+
 export class EvmWallet extends EvmWalletReadonly {
     private privateKey: Buffer;
     private btcPair: bitcoin.ECPairInterface;
