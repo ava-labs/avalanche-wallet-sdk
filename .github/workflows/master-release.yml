@@ -17,7 +17,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@f1f314fca9dfce2769ece7d933488f076716723e # v1
               with:
-                  node-version: 18.x
+                  node-version: 20.x
             - name: add .npmrc
               run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN_READONLY }}' >> .npmrc
             - name: Install dependencies

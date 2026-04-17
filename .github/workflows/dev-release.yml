@@ -18,7 +18,7 @@ jobs:
               uses: actions/setup-node@7c12f8017d5436eb855f1ed4399f037a36fbd9e8 # v2
               with:
                   cache: yarn
-                  node-version: 18.x
+                  node-version: 20.x
             - name: add .npmrc
               run: echo '//registry.npmjs.org/:_authToken= ${{ secrets.NPM_TOKEN_READONLY }}' >> .npmrc
             - name: Install dependencies
