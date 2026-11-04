@@ -7,8 +7,12 @@ on:
             - dev
     pull_request:
 
+permissions: {}
+
 jobs:
     Test:
+        permissions:
+          contents: read
         runs-on: ${{ matrix.os }}
         env:
             NPM_TOKEN: ${{ secrets.NPM_TOKEN_READONLY }}
@@ -18,6 +22,8 @@ jobs:
                 node-version: [20.x]
         steps:
             - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
+              with:
+                persist-credentials: false
             - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   cache: yarn
@@ -26,6 +32,8 @@ jobs:
             - run: yarn --frozen-lockfile --network-timeout 1000000
             - run: yarn test --ci --coverage --maxWorkers=2
     Lint:
+        permissions:
+          contents: read
         runs-on: ubuntu-latest
         env:
             NPM_TOKEN: ${{ secrets.NPM_TOKEN_READONLY }}
@@ -35,6 +43,8 @@ jobs:
                 node-version: [20.x]
         steps:
             - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
+              with:
+                persist-credentials: false
             - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   cache: yarn
