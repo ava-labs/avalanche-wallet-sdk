@@ -3,8 +3,15 @@ on:
     push:
         branches:
             - dev
+permissions: {}
+
 jobs:
     release:
+        permissions:
+          contents: write
+          id-token: write
+          issues: write
+          pull-requests: write
         name: Release Dev Branch
         runs-on: ubuntu-latest
         env:
@@ -14,6 +21,7 @@ jobs:
               uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
               with:
                   fetch-depth: 0
+                  persist-credentials: true  # kept: job runs git commands that use the checkout token
             - name: Setup Node.js
               uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
